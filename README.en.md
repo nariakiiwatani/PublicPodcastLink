@@ -1,8 +1,9 @@
-# Instant Podcast Player
-
 [日本語](README.md)
 
-![screenshot](https://github.com/nariakiiwatani/InstantPodcastPlayer/assets/1306139/09acda03-9004-4a32-810d-07233c6f7386)
+# Instant Podcast Player
+
+
+<img src="https://github.com/nariakiiwatani/InstantPodcastPlayer/assets/1306139/09acda03-9004-4a32-810d-07233c6f7386" width="500" alt='screenshot'>
 
 Instant Podcast Player is a versatile web-based podcast player that allows users to instantly load and play any podcast available in the RSS format. It's a great tool for anyone looking for a quick and efficient way to sample different podcasts, or to have a handy player at their disposal.
 
@@ -44,7 +45,7 @@ Enjoy your podcast journey with Instant Podcast Player!
 ---
 
 ## We Need Your Support!
-PublicPodcast.link is provided as a unique tool to generate permanent links for podcasts. We're offering this platform to users for free, providing resources to make the podcast experience more convenient and efficient.
+[https://publicpodcast.link](PublicPodcast.link) is provided as a unique tool to generate permanent links for podcasts. We're offering this platform to users for free, providing resources to make the podcast experience more convenient and efficient.
 
 However, costs such as domain management and operational expenses are necessary to keep it publicly available. In order to continue and enhance this service, we need your donations.
 

@@ -1,8 +1,8 @@
-# Instant Podcast Player
-
 [English](README.en.md)
 
-![screenshot](https://github.com/nariakiiwatani/InstantPodcastPlayer/assets/1306139/09acda03-9004-4a32-810d-07233c6f7386)
+# Instant Podcast Player
+
+<img src="https://github.com/nariakiiwatani/InstantPodcastPlayer/assets/1306139/09acda03-9004-4a32-810d-07233c6f7386" width="500" alt='screenshot'>
 
 インスタント・ポッドキャスト・プレーヤーは、RSS形式で利用可能などのポッドキャストを即座に読み込み、再生できる汎用性の高いウェブベースのポッドキャストプレーヤーです。異なるポッドキャストを素早く効率的にサンプリングしたい方や、手軽なプレーヤーを利用したい方に最適なツールです。
 
@@ -35,7 +35,7 @@
 ---
 
 ## あなたのサポートが必要です！
-[publicpodcast.link](PublicPodcast.link)は、ポッドキャストのパーマリンクを作成できるユニークなツールとして提供しています。私たちはこのプラットフォームを利用者の皆様に無料で提供し、ポッドキャストの体験を簡単で効率的にするためのリソースを提供したいと考えています。
+[https://publicpodcast.link](PublicPodcast.link)は、ポッドキャストのパーマリンクを作成できるユニークなツールとして提供しています。私たちはこのプラットフォームを利用者の皆様に無料で提供し、ポッドキャストの体験を簡単で効率的にするためのリソースを提供したいと考えています。
 
 しかし、公開維持のためにはドメイン管理費用が必要です。このサービスを続け、改善し続けるためには、皆様からの寄付が必要です。
 
