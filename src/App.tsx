@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import PodcastInput from './components/PodcastInput';
 import PodcastPreview from './components/PodcastPreview';
 import EpisodeList from './components/EpisodeList';
@@ -15,13 +15,16 @@ const theme = createTheme({
 	},
 });
 
+function useQuery() {
+	return new URLSearchParams(useLocation().search);
+}
 const App: React.FC = () => {
-	const [podcasts, setPodcasts] = useState<{ url: string, title: string }[]>(JSON.parse(localStorage.getItem('podcasts')??'[]'));
+	const [podcasts, setPodcasts] = useState<{ url: string, title: string }[]>(JSON.parse(localStorage.getItem('podcasts') ?? '[]'));
 	const [url, setUrl_] = useState('');
 	const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | null>(null);
 	const { podcast, episodes, fetchPodcast, clearPodcast } = usePodcast();
 
-	const query = useParams();
+	const query = useQuery();
 
 	const setUrl = (url: string) => {
 		if (!podcasts.find(({ title }) => title === url)) {
@@ -35,9 +38,13 @@ const App: React.FC = () => {
 	}, [setPodcasts, clearPodcast])
 
 	useEffect(() => {
-		const { channel: url, item: guid } = query
+		let url = query.get('channel')
+		let guid = query.get('item')
+		console.info({url,guid})
 		if (url) {
-			updateSelected(url, guid ?? null).then(() => setUrl(url))
+			url = decodeURIComponent(url)
+			if(guid) guid = decodeURIComponent(guid)
+			updateSelected(url, guid).then(() => setUrl(url!))
 		}
 	}, [])
 

@@ -8,7 +8,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 	<React.StrictMode>
 		<BrowserRouter>
 			<Routes>
-				<Route path='/InstantPodcastPlayer?/:channel/:item?' element={<App />} />
+				<Route path='*' element={<App />} />
 			</Routes>
 		</BrowserRouter>
 	</React.StrictMode>,
