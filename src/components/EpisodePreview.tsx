@@ -4,9 +4,10 @@ import { Typography, Link, Card, CardContent, Box } from '@mui/material'
 
 type EpisodePreviewProps = {
 	episode: Episode | null;
+	ShareButton?: React.ReactNode;
 };
 
-const EpisodePreview: React.FC<EpisodePreviewProps> = ({ episode: src }) => {
+const EpisodePreview: React.FC<EpisodePreviewProps> = ({ episode: src, ShareButton }) => {
 	if (!src) return null;
 
 	return (
@@ -22,11 +23,14 @@ const EpisodePreview: React.FC<EpisodePreviewProps> = ({ episode: src }) => {
 				/>
 			</Box>
 			<CardContent>
-				<Link href={src.link} target='_blank'>
+				<div style={{ display: 'flex', alignItems: 'center' }}>
 					<Typography component="h5" variant="h5">
-						{src.title}
+						<Link href={src.link} target='_blank'>
+							{src.title}
+						</Link>
 					</Typography>
-				</Link>
+					{ShareButton}
+				</div>
 				<audio controls key={src.audioUrl} style={{ width: '100%', marginTop: 15 }}>
 					<source src={src.audioUrl} type="audio/mpeg" />
 					Your browser does not support the audio element.

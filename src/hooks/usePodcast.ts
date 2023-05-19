@@ -11,7 +11,7 @@ const usePodcast = () => {
 	const [podcast, setPodcast] = useState<Podcast | null>(null);
 	const [episodes, setEpisodes] = useState<Episode[]>([]);
 
-	const fetchPodcast = async (url: string): Promise<Podcast | null> => {
+	const fetchPodcast = async (url: string) => {
 		try {
 			const rss_string = await (await fetch(url)).text()
 			const rss = parser.parse(rss_string).rss;
@@ -24,23 +24,22 @@ const usePodcast = () => {
 						imageUrl: channel.image?.url || '',
 						link: channel.link
 					};
-					setPodcast(newPodcast);
 
 					const items = channel?.item ? Array.isArray(channel.item) ? channel.item : [channel.item] : []
+					const newItems = items.map((item: any) => ({
+						id: item.guid['#text'] || '',
+						title: item.title || '',
+						description: item.description || '',
+						link: item.link || '',
+						audioUrl: item.enclosure?.url || '',
+						imageUrl: item['itunes:image'].href || '',
+						pubDate: item.pubDate || '',
+					}))
 
-					setEpisodes(
-						items.map((item: any) => ({
-							id: item.guid['#text'] || '',
-							title: item.title || '',
-							description: item.description || '',
-							link: item.link || '',
-							audioUrl: item.enclosure?.url || '',
-							imageUrl: item['itunes:image'].href || '',
-							pubDate: item.pubDate || '',
-						}))
-					);
+					setPodcast(newPodcast);
+					setEpisodes(newItems);
 
-					return newPodcast;
+					return {podcast:newPodcast, episodes:newItems}
 				}
 			}
 			return null;
