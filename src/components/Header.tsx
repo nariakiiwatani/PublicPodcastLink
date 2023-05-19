@@ -18,17 +18,15 @@ const Header = () => {
 						PublicPodcast.link
 					</Typography>
 				</Link>
-				<Tooltip title='translation'>
-					<Box>
-						<Select
-							value={locale}
-							onChange={handleChangeLanguage}
-						>
-							<MenuItem value="en">🇺🇸 English</MenuItem>
-							<MenuItem value="ja">🇯🇵 日本語</MenuItem>
-						</Select>
-					</Box>
-				</Tooltip>
+				<Box>
+					<Select
+						value={locale}
+						onChange={handleChangeLanguage}
+					>
+						<MenuItem value="en">🇺🇸 English</MenuItem>
+						<MenuItem value="ja">🇯🇵 日本語</MenuItem>
+					</Select>
+				</Box>
 				<Tooltip title='GitHub'>
 					<IconButton color="inherit" target="_blank" component={Link} href="https://github.com/nariakiiwatani/InstantPodcastPlayer">
 						<GitHubIcon />
