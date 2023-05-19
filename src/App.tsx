@@ -16,7 +16,7 @@ const theme = createTheme({
 });
 
 const App: React.FC = () => {
-	const [podcasts, setPodcasts] = useState<{ url: string, title: string }[]>([]);
+	const [podcasts, setPodcasts] = useState<{ url: string, title: string }[]>(JSON.parse(localStorage.getItem('podcasts')??'[]'));
 	const [url, setUrl_] = useState('');
 	const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | null>(null);
 	const { podcast, episodes, fetchPodcast, clearPodcast } = usePodcast();
@@ -33,13 +33,6 @@ const App: React.FC = () => {
 		setPodcasts(prev => prev.filter(p => p.url !== url))
 		clearPodcast()
 	}, [setPodcasts, clearPodcast])
-
-	useEffect(() => {
-		const storedPodcasts = localStorage.getItem('podcasts');
-		if (storedPodcasts) {
-			setPodcasts(JSON.parse(storedPodcasts));
-		}
-	}, [])
 
 	useEffect(() => {
 		const { channel: url, item: guid } = query
