@@ -54,7 +54,6 @@ const App: React.FC = () => {
 	useEffect(() => {
 		let url = query.get('channel')
 		let guid = query.get('item')
-		console.info({url,guid})
 		if (url) {
 			url = decodeURIComponent(url)
 			if(guid) guid = decodeURIComponent(guid)

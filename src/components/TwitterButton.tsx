@@ -2,14 +2,15 @@ import { IconButton, Link } from "@mui/material";
 import TwitterIcon from '@mui/icons-material/Twitter';
 import { shareUrl as createShareUrl } from '../utils/permalink';
 import { Episode, Podcast } from '../types/podcast';
+import Tooltip from '@mui/material/Tooltip';
 
 function extractHashtags(text: string) {
 	let regex = /#(?![0-9])[\p{L}\p{N}_]+/gu;
-    let hashtags = text.match(regex);
-    if (hashtags) {
+	let hashtags = text.match(regex);
+	if (hashtags) {
 		return [...new Set(hashtags)];
-    }
-    return [];
+	}
+	return [];
 }
 type TweetButtonProps = {
 	rss_url: string
@@ -24,21 +25,23 @@ export const TweetButton = ({
 	const shareUrl = createShareUrl(rss_url, episode?.id)
 	const hashtags = extractHashtags([
 		channel.description,
-		episode?.description??'',
-		'#InstantPodcastPlayer'].join(' '))
+		episode?.description ?? '',
+		'#PublicPodcastLink'].join(' '))
 	const message = episode ?
-`${channel.title}
+		`${channel.title}
 ${episode.title}
 ${hashtags.join(' ')}
 ${shareUrl}` :
-`${channel.title}
+		`${channel.title}
 ${hashtags.join(' ')}
 ${shareUrl}`
 
 	const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`;
 	return (
-		<IconButton color="inherit" component={Link} target="_blank" href={twitterShareUrl}>
-			<TwitterIcon />
-		</IconButton>
+		<Tooltip title='Share with Twitter'>
+			<IconButton color="inherit" component={Link} target="_blank" href={twitterShareUrl}>
+				<TwitterIcon />
+			</IconButton>
+		</Tooltip>
 	)
 }

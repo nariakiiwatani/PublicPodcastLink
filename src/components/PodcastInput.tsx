@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { TextField, Autocomplete } from '@mui/material';
+import { useTranslation } from '../hooks/useTranslation';
 
 type PodcastInputProps = {
 	url: string;
@@ -9,6 +10,7 @@ type PodcastInputProps = {
 };
 
 const PodcastInput: React.FC<PodcastInputProps> = ({ url, setUrl, podcasts, deleteUrl }) => {
+	const { t } = useTranslation('select_channel')
 	const [pending, setPending] = useState<string>('---')
 	const selectedPodcast = podcasts.find(podcast => podcast.url === url)??{url:'',title:pending};
 	const options = useMemo(() => selectedPodcast.url==='' ? [selectedPodcast, ...podcasts] : podcasts, [podcasts, selectedPodcast])
@@ -35,7 +37,7 @@ const PodcastInput: React.FC<PodcastInputProps> = ({ url, setUrl, podcasts, dele
 			renderInput={(params) => (
 				<TextField
 					{...params}
-					label="Enter RSS or Select Channel"
+					label={t.label}
 					variant="outlined"
 					fullWidth
 				/>
