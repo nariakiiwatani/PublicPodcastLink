@@ -35,7 +35,7 @@ const EpisodePreview: React.FC<EpisodePreviewProps> = ({ episode: src, ShareButt
 					<source src={src.audioUrl} type="audio/mpeg" />
 					Your browser does not support the audio element.
 				</audio>
-				<Box style={{overflowY: 'scroll', maxHeight: '100%'}}>
+				<Box style={{overflowY: 'scroll', maxHeight: 'calc(100% - 100px)'}}>
 					<Typography variant="subtitle1" color="text.secondary" dangerouslySetInnerHTML={{ __html: src.description }} />
 				</Box>
 			</CardContent>

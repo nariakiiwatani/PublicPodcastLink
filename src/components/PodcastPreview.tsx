@@ -32,7 +32,7 @@ const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src, ShareButt
 					</Typography>
 					{ShareButton}
 				</Box>
-				<Box style={{overflowY: 'scroll', maxHeight: '100%'}}>
+				<Box style={{overflowY: 'scroll', maxHeight: 'calc(100% - 30px)'}}>
 					<Typography
 						variant="subtitle1"
 						color="text.secondary"

@@ -122,13 +122,13 @@ const App: React.FC = () => {
 					<PodcastPreview podcast={podcast} ShareButton={<ShareButtons rss_url={url} channel={podcast} />} />
 					{selectedEpisode && <>
 						<Grid container spacing={1} alignItems='center'>
-							<Grid item xs={12} md={1} marginTop={2}>
+							<Grid item xs={1} marginTop={2}>
 								<Button onClick={onPrevious} variant='outlined' disabled={currentIndex >= episodes.length - 1}>{'<<'}</Button>
 							</Grid>
-							<Grid item xs={12} md={10}>
+							<Grid item xs={10}>
 								<EpisodeList episodes={episodes} selectedEpisodeId={selectedEpisodeId} setSelectedEpisodeId={setSelectedEpisodeId} />
 							</Grid>
-							<Grid item xs={12} md={1} marginTop={2}>
+							<Grid item xs={1} marginTop={2}>
 								<Button onClick={onNext} variant='outlined' disabled={currentIndex <= 0}>{'>>'}</Button>
 							</Grid>
 						</Grid>
