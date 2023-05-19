@@ -8,6 +8,8 @@ import { TweetButton } from './components/TwitterButton'
 import usePodcast from './hooks/usePodcast';
 import { CssBaseline, ThemeProvider, createTheme, Grid, Button, Card, Box } from '@mui/material';
 import Header from './components/Header';
+import { OpenInNewButton } from './components/OpenInNewButton';
+import { Podcast, Episode } from './types/podcast';
 
 const theme = createTheme({
 	palette: {
@@ -17,6 +19,18 @@ const theme = createTheme({
 
 function useQuery() {
 	return new URLSearchParams(useLocation().search);
+}
+
+type ShareProps = {
+	rss_url: string
+	channel: Podcast
+	episode?: Episode
+}
+const ShareButtons = (props:ShareProps) => {
+	return (<>
+		<TweetButton {...props} />
+		<OpenInNewButton {...props} />
+	</>)
 }
 const App: React.FC = () => {
 	const [podcasts, setPodcasts] = useState<{ url: string, title: string }[]>(JSON.parse(localStorage.getItem('podcasts') ?? '[]'));
@@ -106,7 +120,7 @@ const App: React.FC = () => {
 					<PodcastInput url={url} setUrl={setUrl} deleteUrl={deleteUrl} podcasts={podcasts} />
 				</Card>
 				{podcast && <>
-					<PodcastPreview podcast={podcast} ShareButton={<TweetButton rss_url={url} channel={podcast} />} />
+					<PodcastPreview podcast={podcast} ShareButton={<ShareButtons rss_url={url} channel={podcast} />} />
 					{selectedEpisode && <>
 						<Grid container spacing={1} alignItems='center'>
 							<Grid item xs={12} md={1} marginTop={2}>
@@ -119,7 +133,7 @@ const App: React.FC = () => {
 								<Button onClick={onNext} variant='outlined' disabled={currentIndex <= 0}>{'>>'}</Button>
 							</Grid>
 						</Grid>
-						<EpisodePreview episode={selectedEpisode} ShareButton={<TweetButton rss_url={url} channel={podcast} episode={selectedEpisode} />} />
+						<EpisodePreview episode={selectedEpisode} ShareButton={<ShareButtons rss_url={url} channel={podcast} episode={selectedEpisode} />} />
 					</>}
 				</>}
 			</Box>
