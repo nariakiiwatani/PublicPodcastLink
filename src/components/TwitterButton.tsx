@@ -1,6 +1,5 @@
 import { IconButton, Link } from "@mui/material";
 import TwitterIcon from '@mui/icons-material/Twitter';
-import { shareUrl as createShareUrl } from '../utils/permalink';
 import { Episode, Podcast } from '../types/podcast';
 import Tooltip from '@mui/material/Tooltip';
 
@@ -13,16 +12,15 @@ function extractHashtags(text: string) {
 	return [];
 }
 type TweetButtonProps = {
-	rss_url: string
+	url: string
 	channel: Podcast
 	episode?: Episode
 }
 export const TweetButton = ({
-	rss_url,
+	url:shareUrl,
 	channel,
 	episode,
 }: TweetButtonProps) => {
-	const shareUrl = createShareUrl(rss_url, episode?.id)
 	const hashtags = extractHashtags([
 		channel.description,
 		episode?.description ?? '',

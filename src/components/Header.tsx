@@ -4,12 +4,35 @@ import TwitterIcon from '@mui/icons-material/Twitter';
 import { useTranslation } from '../hooks/useTranslation'
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import Tooltip from '@mui/material/Tooltip';
+import { useMediaQuery, useTheme } from '@mui/material';
+
+const IconLinkButton = ({ url, children }: {
+	url: string,
+	children: React.ReactNode
+}) => {
+	const theme = useTheme()
+	const is_small_screen = useMediaQuery(theme.breakpoints.down('sm'))
+	return (
+		<IconButton
+			size={is_small_screen ? 'small' : 'medium'}
+			color="inherit"
+			target="_blank"
+			component={Link}
+			href={url}
+		>
+			{children}
+		</IconButton>
+	)
+
+}
 
 const Header = () => {
 	const { locale, changeLanguage, t } = useTranslation('header')
 	const handleChangeLanguage = (event: SelectChangeEvent<string>) => {
 		changeLanguage(event.target.value)
 	}
+	const theme = useTheme()
+	const is_small_screen = useMediaQuery(theme.breakpoints.down('sm'))
 	return (
 		<AppBar position="static">
 			<Toolbar>
@@ -20,27 +43,29 @@ const Header = () => {
 				</Link>
 				<Box>
 					<Select
+						size='small'
 						value={locale}
 						onChange={handleChangeLanguage}
 					>
-						<MenuItem value="en">🇺🇸 English</MenuItem>
-						<MenuItem value="ja">🇯🇵 日本語</MenuItem>
+						<MenuItem value="en">🇺🇸{!is_small_screen && ' English'}</MenuItem>
+						<MenuItem value="ja">🇯🇵{!is_small_screen && ' 日本語'}</MenuItem>
 					</Select>
 				</Box>
 				<Tooltip title='GitHub'>
-					<IconButton color="inherit" target="_blank" component={Link} href="https://github.com/nariakiiwatani/InstantPodcastPlayer">
-						<GitHubIcon />
-					</IconButton>
+					<IconLinkButton
+						url='https://github.com/nariakiiwatani/InstantPodcastPlayer'
+					><GitHubIcon /></IconLinkButton>
 				</Tooltip>
 				<Tooltip title='Twitter'>
-					<IconButton color="inherit" target="_blank" component={Link} href="https://twitter.com/nariakiiwatani">
-						<TwitterIcon />
-					</IconButton>
+					<IconLinkButton
+						url='https://twitter.com/nariakiiwatani'
+					><TwitterIcon /></IconLinkButton>
 				</Tooltip>
 				<Tooltip title={t.donation.label}>
-					<IconButton color="inherit" target="_blank" component={Link} href={t.donation.url}>
-						<VolunteerActivismIcon />
-					</IconButton>
+					<IconLinkButton
+						url={t.donation.url}
+					><VolunteerActivismIcon />
+					</IconLinkButton>
 				</Tooltip>
 			</Toolbar>
 		</AppBar>

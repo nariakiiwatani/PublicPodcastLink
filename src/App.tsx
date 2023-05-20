@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router-dom'
 import PodcastInput from './components/PodcastInput';
 import PodcastPreview from './components/PodcastPreview';
@@ -6,10 +6,14 @@ import EpisodeList from './components/EpisodeList';
 import EpisodePreview from './components/EpisodePreview';
 import { TweetButton } from './components/TwitterButton'
 import usePodcast from './hooks/usePodcast';
-import { CssBaseline, ThemeProvider, createTheme, Grid, Button, Card, Box } from '@mui/material';
+import { CssBaseline, ThemeProvider, createTheme, Box } from '@mui/material';
 import Header from './components/Header';
 import { OpenInNewButton } from './components/OpenInNewButton';
 import { Podcast, Episode } from './types/podcast';
+import { shareUrl as createShareUrl } from './utils/permalink';
+import { NavigatorButtons } from './components/NavigatorButtons';
+import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
 
 const theme = createTheme({
 	palette: {
@@ -22,11 +26,11 @@ function useQuery() {
 }
 
 type ShareProps = {
-	rss_url: string
+	url: string
 	channel: Podcast
 	episode?: Episode
 }
-const ShareButtons = (props:ShareProps) => {
+const ShareButtons = (props: ShareProps) => {
 	return (<>
 		<TweetButton {...props} />
 		<OpenInNewButton {...props} />
@@ -56,7 +60,7 @@ const App: React.FC = () => {
 		let guid = query.get('item')
 		if (url) {
 			url = decodeURIComponent(url)
-			if(guid) guid = decodeURIComponent(guid)
+			if (guid) guid = decodeURIComponent(guid)
 			updateSelected(url, guid).then(() => setUrl(url!))
 		}
 	}, [])
@@ -110,30 +114,37 @@ const App: React.FC = () => {
 		}
 	};
 
+	const shareUrl = createShareUrl(url, selectedEpisodeId ?? undefined)
+
+	const Navigator = useMemo(() =>
+		<NavigatorButtons
+			prev={{
+				value: <><SkipPreviousIcon />{episodes[currentIndex+1]?.title}</>,
+				onClick: onPrevious,
+				disabled: currentIndex >= episodes.length - 1
+			}}
+			next={{
+				value: <>{episodes[currentIndex-1]?.title}<SkipNextIcon /></>,
+				onClick: onNext,
+				disabled: currentIndex <= 0
+			}}
+		/>, [onPrevious, onNext, currentIndex, episodes.length])
+
 	return (
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
 			<Header />
 			<Box sx={{ margin: 2 }}>
-				<Card style={{ display: 'flex', marginTop: 20, paddingTop: 20 }}>
-					<PodcastInput url={url} setUrl={setUrl} deleteUrl={deleteUrl} podcasts={podcasts} />
-				</Card>
+				<PodcastInput url={url} setUrl={setUrl} deleteUrl={deleteUrl} podcasts={podcasts} />
 				{podcast && <>
-					<PodcastPreview podcast={podcast} ShareButton={<ShareButtons rss_url={url} channel={podcast} />} />
-					{selectedEpisode && <>
-						<Grid container spacing={1} alignItems='center'>
-							<Grid item xs={1} marginTop={2}>
-								<Button onClick={onPrevious} variant='outlined' disabled={currentIndex >= episodes.length - 1}>{'<<'}</Button>
-							</Grid>
-							<Grid item xs={10}>
-								<EpisodeList episodes={episodes} selectedEpisodeId={selectedEpisodeId} setSelectedEpisodeId={setSelectedEpisodeId} />
-							</Grid>
-							<Grid item xs={1} marginTop={2}>
-								<Button onClick={onNext} variant='outlined' disabled={currentIndex <= 0}>{'>>'}</Button>
-							</Grid>
-						</Grid>
-						<EpisodePreview episode={selectedEpisode} ShareButton={<ShareButtons rss_url={url} channel={podcast} episode={selectedEpisode} />} />
-					</>}
+					<EpisodeList episodes={episodes} selectedEpisodeId={selectedEpisodeId} setSelectedEpisodeId={setSelectedEpisodeId} />
+					{selectedEpisode &&
+						<EpisodePreview
+							episode={selectedEpisode}
+							ShareButton={<ShareButtons url={shareUrl} channel={podcast} episode={selectedEpisode} />}
+							Navigator={Navigator}
+						/>}
+					<PodcastPreview podcast={podcast} ShareButton={<ShareButtons url={shareUrl} channel={podcast} />} />
 				</>}
 			</Box>
 		</ThemeProvider>

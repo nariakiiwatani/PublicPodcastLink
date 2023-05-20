@@ -37,8 +37,8 @@ const PodcastInput: React.FC<PodcastInputProps> = ({ url, setUrl, podcasts, dele
 			renderInput={(params) => (
 				<TextField
 					{...params}
+					variant='standard'
 					label={t.label}
-					variant="outlined"
 					fullWidth
 				/>
 			)}
