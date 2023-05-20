@@ -1,15 +1,16 @@
 import React from 'react';
-import { Episode } from '../types/podcast';
+import { Podcast, Episode } from '../types/podcast';
 import { Typography, Link, Grid } from '@mui/material'
 import { OpenInNewButton } from './OpenInNewButton';
 
 type EpisodePreviewProps = {
+	channel: Podcast | null
 	episode: Episode | null;
 	ShareButton?: React.ReactNode;
 	Navigator?: React.ReactNode;
 };
 
-const EpisodePreview: React.FC<EpisodePreviewProps> = ({ episode: src, ShareButton, Navigator }) => {
+const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, ShareButton, Navigator }) => {
 	if (!src) return null;
 
 	return (
@@ -30,8 +31,14 @@ const EpisodePreview: React.FC<EpisodePreviewProps> = ({ episode: src, ShareButt
 				</Grid>
 			</Grid>
 			<Grid item xs={12} md={8}>
+				<Typography variant="subtitle2">
+					{new Date(src.pubDate).toLocaleString()}
+				</Typography>
 				<Typography variant="h5">
-				{src.title}<OpenInNewButton url={src.link} />
+					{src.title}<OpenInNewButton url={src.link} />
+				</Typography>
+				<Typography variant="subtitle1">
+					{channel?.title}
 				</Typography>
 			</Grid>
 			<Grid item xs={12}>

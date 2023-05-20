@@ -17,7 +17,16 @@ const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src, ShareButt
 	return (
 		<Card sx={{ marginTop: 2, borderRadius: 2 }}>
 			<CardHeader
-				title={<p>{src.title}<OpenInNewButton url={src.link} /></p>}
+				title={<>
+					<Typography
+							variant='h5'
+						>{src.title}<OpenInNewButton url={src.link} />
+						</Typography>
+						<Typography
+							variant='subtitle1'
+						>{src.author}
+						</Typography>
+				</>}
 				style={{ textAlign: 'center' }}
 			/>
 			<Grid container direction="row" justifyContent="center" alignItems="flex-start">

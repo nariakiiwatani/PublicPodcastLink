@@ -3,6 +3,7 @@ export type Podcast = {
 	description: string;
 	imageUrl: string;
 	link: string;
+	author: string;
 };
 
 export type Episode = {

@@ -144,6 +144,7 @@ const App: React.FC = () => {
 					<EpisodeList episodes={episodes} selectedEpisodeId={selectedEpisodeId} setSelectedEpisodeId={setSelectedEpisodeId} />
 					{selectedEpisode &&
 						<EpisodePreview
+							channel={podcast}
 							episode={selectedEpisode}
 							ShareButton={<ShareButtons rss_url={url} channel={podcast} episode={selectedEpisode} />}
 							Navigator={Navigator}
