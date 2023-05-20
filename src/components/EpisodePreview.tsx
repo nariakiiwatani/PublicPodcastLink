@@ -1,6 +1,6 @@
 import React from 'react';
 import { Podcast, Episode } from '../types/podcast';
-import { Typography, Link, Grid } from '@mui/material'
+import { Typography, Grid } from '@mui/material'
 import { OpenInNewButton } from './OpenInNewButton';
 
 type EpisodePreviewProps = {

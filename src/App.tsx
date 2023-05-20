@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import PodcastInput from './components/PodcastInput';
 import PodcastPreview from './components/PodcastPreview';
 import EpisodeList from './components/EpisodeList';
@@ -9,7 +9,7 @@ import usePodcast from './hooks/usePodcast';
 import { CssBaseline, ThemeProvider, createTheme, Box, Grid } from '@mui/material';
 import Header from './components/Header';
 import { Podcast, Episode } from './types/podcast';
-import { shareUrl as createShareUrl } from './utils/permalink';
+import { permalink as createPermalink } from './utils/permalink';
 import { NavigatorButtons } from './components/NavigatorButtons';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
@@ -33,8 +33,8 @@ type ShareProps = {
 	episode?: Episode
 }
 const ShareButtons = (props: ShareProps) => {
-	const {rss_url, channel, episode} = props
-	const permalink = createShareUrl(rss_url, episode?.id)
+	const { rss_url, episode } = props
+	const permalink = createPermalink(rss_url, episode?.id)
 
 	return (<Grid container direction='row'>
 		<CopyToClipboardButton {...props} value={rss_url} Icon={<RssFeedIcon />} />
@@ -48,6 +48,8 @@ const App: React.FC = () => {
 	const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | null>(null);
 	const { podcast, episodes, fetchPodcast, clearPodcast } = usePodcast();
 
+	const navigate = useNavigate()
+
 	const query = useQuery();
 
 	const setUrl = (url: string) => {
@@ -59,6 +61,7 @@ const App: React.FC = () => {
 	const deleteUrl = useCallback((url: string) => {
 		setPodcasts(prev => prev.filter(p => p.url !== url))
 		clearPodcast()
+		navigate(`/`)
 	}, [setPodcasts, clearPodcast])
 
 	useEffect(() => {
@@ -76,6 +79,13 @@ const App: React.FC = () => {
 			updateSelected(url, selectedEpisodeId)
 		}
 	}, [url]);
+	useEffect(() => {
+		if (url === '') {
+			return
+		}
+		const permalink = createPermalink(url, selectedEpisodeId || undefined, '/')
+		navigate(permalink)
+	}, [podcast, selectedEpisodeId]);
 
 	const updateSelected = useCallback((url: string, episode_id: string | null) => {
 		return fetchPodcast(url).then((result) => {
@@ -103,7 +113,6 @@ const App: React.FC = () => {
 		});
 	}, [fetchPodcast, podcasts, setPodcasts])
 
-
 	const selectedEpisode = episodes.find((episode) => episode.id === selectedEpisodeId) ?? null;
 
 	const currentIndex = episodes.findIndex((episode) => episode.id === selectedEpisodeId);
@@ -123,12 +132,12 @@ const App: React.FC = () => {
 	const Navigator = useMemo(() =>
 		<NavigatorButtons
 			prev={{
-				value: <><SkipPreviousIcon />{episodes[currentIndex+1]?.title}</>,
+				value: <><SkipPreviousIcon />{episodes[currentIndex + 1]?.title}</>,
 				onClick: onPrevious,
 				disabled: currentIndex >= episodes.length - 1
 			}}
 			next={{
-				value: <>{episodes[currentIndex-1]?.title}<SkipNextIcon /></>,
+				value: <>{episodes[currentIndex - 1]?.title}<SkipNextIcon /></>,
 				onClick: onNext,
 				disabled: currentIndex <= 0
 			}}
