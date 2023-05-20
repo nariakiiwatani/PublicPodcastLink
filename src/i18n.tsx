@@ -16,5 +16,23 @@ export default {
 				ja: 'https://donate.stripe.com/3cseVF4xP07PbLibIJ'
 			}
 		}
+	},
+	copy: {
+		tooltip: {
+			en: 'Copy to Clipboard',
+			ja: 'クリップボードにコピー'
+		},
+		pending: {
+			en: 'Copying to clipboard...',
+			ja: 'クリップボードにコピー中...'
+		},
+		success: {
+			en: 'Copied to clipboard!',
+			ja: 'コピーしました！'
+		},
+		fail: {
+			en: 'Failed to copy text.',
+			ja: 'コピーに失敗しました。'
+		}
 	}
 };

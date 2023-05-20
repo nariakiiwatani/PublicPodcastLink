@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Podcast } from '../types/podcast';
 import { Typography, Card, CardContent, CardMedia, Box, Grid, CardHeader } from '@mui/material'
 import { avoidXSS } from '../utils/escape';
+import { OpenInNewButton } from './OpenInNewButton';
 
 type PodcastPreviewProps = {
 	podcast: Podcast | null;
@@ -16,7 +17,7 @@ const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src, ShareButt
 	return (
 		<Card sx={{ marginTop: 2, borderRadius: 2 }}>
 			<CardHeader
-				title={src.title}
+				title={<p>{src.title}<OpenInNewButton url={src.link} /></p>}
 				style={{ textAlign: 'center' }}
 			/>
 			<Grid container direction="row" justifyContent="center" alignItems="flex-start">

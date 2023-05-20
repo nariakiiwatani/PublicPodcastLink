@@ -1,6 +1,7 @@
 import React from 'react';
 import { Episode } from '../types/podcast';
 import { Typography, Link, Grid } from '@mui/material'
+import { OpenInNewButton } from './OpenInNewButton';
 
 type EpisodePreviewProps = {
 	episode: Episode | null;
@@ -30,9 +31,7 @@ const EpisodePreview: React.FC<EpisodePreviewProps> = ({ episode: src, ShareButt
 			</Grid>
 			<Grid item xs={12} md={8}>
 				<Typography variant="h5">
-					<Link href={src.link} target='_blank'>
-						{src.title}
-					</Link>
+				{src.title}<OpenInNewButton url={src.link} />
 				</Typography>
 			</Grid>
 			<Grid item xs={12}>

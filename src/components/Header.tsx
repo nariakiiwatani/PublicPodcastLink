@@ -51,22 +51,27 @@ const Header = () => {
 						<MenuItem value="ja">🇯🇵{!is_small_screen && ' 日本語'}</MenuItem>
 					</Select>
 				</Box>
-				<Tooltip title='GitHub'>
-					<IconLinkButton
-						url='https://github.com/nariakiiwatani/InstantPodcastPlayer'
-					><GitHubIcon /></IconLinkButton>
-				</Tooltip>
-				<Tooltip title='Twitter'>
-					<IconLinkButton
-						url='https://twitter.com/nariakiiwatani'
-					><TwitterIcon /></IconLinkButton>
-				</Tooltip>
-				<Tooltip title={t.donation.label}>
-					<IconLinkButton
-						url={t.donation.url}
-					><VolunteerActivismIcon />
-					</IconLinkButton>
-				</Tooltip>
+
+				<IconLinkButton
+					url='https://github.com/nariakiiwatani/InstantPodcastPlayer'
+				>
+					<Tooltip title='GitHub'><GitHubIcon /></Tooltip>
+				</IconLinkButton>
+
+
+				<IconLinkButton
+					url='https://twitter.com/nariakiiwatani'
+				>
+					<Tooltip title='Twitter'><TwitterIcon /></Tooltip>
+				</IconLinkButton>
+				<IconLinkButton
+					url={t.donation.url}
+				>
+					<Tooltip title={t.donation.label}>
+						<VolunteerActivismIcon />
+					</Tooltip>
+				</IconLinkButton>
+
 			</Toolbar>
 		</AppBar>
 	);

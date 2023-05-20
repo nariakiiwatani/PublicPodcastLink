@@ -6,14 +6,16 @@ import EpisodeList from './components/EpisodeList';
 import EpisodePreview from './components/EpisodePreview';
 import { TweetButton } from './components/TwitterButton'
 import usePodcast from './hooks/usePodcast';
-import { CssBaseline, ThemeProvider, createTheme, Box } from '@mui/material';
+import { CssBaseline, ThemeProvider, createTheme, Box, Grid } from '@mui/material';
 import Header from './components/Header';
-import { OpenInNewButton } from './components/OpenInNewButton';
 import { Podcast, Episode } from './types/podcast';
 import { shareUrl as createShareUrl } from './utils/permalink';
 import { NavigatorButtons } from './components/NavigatorButtons';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
+import { CopyToClipboardButton } from './components/CopyToClipboardButton';
+import FileCopyOutlinedIcon from '@mui/icons-material/FileCopyOutlined';
+import RssFeedIcon from '@mui/icons-material/RssFeed';
 
 const theme = createTheme({
 	palette: {
@@ -26,15 +28,19 @@ function useQuery() {
 }
 
 type ShareProps = {
-	url: string
+	rss_url: string
 	channel: Podcast
 	episode?: Episode
 }
 const ShareButtons = (props: ShareProps) => {
-	return (<>
-		<TweetButton {...props} />
-		<OpenInNewButton {...props} />
-	</>)
+	const {rss_url, channel, episode} = props
+	const permalink = createShareUrl(rss_url, episode?.id)
+
+	return (<Grid container direction='row'>
+		<CopyToClipboardButton {...props} value={rss_url} Icon={<RssFeedIcon />} />
+		<TweetButton {...props} url={permalink} />
+		<CopyToClipboardButton {...props} value={permalink} Icon={<FileCopyOutlinedIcon />} />
+	</Grid>)
 }
 const App: React.FC = () => {
 	const [podcasts, setPodcasts] = useState<{ url: string, title: string }[]>(JSON.parse(localStorage.getItem('podcasts') ?? '[]'));
@@ -114,8 +120,6 @@ const App: React.FC = () => {
 		}
 	};
 
-	const shareUrl = createShareUrl(url, selectedEpisodeId ?? undefined)
-
 	const Navigator = useMemo(() =>
 		<NavigatorButtons
 			prev={{
@@ -141,10 +145,10 @@ const App: React.FC = () => {
 					{selectedEpisode &&
 						<EpisodePreview
 							episode={selectedEpisode}
-							ShareButton={<ShareButtons url={shareUrl} channel={podcast} episode={selectedEpisode} />}
+							ShareButton={<ShareButtons rss_url={url} channel={podcast} episode={selectedEpisode} />}
 							Navigator={Navigator}
 						/>}
-					<PodcastPreview podcast={podcast} ShareButton={<ShareButtons url={shareUrl} channel={podcast} />} />
+					<PodcastPreview podcast={podcast} ShareButton={<ShareButtons rss_url={url} channel={podcast} />} />
 				</>}
 			</Box>
 		</ThemeProvider>
