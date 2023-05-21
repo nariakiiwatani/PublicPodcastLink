@@ -1,15 +1,15 @@
 export default {
 	select_channel: {
 		label: {
-			en: 'Enter RSS or Select Channel',
-			ja: 'RSSを入力するか番組を選択してください'
+			en: 'Enter RSS to add a channel',
+			ja: 'RSSを入力して番組を追加'
 		}
 	},
 	header: {
 		donation: {
 			label: {
-				en: 'Donation for PublicPodcast.link',
-				ja: 'PublicPodcast.linkへの寄付'
+				en: 'Donate',
+				ja: '寄付'
 			},
 			url: {
 				en: 'https://donate.stripe.com/3cs8xhggxaMtdTq4gi',
@@ -19,7 +19,7 @@ export default {
 	},
 	copy: {
 		tooltip: {
-			en: 'Copy to Clipboard',
+			en: 'Copy to clipboard',
 			ja: 'クリップボードにコピー'
 		},
 		pending: {

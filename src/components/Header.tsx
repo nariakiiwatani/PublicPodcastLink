@@ -1,38 +1,35 @@
-import { AppBar, Toolbar, Typography, IconButton, Link, Box, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+
+import React, { useState } from 'react';
+import { AppBar, Toolbar, Typography, IconButton, Link, Box, MenuItem, Select, SelectChangeEvent, Menu, ListItemIcon, ListItemText, useMediaQuery, useTheme } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import TwitterIcon from '@mui/icons-material/Twitter';
-import { useTranslation } from '../hooks/useTranslation'
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
-import Tooltip from '@mui/material/Tooltip';
-import { useMediaQuery, useTheme } from '@mui/material';
-
-const IconLinkButton = ({ url, children }: {
-	url: string,
-	children: React.ReactNode
-}) => {
-	const theme = useTheme()
-	const is_small_screen = useMediaQuery(theme.breakpoints.down('sm'))
-	return (
-		<IconButton
-			size={is_small_screen ? 'small' : 'medium'}
-			color="inherit"
-			target="_blank"
-			component={Link}
-			href={url}
-		>
-			{children}
-		</IconButton>
-	)
-
-}
+import MenuIcon from '@mui/icons-material/Menu';
+import { useTranslation } from '../hooks/useTranslation'
 
 const Header = () => {
 	const { locale, changeLanguage, t } = useTranslation('header')
+	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
 	const handleChangeLanguage = (event: SelectChangeEvent<string>) => {
 		changeLanguage(event.target.value)
 	}
 	const theme = useTheme()
 	const is_small_screen = useMediaQuery(theme.breakpoints.down('sm'))
+
+	const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+		setAnchorEl(event.currentTarget);
+	};
+
+	const handleMenuClose = () => {
+		setAnchorEl(null);
+	};
+
+	const handleLinkItemClick = (url: string, target: string='_blank') => () => {
+		window.open(url, target)
+		handleMenuClose();
+	};
+
 	return (
 		<AppBar position="static">
 			<Toolbar>
@@ -52,26 +49,41 @@ const Header = () => {
 					</Select>
 				</Box>
 
-				<IconLinkButton
-					url='https://github.com/nariakiiwatani/InstantPodcastPlayer'
+				<IconButton
+					size='medium'
+					color="inherit"
+					aria-label="menu"
+					onClick={handleMenuOpen}
 				>
-					<Tooltip title='GitHub'><GitHubIcon /></Tooltip>
-				</IconLinkButton>
+					<MenuIcon />
+				</IconButton>
 
-
-				<IconLinkButton
-					url='https://twitter.com/nariakiiwatani'
+				<Menu
+					anchorEl={anchorEl}
+					open={Boolean(anchorEl)}
+					onClose={handleMenuClose}
 				>
-					<Tooltip title='Twitter'><TwitterIcon /></Tooltip>
-				</IconLinkButton>
-				<IconLinkButton
-					url={t.donation.url}
-				>
-					<Tooltip title={t.donation.label}>
-						<VolunteerActivismIcon />
-					</Tooltip>
-				</IconLinkButton>
+					<MenuItem onClick={handleLinkItemClick('https://github.com/nariakiiwatani/InstantPodcastPlayer')}>
+						<ListItemIcon>
+							<GitHubIcon />
+						</ListItemIcon>
+						<ListItemText primary="GitHub" />
+					</MenuItem>
 
+					<MenuItem onClick={handleLinkItemClick('https://twitter.com/nariakiiwatani')}>
+						<ListItemIcon>
+							<TwitterIcon />
+						</ListItemIcon>
+						<ListItemText primary="Twitter" />
+					</MenuItem>
+
+					<MenuItem onClick={handleLinkItemClick(t.donation.url)}>
+						<ListItemIcon>
+							<VolunteerActivismIcon />
+						</ListItemIcon>
+						<ListItemText primary={t.donation.label} />
+					</MenuItem>
+				</Menu>
 			</Toolbar>
 		</AppBar>
 	);
