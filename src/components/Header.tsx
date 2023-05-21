@@ -71,20 +71,6 @@ const Header = () => {
 					open={Boolean(anchorEl)}
 					onClose={handleMenuClose}
 				>
-					<MenuItem onClick={handleLinkItemClick('https://github.com/nariakiiwatani/InstantPodcastPlayer')}>
-						<ListItemIcon>
-							<GitHubIcon />
-						</ListItemIcon>
-						<ListItemText primary="GitHub" />
-					</MenuItem>
-
-					<MenuItem onClick={handleLinkItemClick('https://twitter.com/nariakiiwatani')}>
-						<ListItemIcon>
-							<TwitterIcon />
-						</ListItemIcon>
-						<ListItemText primary="Twitter" />
-					</MenuItem>
-
 					<MenuItem onClick={export_dialog.open}>
 						<ListItemIcon>
 							<ShareIcon />
@@ -104,6 +90,20 @@ const Header = () => {
 							<PeopleIcon />
 						</ListItemIcon>
 						<ListItemText primary={t.about_donation} />
+					</MenuItem>
+
+					<MenuItem onClick={handleLinkItemClick('https://twitter.com/nariakiiwatani')}>
+						<ListItemIcon>
+							<TwitterIcon />
+						</ListItemIcon>
+						<ListItemText primary="Twitter" />
+					</MenuItem>
+
+					<MenuItem onClick={handleLinkItemClick('https://github.com/nariakiiwatani/InstantPodcastPlayer')}>
+						<ListItemIcon>
+							<GitHubIcon />
+						</ListItemIcon>
+						<ListItemText primary="GitHub" />
 					</MenuItem>
 
 				</Menu>
