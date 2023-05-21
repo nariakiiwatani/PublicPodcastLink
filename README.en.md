@@ -3,7 +3,7 @@
 # Instant Podcast Player
 
 
-<img src="https://github.com/nariakiiwatani/InstantPodcastPlayer/assets/1306139/09acda03-9004-4a32-810d-07233c6f7386" width="500" alt='screenshot'>
+<img src="https://github.com/nariakiiwatani/InstantPodcastPlayer/assets/1306139/a5519776-d26a-47c5-8889-31734f777611" width="500" alt='screenshot'>
 
 Instant Podcast Player is a versatile web-based podcast player that allows users to instantly load and play any podcast available in the RSS format. It's a great tool for anyone looking for a quick and efficient way to sample different podcasts, or to have a handy player at their disposal.
 
