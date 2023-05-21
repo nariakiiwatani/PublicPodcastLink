@@ -5,6 +5,12 @@ export default {
 			ja: 'RSSを入力して番組を追加'
 		}
 	},
+	select_episode: {
+		label: {
+			en: 'Select episode',
+			ja: 'エピソードを選択'
+		}
+	},
 	header: {
 		donation: {
 			label: {
