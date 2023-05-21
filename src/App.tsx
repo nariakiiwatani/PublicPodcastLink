@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, createContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom'
 import PodcastInput from './components/PodcastInput';
 import PodcastPreview from './components/PodcastPreview';
@@ -43,8 +43,13 @@ const ShareButtons = (props: ShareProps) => {
 		<CopyToClipboardButton {...props} value={permalink} Icon={<FileCopyOutlinedIcon />} />
 	</Grid>)
 }
+
+type PodcastRecord = { url: string, title: string }
+
+export const PodcastRecordContext = createContext<PodcastRecord[]>([])
+
 const App: React.FC = () => {
-	const [podcasts, setPodcasts] = useState<{ url: string, title: string }[]>(JSON.parse(localStorage.getItem('podcasts') ?? '[]'));
+	const [podcasts, setPodcasts] = useState<PodcastRecord[]>(JSON.parse(localStorage.getItem('podcasts') ?? '[]'));
 	const [url, setUrl_] = useState('');
 	const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | null>(null);
 	const { podcast, episodes, fetchPodcast, clearPodcast } = usePodcast();
@@ -67,9 +72,9 @@ const App: React.FC = () => {
 
 	useAsync(async () => {
 		const url = query.get('channel')
-		if(url) {
+		if (url) {
 			const list = url.split(',')
-			await Promise.all(list.map(url=> {
+			await Promise.all(list.map(url => {
 				let guid = query.get('item')
 				url = decodeURIComponent(url)
 				if (guid) guid = decodeURIComponent(guid)
@@ -152,22 +157,24 @@ const App: React.FC = () => {
 
 	return (
 		<ThemeProvider theme={theme}>
-			<CssBaseline />
-			<Header />
-			<Box sx={{ margin: 2 }}>
-				<PodcastInput url={url} setUrl={setUrl} deleteUrl={deleteUrl} podcasts={podcasts} />
-				{podcast && <>
-					<EpisodeList episodes={episodes} selectedEpisodeId={selectedEpisodeId} setSelectedEpisodeId={setSelectedEpisodeId} />
-					{selectedEpisode &&
-						<EpisodePreview
-							channel={podcast}
-							episode={selectedEpisode}
-							ShareButton={<ShareButtons rss_url={url} channel={podcast} episode={selectedEpisode} />}
-							Navigator={Navigator}
-						/>}
-					<PodcastPreview podcast={podcast} ShareButton={<ShareButtons rss_url={url} channel={podcast} />} />
-				</>}
-			</Box>
+			<PodcastRecordContext.Provider value={podcasts}>
+				<CssBaseline />
+				<Header />
+				<Box sx={{ margin: 2 }}>
+					<PodcastInput url={url} setUrl={setUrl} deleteUrl={deleteUrl} podcasts={podcasts} />
+					{podcast && <>
+						<EpisodeList episodes={episodes} selectedEpisodeId={selectedEpisodeId} setSelectedEpisodeId={setSelectedEpisodeId} />
+						{selectedEpisode &&
+							<EpisodePreview
+								channel={podcast}
+								episode={selectedEpisode}
+								ShareButton={<ShareButtons rss_url={url} channel={podcast} episode={selectedEpisode} />}
+								Navigator={Navigator}
+							/>}
+						<PodcastPreview podcast={podcast} ShareButton={<ShareButtons rss_url={url} channel={podcast} />} />
+					</>}
+				</Box>
+			</PodcastRecordContext.Provider>
 		</ThemeProvider>
 	);
 };

@@ -5,9 +5,11 @@ import { useTranslation } from '../hooks/useTranslation';
 type CopyToClipboardButtonProps = {
 	value: string;
 	Icon: React.ReactNode
+	disabled?: boolean
+	disable_tooltip?: boolean
 };
 
-export const CopyToClipboardButton: React.FC<CopyToClipboardButtonProps> = ({ value, Icon }) => {
+export const CopyToClipboardButton: React.FC<CopyToClipboardButtonProps> = ({ value, Icon, disabled, disable_tooltip }) => {
 	const { t } = useTranslation('copy')
 	const [copyStatus, setCopyStatus] = useState<'idle' | 'copying' | 'completed' | 'error'>('idle');
 
@@ -26,25 +28,34 @@ export const CopyToClipboardButton: React.FC<CopyToClipboardButtonProps> = ({ va
 		setCopyStatus('idle');
 	};
 
+	const Button = (
+		<IconButton
+			color="inherit"
+			onClick={handleCopy}
+			disabled={disabled || (copyStatus === 'copying')}
+		>{Icon}
+		</IconButton>
+	)
 	const tooltip = ((status: string) => {
-		switch(status) {
+		switch (status) {
 			case 'copying': return t.pending
 			case 'completed': return t.success
 			case 'error': t.fail
 		}
 		return t.tooltip
 	})(copyStatus)
+	const ButtonWrapped = disable_tooltip ? Button : (
+		<Tooltip title={tooltip}>
+			<span>
+				{Button}
+			</span>
+		</Tooltip>
+
+	)
 	const duration = 2000
 	return (
 		<div>
-			<Tooltip title={tooltip}>
-				<IconButton
-					color="inherit"
-					onClick={handleCopy}
-					disabled={copyStatus === 'copying'}
-				>{Icon}
-				</IconButton>
-			</Tooltip>
+			{ButtonWrapped}
 			<Snackbar open={copyStatus === 'copying'} autoHideDuration={duration} onClose={handleClose}>
 				<Alert onClose={handleClose} severity="info" sx={{ width: '100%' }}>
 					{t.pending}

@@ -25,6 +25,24 @@ export default {
 		export: {
 			en: 'Export',
 			ja: 'エクスポート'
+		},
+		export_modal_title: {
+			en: 'Create Share URL',
+			ja: '共有用リンクを作成'
+		}
+	},
+	create_import_url: {
+		all: {
+			en: 'all',
+			ja: '全て'
+		},
+		copy: {
+			en: 'Click to copy',
+			ja: 'クリックしてコピー'
+		},
+		selected: {
+			en: (num:number)=>`${num>0?num:'no'} item${num>1?'s':''} selected.`,
+			ja: (num:number)=>`${num} 番組を選択中`
 		}
 	},
 	copy: {

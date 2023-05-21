@@ -8,6 +8,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ShareIcon from '@mui/icons-material/Share';
 import { useTranslation } from '../hooks/useTranslation'
 import { useDialog } from '../hooks/useDialog';
+import { CreateImportURL } from './CreateImportURL';
 
 const Header = () => {
 	const { locale, changeLanguage, t } = useTranslation('header')
@@ -95,8 +96,8 @@ const Header = () => {
 						<ListItemText primary={t.donation.label} />
 					</MenuItem>
 				</Menu>
-				<Dialog title="Modal Title">
-					Modal Content
+				<Dialog title={t.export_modal_title}>
+					<CreateImportURL />
 				</Dialog>
 			</Toolbar>
 		</AppBar>
