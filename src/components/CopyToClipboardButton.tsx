@@ -26,9 +26,18 @@ export const CopyToClipboardButton: React.FC<CopyToClipboardButtonProps> = ({ va
 		setCopyStatus('idle');
 	};
 
+	const tooltip = ((status: string) => {
+		switch(status) {
+			case 'copying': return t.pending
+			case 'completed': return t.success
+			case 'error': t.fail
+		}
+		return t.tooltip
+	})(copyStatus)
+	const duration = 2000
 	return (
 		<div>
-			<Tooltip title={t.tooltip}>
+			<Tooltip title={tooltip}>
 				<IconButton
 					color="inherit"
 					onClick={handleCopy}
@@ -36,17 +45,17 @@ export const CopyToClipboardButton: React.FC<CopyToClipboardButtonProps> = ({ va
 				>{Icon}
 				</IconButton>
 			</Tooltip>
-			<Snackbar open={copyStatus === 'copying'} autoHideDuration={6000} onClose={handleClose}>
+			<Snackbar open={copyStatus === 'copying'} autoHideDuration={duration} onClose={handleClose}>
 				<Alert onClose={handleClose} severity="info" sx={{ width: '100%' }}>
 					{t.pending}
 				</Alert>
 			</Snackbar>
-			<Snackbar open={copyStatus === 'completed'} autoHideDuration={6000} onClose={handleClose}>
+			<Snackbar open={copyStatus === 'completed'} autoHideDuration={duration} onClose={handleClose}>
 				<Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
 					{t.success}
 				</Alert>
 			</Snackbar>
-			<Snackbar open={copyStatus === 'error'} autoHideDuration={6000} onClose={handleClose}>
+			<Snackbar open={copyStatus === 'error'} autoHideDuration={duration} onClose={handleClose}>
 				<Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
 					{t.fail}
 				</Alert>
