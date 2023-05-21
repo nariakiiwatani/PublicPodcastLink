@@ -5,7 +5,9 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import MenuIcon from '@mui/icons-material/Menu';
+import ShareIcon from '@mui/icons-material/Share';
 import { useTranslation } from '../hooks/useTranslation'
+import { useDialog } from '../hooks/useDialog';
 
 const Header = () => {
 	const { locale, changeLanguage, t } = useTranslation('header')
@@ -25,10 +27,12 @@ const Header = () => {
 		setAnchorEl(null);
 	};
 
-	const handleLinkItemClick = (url: string, target: string='_blank') => () => {
+	const handleLinkItemClick = (url: string, target: string = '_blank') => () => {
 		window.open(url, target)
 		handleMenuClose();
 	};
+
+	const { Dialog, open: openDialog, close: closeDialog } = useDialog();
 
 	return (
 		<AppBar position="static">
@@ -77,6 +81,13 @@ const Header = () => {
 						<ListItemText primary="Twitter" />
 					</MenuItem>
 
+					<MenuItem onClick={openDialog}>
+						<ListItemIcon>
+							<ShareIcon />
+						</ListItemIcon>
+						<ListItemText primary={t.export} />
+					</MenuItem>
+
 					<MenuItem onClick={handleLinkItemClick(t.donation.url)}>
 						<ListItemIcon>
 							<VolunteerActivismIcon />
@@ -84,6 +95,9 @@ const Header = () => {
 						<ListItemText primary={t.donation.label} />
 					</MenuItem>
 				</Menu>
+				<Dialog title="Modal Title">
+					Modal Content
+				</Dialog>
 			</Toolbar>
 		</AppBar>
 	);

@@ -15,6 +15,10 @@ export default {
 				en: 'https://donate.stripe.com/3cs8xhggxaMtdTq4gi',
 				ja: 'https://donate.stripe.com/3cseVF4xP07PbLibIJ'
 			}
+		},
+		export: {
+			en: 'Export',
+			ja: 'エクスポート'
 		}
 	},
 	copy: {
