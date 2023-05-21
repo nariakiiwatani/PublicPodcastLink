@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { Checkbox, List, ListItem, ListItemText, ListItemSecondaryAction, Typography, Box, Paper, Divider } from '@mui/material';
+import { Checkbox, List, ListItem, ListItemText, ListItemSecondaryAction, Typography, Box, Divider } from '@mui/material';
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import LinkIcon from '@mui/icons-material/Link';
 import { PodcastRecordContext } from '../App';

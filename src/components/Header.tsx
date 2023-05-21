@@ -6,9 +6,11 @@ import TwitterIcon from '@mui/icons-material/Twitter';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import MenuIcon from '@mui/icons-material/Menu';
 import ShareIcon from '@mui/icons-material/Share';
+import PeopleIcon from '@mui/icons-material/People';
 import { useTranslation } from '../hooks/useTranslation'
 import { useDialog } from '../hooks/useDialog';
 import { CreateImportURL } from './CreateImportURL';
+import Donation from './Donation';
 
 const Header = () => {
 	const { locale, changeLanguage, t } = useTranslation('header')
@@ -33,7 +35,8 @@ const Header = () => {
 		handleMenuClose();
 	};
 
-	const { Dialog, open: openDialog, close: closeDialog } = useDialog();
+	const export_dialog = useDialog();
+	const donation_dialog = useDialog();
 
 	return (
 		<AppBar position="static">
@@ -82,7 +85,7 @@ const Header = () => {
 						<ListItemText primary="Twitter" />
 					</MenuItem>
 
-					<MenuItem onClick={openDialog}>
+					<MenuItem onClick={export_dialog.open}>
 						<ListItemIcon>
 							<ShareIcon />
 						</ListItemIcon>
@@ -95,10 +98,21 @@ const Header = () => {
 						</ListItemIcon>
 						<ListItemText primary={t.donation.label} />
 					</MenuItem>
+
+					<MenuItem onClick={donation_dialog.open}>
+						<ListItemIcon>
+							<PeopleIcon />
+						</ListItemIcon>
+						<ListItemText primary={t.about_donation} />
+					</MenuItem>
+
 				</Menu>
-				<Dialog title={t.export_modal_title}>
+				<export_dialog.Dialog title={t.export_modal_title}>
 					<CreateImportURL />
-				</Dialog>
+				</export_dialog.Dialog>
+				<donation_dialog.Dialog title={t.about_donation}>
+					<Donation />
+				</donation_dialog.Dialog>
 			</Toolbar>
 		</AppBar>
 	);
