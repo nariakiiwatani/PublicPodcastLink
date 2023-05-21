@@ -15,8 +15,8 @@ export default {
 	header: {
 		donation: {
 			label: {
-				en: 'Donate',
-				ja: '寄付'
+				en: 'Support This Project',
+				ja: 'サポートする'
 			},
 			url: {
 				en: 'https://donate.stripe.com/3cs8xhggxaMtdTq4gi',
@@ -24,8 +24,8 @@ export default {
 			}
 		},
 		about_donation: {
-			en: 'About donation',
-			ja: '寄付について'
+			en: 'About Supporting',
+			ja: 'サポートについて'
 		},
 		donation_modal_title: {
 			en: 'Create Share URL',
@@ -56,24 +56,24 @@ export default {
 	},
 	donation: {
 		list_header: {
-			en: 'Donators',
-			ja: '寄付者'
+			en: 'Supporters',
+			ja: 'サポーター一覧'
 		},
 		title: {
-			en: 'About donation',
-			ja: '寄付について'
+			en: 'About Supporting',
+			ja: 'サポートについて'
 		},
 		body: {
 			en: <div>
 				<p>
 					<a href='https://publicpodcast.link' target='_blank'>PublicPodcast.link</a>
-					<span>is provided as a unique tool to generate permanent links for podcasts. We're offering this platform to users for free, providing resources to make the podcast experience more convenient and efficient.</span>
+					<span> is provided as a unique tool to generate permanent links for podcasts. We're offering this platform to users for free, providing resources to make the podcast experience more convenient and efficient.</span>
 				</p>
 				<p>However, costs such as domain management and operational expenses are necessary to keep it publicly available. In order to continue and enhance this service, we need your donations.</p>
 				<p>If you find PublicPodcast.link useful, we'd appreciate it if you could consider making a donation. Any amount makes a big difference.</p>
 				<p>
 					<span>We deeply appreciate your support and understanding. You can make a donation here: </span>
-					<a href='https://donate.stripe.com/3cs8xhggxaMtdTq4gi' target='_blank'>Donation for PublicPodcast.link</a>
+					<a href='https://donate.stripe.com/3cs8xhggxaMtdTq4gi' target='_blank'>Support PublicPodcast.link</a>
 				</p>
 			</div>,
 			ja: <div>
@@ -86,7 +86,7 @@ export default {
 				<p>あなたがPublicPodcast.linkを有用と感じていただけるなら、寄付を検討していただけると幸いです。どんな額でも、大きな違いを生み出す力があります。</p>
 				<p>
 					<span>皆様のご支援とご理解に心より感謝いたします。ここから寄付をしていただけます： </span>
-					<a href='https://buy.stripe.com/3cseVF4xP07PbLibIJ' target='_blank'>PublicPodcast.linkへの寄付</a>
+					<a href='https://buy.stripe.com/3cseVF4xP07PbLibIJ' target='_blank'>PublicPodcast.linkをサポートする</a>
 				</p>
 			</div>
 		}

@@ -51,7 +51,7 @@ However, costs such as domain management and operational expenses are necessary 
 
 If you find PublicPodcast.link useful, we'd appreciate it if you could consider making a donation. Any amount makes a big difference.
 
-We deeply appreciate your support and understanding. You can make a donation here: [Donation for PublicPodcast.link](https://donate.stripe.com/3cs8xhggxaMtdTq4gi)
+We deeply appreciate your support and understanding. You can make a donation here: [Support PublicPodcast.link](https://donate.stripe.com/3cs8xhggxaMtdTq4gi)
 
 Thank you very much!
 
