@@ -51,7 +51,16 @@ const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, 
 				{Navigator}
 			</Grid>
 			<Grid item xs={12}>
-				<Typography variant="subtitle1" color="text.secondary" dangerouslySetInnerHTML={{ __html: src.description }} />
+				<Typography
+					variant="subtitle1"
+					color="text.secondary"
+					style={{
+						whiteSpace: 'pre-wrap',
+						overflowWrap: 'break-word',
+						wordBreak: 'break-all',
+					}}
+					dangerouslySetInnerHTML={{ __html: src.description }}
+				/>
 			</Grid>
 			<Grid item xs={12}>
 				{Navigator}
