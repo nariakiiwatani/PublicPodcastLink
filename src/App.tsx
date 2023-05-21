@@ -16,6 +16,7 @@ import SkipNextIcon from '@mui/icons-material/SkipNext';
 import { CopyToClipboardButton } from './components/CopyToClipboardButton';
 import FileCopyOutlinedIcon from '@mui/icons-material/FileCopyOutlined';
 import RssFeedIcon from '@mui/icons-material/RssFeed';
+import { useAsync } from 'react-use';
 
 const theme = createTheme({
 	palette: {
@@ -64,13 +65,17 @@ const App: React.FC = () => {
 		navigate(`/`)
 	}, [setPodcasts, clearPodcast])
 
-	useEffect(() => {
-		let url = query.get('channel')
-		let guid = query.get('item')
-		if (url) {
-			url = decodeURIComponent(url)
-			if (guid) guid = decodeURIComponent(guid)
-			updateSelected(url, guid).then(() => setUrl(url!))
+	useAsync(async () => {
+		const url = query.get('channel')
+		if(url) {
+			const list = url.split(',')
+			await Promise.all(list.map(url=> {
+				let guid = query.get('item')
+				url = decodeURIComponent(url)
+				if (guid) guid = decodeURIComponent(guid)
+				return updateSelected(url, guid)
+			}))
+			setUrl(list[0])
 		}
 	}, [])
 
@@ -91,15 +96,18 @@ const App: React.FC = () => {
 		return fetchPodcast(url).then((result) => {
 			if (result) {
 				const { podcast: pod, episodes: epi } = result
-				const newPodcasts = [...podcasts]
-				const prev = newPodcasts.find(({ url: prev_url }) => url === prev_url)
-				if (prev) {
-					prev.title = pod.title
-				}
-				else {
-					newPodcasts.push({ url, title: pod.title })
-				}
-				setPodcasts(newPodcasts);
+				setPodcasts(podcasts => {
+					const newPodcasts = [...podcasts]
+					const prev = newPodcasts.find(({ url: prev_url }) => url === prev_url)
+					if (prev) {
+						prev.title = pod.title
+					}
+					else {
+						newPodcasts.push({ url, title: pod.title })
+					}
+					localStorage.setItem('podcasts', JSON.stringify(newPodcasts));
+					return newPodcasts
+				});
 				if (epi.length > 0) {
 					if (episode_id && epi.find(({ id }: { id: string }) => id === episode_id)) {
 						setSelectedEpisodeId(episode_id)
@@ -108,7 +116,6 @@ const App: React.FC = () => {
 						setSelectedEpisodeId(epi[0].id)
 					}
 				}
-				localStorage.setItem('podcasts', JSON.stringify(newPodcasts));
 			}
 		});
 	}, [fetchPodcast, podcasts, setPodcasts])
