@@ -64,11 +64,23 @@ const App: React.FC = () => {
 		}
 	}
 
-	const deleteUrl = useCallback((url: string) => {
-		setPodcasts(prev => prev.filter(p => p.url !== url))
-		clearPodcast()
-		navigate(`/`)
-	}, [setPodcasts, clearPodcast])
+	const deleteUrl = (url: string) => {
+		const newPodcasts = [...podcasts]
+		let index = newPodcasts.findIndex(p => p.url === url)
+		if (index >= 0) {
+			newPodcasts.splice(index, 1)
+			setPodcasts(newPodcasts)
+			index = Math.min(index, newPodcasts.length-1)
+			if(index >= 0) {
+				setUrl(newPodcasts[index].url)
+			}
+			else {
+				clearPodcast()
+				navigate(`/`)
+			}
+			localStorage.setItem('podcasts', JSON.stringify(newPodcasts))
+		}
+	}
 
 	useAsync(async () => {
 		const url = query.get('channel')
