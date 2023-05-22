@@ -2,7 +2,7 @@
 
 # Instant Podcast Player
 
-<img src="https://github.com/nariakiiwatani/InstantPodcastPlayer/assets/1306139/09acda03-9004-4a32-810d-07233c6f7386" width="500" alt='screenshot'>
+<img src="https://github.com/nariakiiwatani/InstantPodcastPlayer/assets/1306139/a5519776-d26a-47c5-8889-31734f777611" width="500" alt='screenshot'>
 
 インスタント・ポッドキャスト・プレーヤーは、RSS形式で利用可能などのポッドキャストを即座に読み込み、再生できる汎用性の高いウェブベースのポッドキャストプレーヤーです。異なるポッドキャストを素早く効率的にサンプリングしたい方や、手軽なプレーヤーを利用したい方に最適なツールです。
 
