@@ -3,7 +3,7 @@ import { IconButton, Snackbar, Alert, Tooltip } from '@mui/material';
 import { useTranslation } from '../hooks/useTranslation';
 
 type CopyToClipboardButtonProps = {
-	value: string;
+	value: string
 	Icon: React.ReactNode
 	disabled?: boolean
 	disable_tooltip?: boolean

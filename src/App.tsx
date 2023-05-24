@@ -17,6 +17,7 @@ import { CopyToClipboardButton } from './components/CopyToClipboardButton';
 import FileCopyOutlinedIcon from '@mui/icons-material/FileCopyOutlined';
 import RssFeedIcon from '@mui/icons-material/RssFeed';
 import { useAsync } from 'react-use';
+import { MyHelmet } from './components/MyHelmet';
 
 const theme = createTheme({
 	palette: {
@@ -35,8 +36,8 @@ type ShareProps = {
 }
 const ShareButtons = (props: ShareProps) => {
 	const { rss_url, episode } = props
-	const permalink = createPermalink(rss_url, episode?.id)
-
+	const permalink = useMemo(() => createPermalink(rss_url, episode?.id), [rss_url, episode])
+	
 	return (<Grid container direction='row'>
 		<CopyToClipboardButton {...props} value={rss_url} Icon={<RssFeedIcon />} />
 		<TweetButton {...props} url={permalink} />
@@ -70,8 +71,8 @@ const App: React.FC = () => {
 		if (index >= 0) {
 			newPodcasts.splice(index, 1)
 			setPodcasts(newPodcasts)
-			index = Math.min(index, newPodcasts.length-1)
-			if(index >= 0) {
+			index = Math.min(index, newPodcasts.length - 1)
+			if (index >= 0) {
 				setUrl(newPodcasts[index].url)
 			}
 			else {
@@ -171,6 +172,7 @@ const App: React.FC = () => {
 		<ThemeProvider theme={theme}>
 			<PodcastRecordContext.Provider value={podcasts}>
 				<CssBaseline />
+				<MyHelmet podcast={podcast} episode={selectedEpisode} />
 				<Header />
 				<Box sx={{ margin: 2 }}>
 					<PodcastInput url={url} setUrl={setUrl} deleteUrl={deleteUrl} podcasts={podcasts} />

@@ -1,4 +1,4 @@
-import { IconButton, Link } from "@mui/material";
+import { IconButton } from "@mui/material";
 import TwitterIcon from '@mui/icons-material/Twitter';
 import { Episode, Podcast } from '../types/podcast';
 import Tooltip from '@mui/material/Tooltip';
@@ -25,19 +25,22 @@ export const TweetButton = ({
 		channel.description,
 		episode?.description ?? '',
 		'#PublicPodcastLink'].join(' '))
-	const message = episode ?
-		`${channel.title}
+	const handleClick = async () => {
+		const message = episode ?
+`${channel.title}
 ${episode.title}
 ${hashtags.join(' ')}
 ${shareUrl}` :
-		`${channel.title}
+`${channel.title}
 ${hashtags.join(' ')}
 ${shareUrl}`
+		const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`;
+		window.open(twitterShareUrl, '_blank')
+	}
 
-	const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`;
 	return (
 		<Tooltip title='Share with Twitter'>
-			<IconButton color="inherit" component={Link} target="_blank" href={twitterShareUrl}>
+			<IconButton color="inherit" onClick={handleClick}>
 				<TwitterIcon />
 			</IconButton>
 		</Tooltip>
