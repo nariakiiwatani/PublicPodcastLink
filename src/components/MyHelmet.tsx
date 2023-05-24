@@ -14,9 +14,10 @@ const s = {
 }
 export const MyHelmet = ({podcast:p, episode:e}:MyHelmetProps) => {
 	const info = useMemo(() => {
-		const title = (e?e.title:'')+(p?e?` (${p.title})`:p.title:'')+(p?' - ':'')+s.title
+		const title = (e?e.title:'')+(p?e?` (${p.title})`:p.title:'')
 		return {
 			title,
+			site_name: s.title,
 			url: e?e.link:p?p.link:s.link,
 			image: e?e.imageUrl:p?p.imageUrl:s.imageUrl,
 			description: e?e.description:p?p.description:s.description,
