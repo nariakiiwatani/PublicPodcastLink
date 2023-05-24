@@ -35,6 +35,7 @@ const usePodcast = () => {
 						audioUrl: item.enclosure?.url || '',
 						imageUrl: item['itunes:image'].href || '',
 						pubDate: item.pubDate || '',
+						type: item.enclosure?.type || ''
 					}))
 
 					setPodcast(newPodcast);
