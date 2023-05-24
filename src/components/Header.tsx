@@ -99,7 +99,7 @@ const Header = () => {
 						<ListItemText primary="Twitter" />
 					</MenuItem>
 
-					<MenuItem onClick={handleLinkItemClick('https://github.com/nariakiiwatani/InstantPodcastPlayer')}>
+					<MenuItem onClick={handleLinkItemClick('https://github.com/nariakiiwatani/PublicPodcastLink')}>
 						<ListItemIcon>
 							<GitHubIcon />
 						</ListItemIcon>

@@ -41,7 +41,7 @@ export const MyHelmet = ({podcast:p, episode:e}:MyHelmetProps) => {
 	const info = (() => {
 		if(!channel) p = null
 		if(!item) e = null
-		const title = (e?e.title:'')+(p?e?` (${p.title})`:p.title:'')+` - ${s.title}`
+		const title = (e?e.title:'')+(p?e?` (${p.title})`:p.title:'')+(p?' - ':'')+s.title
 		const ret:{[key:string]:any} = {
 			title,
 			site_name: s.title,
