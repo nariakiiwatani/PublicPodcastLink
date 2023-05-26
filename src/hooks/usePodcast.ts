@@ -7,13 +7,17 @@ const parser = new XMLParser({
 	ignoreAttributes: false
 })
 
+const fetch_via_api = (url: string) => {
+	const new_url = `${window.origin}/.netlify/functions/get_rss?url=${encodeURIComponent(url)}`
+	return fetch(new_url)
+}
 const usePodcast = () => {
 	const [podcast, setPodcast] = useState<Podcast | null>(null);
 	const [episodes, setEpisodes] = useState<Episode[]>([]);
 
 	const fetchPodcast = async (url: string) => {
 		try {
-			const rss_string = await (await fetch(url)).text()
+			const rss_string = await (await fetch_via_api(url)).text()
 			const rss = parser.parse(rss_string).rss;
 			if (rss) {
 				const { channel } = rss
