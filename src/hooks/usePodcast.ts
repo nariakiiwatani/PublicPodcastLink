@@ -32,12 +32,12 @@ const usePodcast = () => {
 
 					const items = channel?.item ? Array.isArray(channel.item) ? channel.item : [channel.item] : []
 					const newItems = items.map((item: any) => ({
-						id: item.guid['#text'] || '',
+						id: item.guid?.['#text'] || '',
 						title: item.title || '',
 						description: item.description || '',
 						link: item.link || '',
 						audioUrl: item.enclosure?.url || '',
-						imageUrl: item['itunes:image'].href || '',
+						imageUrl: item['itunes:image']?.href || '',
 						pubDate: item.pubDate || '',
 						type: item.enclosure?.type || ''
 					}))
