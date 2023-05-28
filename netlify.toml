@@ -1,5 +1,6 @@
 [dev]
-command = "vite"
+command = "dotenv -e .env.local cross-var 'vite dev'"
+port = 65510
 
 [build]
 publish = "dist/"

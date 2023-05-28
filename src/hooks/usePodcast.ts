@@ -8,7 +8,7 @@ const parser = new XMLParser({
 })
 
 const fetch_via_api = (url: string) => {
-	const new_url = `${window.origin}/.netlify/functions/get_rss?url=${encodeURIComponent(url)}`
+	const new_url = `${import.meta.env.VITE_API_PATH}/get_rss?url=${encodeURIComponent(url)}`
 	return fetch(new_url)
 }
 const usePodcast = () => {
