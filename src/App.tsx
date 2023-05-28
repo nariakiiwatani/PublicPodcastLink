@@ -131,7 +131,7 @@ const App: React.FC = () => {
 						setSelectedEpisodeId(episode_id)
 					}
 					else {
-						setSelectedEpisodeId(epi[0].id)
+						setSelectedEpisodeId(null)
 					}
 				}
 			}
