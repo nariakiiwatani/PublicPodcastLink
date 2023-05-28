@@ -4,6 +4,7 @@ export type Podcast = {
 	imageUrl: string;
 	link: string;
 	author: string;
+	self_url: string;
 };
 
 export type Episode = {

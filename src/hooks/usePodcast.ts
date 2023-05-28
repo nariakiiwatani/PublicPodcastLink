@@ -27,7 +27,8 @@ const usePodcast = () => {
 						description: channel.description,
 						imageUrl: channel.image?.url || '',
 						link: channel.link,
-						author: channel.author || ''
+						author: channel.author || '',
+						self_url: url
 					};
 
 					const items = channel?.item ? Array.isArray(channel.item) ? channel.item : [channel.item] : []

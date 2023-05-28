@@ -3,13 +3,13 @@ import { Podcast } from '../types/podcast';
 import { Typography, Card, CardContent, CardMedia, Box, Grid, CardHeader } from '@mui/material'
 import { avoidXSS } from '../utils/escape';
 import { OpenInNewButton } from './OpenInNewButton';
+import { ShareButtons } from './ShareButtons'
 
 type PodcastPreviewProps = {
 	podcast: Podcast | null;
-	ShareButton?: React.ReactNode;
 };
 
-const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src, ShareButton }) => {
+const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 	if (!src) return null;
 
 	const safeDescription = useMemo(() => avoidXSS(src.description), [src.description])
@@ -38,7 +38,7 @@ const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src, ShareButt
 						sx={{ width: 180, height: 180, borderRadius: '50%' }}
 					/>
 					<Box style={{ marginTop: 10 }}>
-						{ShareButton}
+						<ShareButtons channel={src} />
 					</Box>
 				</Grid>
 				<Grid item xs={12} sm={8}>

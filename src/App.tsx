@@ -18,6 +18,7 @@ import FileCopyOutlinedIcon from '@mui/icons-material/FileCopyOutlined';
 import RssFeedIcon from '@mui/icons-material/RssFeed';
 import { useAsync } from 'react-use';
 import { MyHelmet } from './components/MyHelmet';
+import { ShareButtons } from './components/ShareButtons';
 
 const theme = createTheme({
 	palette: {
@@ -27,22 +28,6 @@ const theme = createTheme({
 
 function useQuery() {
 	return new URLSearchParams(useLocation().search);
-}
-
-type ShareProps = {
-	rss_url: string
-	channel: Podcast
-	episode?: Episode
-}
-const ShareButtons = (props: ShareProps) => {
-	const { rss_url, episode } = props
-	const permalink = useMemo(() => createPermalink(rss_url, episode?.id), [rss_url, episode])
-	
-	return (<Grid container direction='row'>
-		<CopyToClipboardButton {...props} value={rss_url} Icon={<RssFeedIcon />} />
-		<TweetButton {...props} url={permalink} />
-		<CopyToClipboardButton {...props} value={permalink} Icon={<FileCopyOutlinedIcon />} />
-	</Grid>)
 }
 
 type PodcastRecord = { url: string, title: string }
@@ -182,10 +167,9 @@ const App: React.FC = () => {
 							<EpisodePreview
 								channel={podcast}
 								episode={selectedEpisode}
-								ShareButton={<ShareButtons rss_url={url} channel={podcast} episode={selectedEpisode} />}
 								Navigator={Navigator}
 							/>}
-						<PodcastPreview podcast={podcast} ShareButton={<ShareButtons rss_url={url} channel={podcast} />} />
+						<PodcastPreview podcast={podcast}/>
 					</>}
 				</Box>
 			</PodcastRecordContext.Provider>
