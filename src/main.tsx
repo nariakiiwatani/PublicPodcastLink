@@ -11,7 +11,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 		<LanguageProvider>
 			<BrowserRouter>
 				<Routes>
-					<Route path='/owner/:channel' element={<Owner />} />
+					<Route path='/owner' element={<Owner />} />
 					<Route path='/' element={<App />} />
 				</Routes>
 			</BrowserRouter>

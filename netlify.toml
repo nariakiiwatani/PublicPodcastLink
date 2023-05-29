@@ -1,5 +1,5 @@
 [dev]
-command = "dotenv -e .env.local cross-var 'vite dev'"
+command = "vite dev"
 port = 65510
 
 [build]

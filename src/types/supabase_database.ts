@@ -56,41 +56,20 @@ export interface Database {
         Row: {
           created_at: string | null
           id: number
-          link_url: string
-          rss_feed: string
-          type: string | null
+          link_url: string[]
+          rss_url: string
         }
         Insert: {
           created_at?: string | null
           id?: number
-          link_url: string
-          rss_feed: string
-          type?: string | null
+          link_url: string[]
+          rss_url: string
         }
         Update: {
           created_at?: string | null
           id?: number
-          link_url?: string
-          rss_feed?: string
-          type?: string | null
-        }
-        Relationships: []
-      }
-      related_link_request_platform: {
-        Row: {
-          created_at: string | null
-          id: number
-          platform_name: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: number
-          platform_name: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: number
-          platform_name?: string
+          link_url?: string[]
+          rss_url?: string
         }
         Relationships: []
       }

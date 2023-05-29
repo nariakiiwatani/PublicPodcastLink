@@ -12,9 +12,10 @@ export const handler: Handler = async (event : HandlerEvent, context) => {
 		const valid = await supabase.from('check_owner')
 		.select('id, channel')
 		.match({id:key,channel})
+		.single()
 		if(valid.error) {
 			return {
-				statusCode: 404
+				statusCode:  406
 			}
 		}
 		return {

@@ -9,34 +9,57 @@ type PodcastPreviewProps = {
 	podcast: Podcast | null;
 };
 
+export const Title: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
+	if (!src) return null;
+	return (<>
+		<Typography
+				variant='h5'
+			>{src.title}<OpenInNewButton url={src.link} />
+			</Typography>
+			<Typography
+				variant='subtitle1'
+			>{src.author}
+			</Typography>
+	</>)
+}
+
+export const Thumbnail: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
+	if (!src) return null;
+	return (<CardMedia
+		component="img"
+		image={src.imageUrl}
+		alt={src.title}
+		sx={{ width: 180, height: 180, borderRadius: '50%' }}
+	/>)
+}
+
+export const Description: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
+	if(!src) return null
+	const safeDescription = useMemo(() => avoidXSS(src.description), [src.description])
+	return (<Typography
+		variant="subtitle1"
+		color="text.secondary"
+		style={{
+			whiteSpace: 'pre-wrap',
+			overflowWrap: 'break-word',
+			wordBreak: 'break-all',
+		}}
+		dangerouslySetInnerHTML={{ __html: safeDescription }}
+	/>)
+}
+
 const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 	if (!src) return null;
-
-	const safeDescription = useMemo(() => avoidXSS(src.description), [src.description])
 
 	return (
 		<Card sx={{ marginTop: 2, borderRadius: 2 }}>
 			<CardHeader
-				title={<>
-					<Typography
-							variant='h5'
-						>{src.title}<OpenInNewButton url={src.link} />
-						</Typography>
-						<Typography
-							variant='subtitle1'
-						>{src.author}
-						</Typography>
-				</>}
+				title={<Title podcast={src} />}
 				style={{ textAlign: 'center' }}
 			/>
 			<Grid container direction="row" justifyContent="center" alignItems="flex-start">
 				<Grid item xs={12} sm={4} style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center' }}>
-					<CardMedia
-						component="img"
-						image={src.imageUrl}
-						alt={src.title}
-						sx={{ width: 180, height: 180, borderRadius: '50%' }}
-					/>
+					<Thumbnail podcast={src} />
 					<Box style={{ marginTop: 10 }}>
 						<ShareButtons channel={src} />
 					</Box>
@@ -44,16 +67,7 @@ const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 				<Grid item xs={12} sm={8}>
 					<CardContent style={{ flex: '1 0 auto' }}>
 						<Box style={{ overflowY: 'scroll', maxHeight: 'calc(100% - 30px)' }}>
-							<Typography
-								variant="subtitle1"
-								color="text.secondary"
-								style={{
-									whiteSpace: 'pre-wrap',
-									overflowWrap: 'break-word',
-									wordBreak: 'break-all',
-								}}
-								dangerouslySetInnerHTML={{ __html: safeDescription }}
-							/>
+							<Description podcast={src} />
 						</Box>
 					</CardContent>
 				</Grid>
