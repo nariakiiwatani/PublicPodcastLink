@@ -1,9 +1,10 @@
 import React, { useMemo } from 'react';
 import { Podcast } from '../types/podcast';
-import { Typography, Card, CardContent, CardMedia, Box, Grid, CardHeader } from '@mui/material'
+import { Typography, Card, CardContent, CardMedia, Box, Grid, CardHeader, IconButton, Link } from '@mui/material'
 import { avoidXSS } from '../utils/escape';
 import { OpenInNewButton } from './OpenInNewButton';
 import { ShareButtons } from './ShareButtons'
+import { useRelatedLinks } from '../hooks/useRelatedLinks';
 
 type PodcastPreviewProps = {
 	podcast: Podcast | null;
@@ -50,6 +51,7 @@ export const Description: React.FC<PodcastPreviewProps> = ({ podcast: src }) => 
 
 const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 	if (!src) return null;
+	const { value: links } = useRelatedLinks(src?.self_url??'')
 
 	return (
 		<Card sx={{ marginTop: 2, borderRadius: 2 }}>
@@ -60,8 +62,25 @@ const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 			<Grid container direction="row" justifyContent="center" alignItems="flex-start">
 				<Grid item xs={12} sm={4} style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center' }}>
 					<Thumbnail podcast={src} />
-					<Box style={{ marginTop: 10 }}>
+					<Box sx={{ marginTop: 1 }}>
 						<ShareButtons channel={src} />
+					</Box>
+					<Box sx={{
+						maxWidth: '80%',
+						marginTop: 1,
+						display:'flex', flexDirection:'row', flexWrap: 'wrap',
+						justifyContent: 'center',
+						alignContent: 'flex-start'
+					}}>
+						{links?.data
+						.filter(({icon})=>icon)
+						.map(({url,icon})=> (
+							<IconButton
+								component={Link} href={url} target='_blank'
+							>
+								<img src={icon!} width='32px' height='auto' />
+							</IconButton>
+						))}
 					</Box>
 				</Grid>
 				<Grid item xs={12} sm={8}>

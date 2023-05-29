@@ -116,11 +116,16 @@ export const getPlatformIcon = (url: string) => {
 		'https://lit.link': 'litlink',
 		'https://linktr.ee': 'linktr',
 		'https://www.instagram.com': 'instagram',
-		'https://podcasts.google.com': ['google-podcasts', 'svg'],
+		'https://podcasts.google.com': ['google_podcasts', 'svg'],
 		'https://www.facebook.com': 'facebook',
 		'https://podcasts.apple.com': 'apple_podcasts',
 		'https://music.amazon.com': 'amazon_music',
-		'https://scrapbox.io': 'scrapbox'
+		'https://scrapbox.io': 'scrapbox',
+		'https://discord.com': 'discord',
+		'https://listen.style': 'listen',
+		'https://zenn.dev': 'zenn',
+		'https://qiita.com': 'qiita',
+		'https://www.linkedin.com': 'linkedin',
 	}
 	const found_key = Object.keys(approved_list).find(origin=>url.startsWith(origin))
 	if (found_key) {
