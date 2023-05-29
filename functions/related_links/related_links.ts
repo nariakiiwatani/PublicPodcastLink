@@ -107,27 +107,27 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
 export const getPlatformIcon = (url: string) => {
 	const make_url = (name: string, ext: string = 'png') => `/platform_icons/${name}.${ext}`
 	const approved_list:{[key:string]:string|string[]} = {
-		'https://github.com': 'github',
-		'https://youtube.com': 'youtube',
-		'https://twitter.com': 'twitter',
-		'https://open.spotify.com': 'spotify',
-		'https://podcasters.spotify.com': 'sfpc',
-		'https://note.com': 'note',
-		'https://lit.link': 'litlink',
-		'https://linktr.ee': 'linktr',
-		'https://www.instagram.com': 'instagram',
-		'https://podcasts.google.com': ['google_podcasts', 'svg'],
-		'https://www.facebook.com': 'facebook',
-		'https://podcasts.apple.com': 'apple_podcasts',
-		'https://music.amazon.com': 'amazon_music',
-		'https://scrapbox.io': 'scrapbox',
-		'https://discord.com': 'discord',
-		'https://listen.style': 'listen',
-		'https://zenn.dev': 'zenn',
-		'https://qiita.com': 'qiita',
-		'https://www.linkedin.com': 'linkedin',
+		'https://(.*\.)?github\.com': 'github',
+		'https://(.*\.)?youtube\.com': 'youtube',
+		'https://(.*\.)?twitter\.com': 'twitter',
+		'https://podcasters.spotify\.com': 'sfpc',
+		'https://(.*\.)?spotify\.com': 'spotify',
+		'https://(.*\.)?note\.com': 'note',
+		'https://(.*\.)?lit\.link': 'litlink',
+		'https://(.*\.)?linktr\.ee': 'linktr',
+		'https://(.*\.)?instagram\.com': 'instagram',
+		'https://podcasts.google\.com': ['google_podcasts', 'svg'],
+		'https://(.*\.)?facebook\.com': 'facebook',
+		'https://podcasts.apple\.com': 'apple_podcasts',
+		'https://music.amazon\.com': 'amazon_music',
+		'https://(.*\.)?scrapbox\.io': 'scrapbox',
+		'https://(.*\.)?discord\.com': 'discord',
+		'https://(.*\.)?listen\.style': 'listen',
+		'https://(.*\.)?zenn\.dev': 'zenn',
+		'https://(.*\.)?qiita\.com': 'qiita',
+		'https://(.*\.)?linkedin\.com': 'linkedin',
 	}
-	const found_key = Object.keys(approved_list).find(origin=>url.startsWith(origin))
+	const found_key = Object.keys(approved_list).find(tester=>new RegExp(tester).test(url))
 	if (found_key) {
 		let args = approved_list[found_key]
 		args = Array.isArray(args) ? args : [args]
