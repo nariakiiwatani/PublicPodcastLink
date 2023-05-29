@@ -4,21 +4,15 @@ import PodcastInput from './components/PodcastInput';
 import PodcastPreview from './components/PodcastPreview';
 import EpisodeList from './components/EpisodeList';
 import EpisodePreview from './components/EpisodePreview';
-import { TweetButton } from './components/TwitterButton'
 import usePodcast from './hooks/usePodcast';
-import { CssBaseline, ThemeProvider, createTheme, Box, Grid } from '@mui/material';
+import { CssBaseline, ThemeProvider, createTheme, Box } from '@mui/material';
 import Header from './components/Header';
-import { Podcast, Episode } from './types/podcast';
 import { permalink as createPermalink } from './utils/permalink';
 import { NavigatorButtons } from './components/NavigatorButtons';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
-import { CopyToClipboardButton } from './components/CopyToClipboardButton';
-import FileCopyOutlinedIcon from '@mui/icons-material/FileCopyOutlined';
-import RssFeedIcon from '@mui/icons-material/RssFeed';
 import { useAsync } from 'react-use';
 import { MyHelmet } from './components/MyHelmet';
-import { ShareButtons } from './components/ShareButtons';
 
 const theme = createTheme({
 	palette: {

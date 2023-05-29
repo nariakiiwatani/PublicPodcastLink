@@ -106,8 +106,27 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
 }
 export const getPlatformIcon = (url: string) => {
 	const make_url = (name: string, ext: string = 'png') => `/platform_icons/${name}.${ext}`
-	if (url.startsWith('https://github.com')) {
-		return make_url('test')
+	const approved_list:{[key:string]:string|string[]} = {
+		'https://github.com': 'github',
+		'https://youtube.com': 'youtube',
+		'https://twitter.com': 'twitter',
+		'https://open.spotify.com': 'spotify',
+		'https://podcasters.spotify.com': 'sfpc',
+		'https://note.com': 'note',
+		'https://lit.link': 'litlink',
+		'https://linktr.ee': 'linktr',
+		'https://www.instagram.com': 'instagram',
+		'https://podcasts.google.com': ['google-podcasts', 'svg'],
+		'https://www.facebook.com': 'facebook',
+		'https://podcasts.apple.com': 'apple_podcasts',
+		'https://music.amazon.com': 'amazon_music',
+		'https://scrapbox.io': 'scrapbox'
+	}
+	const found_key = Object.keys(approved_list).find(origin=>url.startsWith(origin))
+	if (found_key) {
+		let args = approved_list[found_key]
+		args = Array.isArray(args) ? args : [args]
+		return make_url(args[0], args[1])
 	}
 	return null
 }

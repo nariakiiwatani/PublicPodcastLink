@@ -2,7 +2,7 @@ import { Handler } from '@netlify/functions'
 import fetch from 'node-fetch';
 
 export const handler: Handler = async (event, context) => {
-	const { url } = event.queryStringParameters
+	const { url } = event.queryStringParameters as { url: string }
 	if (!url) {
 		return {
 			statusCode: 400

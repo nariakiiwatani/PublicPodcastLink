@@ -12,7 +12,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import PendingIcon from '@mui/icons-material/Pending'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
-import { ReturnType as RelatedLinksResultType } from '../functions/related_links/related_links'
+import { useRelatedLinks } from './hooks/useRelatedLinks'
 
 function useQuery() {
 	const location = useLocation()
@@ -31,33 +31,6 @@ const check_if_valid_owner = async (channel: string, key: string): Promise<boole
 	return result.ok
 }
 
-const get_related_links = async (channel: string): Promise<RelatedLinksResultType> => {
-	const url = `${import.meta.env.VITE_API_PATH}/related_links?channel=${channel}`
-	const result = await fetch(url)
-	if(result.status === 404) {
-		return {
-			data: []
-		}
-	}
-	return await result.json()
-}
-
-const update_related_links = async (id: string, links: string[]): Promise<RelatedLinksResultType> => {
-	const url = `${import.meta.env.VITE_API_PATH}/related_links/${id}`
-	const result = await fetch(url, {
-		method: 'PUT',
-		body: links.join(',')
-	})
-	return await result.json()
-}
-const insert_related_links = async (channel: string, links: string[]): Promise<RelatedLinksResultType> => {
-	const url = `${import.meta.env.VITE_API_PATH}/related_links?channel=${channel}`
-	const result = await fetch(url, {
-		method: 'POST',
-		body: links.join(',')
-	})
-	return await result.json()
-}
 
 const CheckOwner = ({ children }: { children: React.ReactNode }) => {
 	const { channel, key } = useQuery()
@@ -99,30 +72,6 @@ const NotAnOwner = () => {
 	)
 }
 
-const useRelatedLinks = (url?: string) => {
-	const [result, setResult] = useState<RelatedLinksResultType>(null)
-	useEffect(() => {
-		if (!url) return
-		get_related_links(url)
-		.then(setResult)
-		.catch(e=>console.info({e}))
-	}, [url])
-	const update = useCallback((links: string[]):false|Promise<RelatedLinksResultType> => {
-		if (!url) return false
-		return (result && result.id
-			? update_related_links(result.id, links)
-			: insert_related_links(url, links)
-		)
-		.then(result => {
-			setResult(result)
-			return result
-		})
-	}, [url, result])
-	return {
-		result,
-		update
-	}
-}
 type LinkItemProps = {
 	url: string
 	icon: string | null
@@ -168,7 +117,7 @@ const LinkItem = ({ url, icon, onEdit, onDelete }: LinkItemProps) => {
 	return (
 	<ListItem>
 		<Box sx={{display:'flex', flexDirection:'row', alignItems:'center'}}>
-			<Icon sx={{marginRight:1, overflow:'visible', width:'32px', height:'32px'}}>
+			<Icon sx={{marginRight:1, overflow:'visible', width:'32px', height: 'auto'}}>
 				{icon
 				?<img src={icon} width='100%' height='100%' />
 				:<Tooltip title={pending_text}><PendingIcon /></Tooltip>}
@@ -237,7 +186,7 @@ const AddRelatedLink = ({onAdd}:AddRelatedLinkProps) => {
 	<ListItem>
 		<Box sx={{display:'flex', flexDirection:'row', alignItems:'center'}}>
 			<IconButton
-				sx={{marginRight:1, overflow:'visible', width:'32px', height:'32px'}}
+				sx={{marginRight:1, overflow:'visible', width:'32px', height: 'auto'}}
 				onClick={edit?handleCancel:handleEdit}
 			>
 				{edit ? <CancelIcon /> : <AddCircleIcon />}
@@ -270,7 +219,7 @@ const AddRelatedLink = ({onAdd}:AddRelatedLinkProps) => {
 
 const RelatedLinks = () => {
 	const { podcast: src } = useContext(ChannelContext)
-	const { result: value, update } = useRelatedLinks(src?.self_url)
+	const { value, update } = useRelatedLinks(src?.self_url??'')
 	const handleEdit = (i:number) => async (url: string) => {
 		if(!value) return false
 		const arr = [...value.data.map(({url})=>url)]
