@@ -34,23 +34,33 @@ export interface Database {
   }
   public: {
     Tables: {
-      check_owner: {
+      editable_channel: {
         Row: {
-          channel: string
           created_at: string | null
           id: string
+          owned: string[] | null
+          shared: string[] | null
         }
         Insert: {
-          channel: string
           created_at?: string | null
-          id?: string
+          id: string
+          owned?: string[] | null
+          shared?: string[] | null
         }
         Update: {
-          channel?: string
           created_at?: string | null
           id?: string
+          owned?: string[] | null
+          shared?: string[] | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "editable_channel_id_fkey"
+            columns: ["id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       related_link: {
         Row: {

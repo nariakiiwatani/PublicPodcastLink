@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { XMLParser } from 'fast-xml-parser';
 import { Podcast, Episode } from '../types/podcast';
 
@@ -11,11 +11,11 @@ const fetch_via_api = (url: string) => {
 	const new_url = `${import.meta.env.VITE_API_PATH}/get_rss?url=${encodeURIComponent(url)}`
 	return fetch(new_url)
 }
-const usePodcast = () => {
+const usePodcast = (url?: string) => {
 	const [podcast, setPodcast] = useState<Podcast | null>(null);
 	const [episodes, setEpisodes] = useState<Episode[]>([]);
 
-	const fetchPodcast = async (url: string) => {
+	const fetchPodcast = async (url: string, without_state_update?:boolean) => {
 		try {
 			const rss_string = await (await fetch_via_api(url)).text()
 			const rss = parser.parse(rss_string).rss;
@@ -28,7 +28,10 @@ const usePodcast = () => {
 						imageUrl: channel.image?.url || '',
 						link: channel.link,
 						author: channel.author || '',
-						self_url: url
+						self_url: url,
+						owner: {
+							email: channel['itunes:owner']?.['itunes:email'] || ''
+						}
 					};
 
 					const items = channel?.item ? Array.isArray(channel.item) ? channel.item : [channel.item] : []
@@ -43,8 +46,10 @@ const usePodcast = () => {
 						type: item.enclosure?.type || ''
 					}))
 
-					setPodcast(newPodcast);
-					setEpisodes(newItems);
+					if(!without_state_update) {
+						setPodcast(newPodcast);
+						setEpisodes(newItems);
+					}
 
 					return {podcast:newPodcast, episodes:newItems}
 				}
@@ -56,6 +61,11 @@ const usePodcast = () => {
 			return null;
 		}
 	};
+
+	useEffect(() => {
+		if(!url) return
+		fetchPodcast(url)
+	}, [url])
 
 	const clearPodcast = () => {
 		setPodcast(null)

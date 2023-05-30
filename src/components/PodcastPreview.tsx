@@ -5,6 +5,7 @@ import { avoidXSS } from '../utils/escape';
 import { OpenInNewButton } from './OpenInNewButton';
 import { ShareButtons } from './ShareButtons'
 import { useRelatedLinks } from '../hooks/useRelatedLinks';
+import { useOwnerRequestPopup } from '../Owner';
 
 type PodcastPreviewProps = {
 	podcast: Podcast | null;
@@ -51,7 +52,8 @@ export const Description: React.FC<PodcastPreviewProps> = ({ podcast: src }) => 
 
 const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 	if (!src) return null;
-	const { value: links } = useRelatedLinks(src?.self_url??'')
+	const { value: links } = useRelatedLinks(src.self_url??'')
+	const owner_request = useOwnerRequestPopup(src)
 
 	return (
 		<Card sx={{ marginTop: 2, borderRadius: 2 }}>
@@ -74,14 +76,22 @@ const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 					}}>
 						{links?.data
 						.filter(({icon})=>icon)
-						.map(({url,icon})=> (
+						.map(({url,icon},i)=> (
 							<IconButton
+								key={i}
 								component={Link} href={url} target='_blank'
 							>
 								<img src={icon!} width='32px' height='auto' />
 							</IconButton>
 						))}
 					</Box>
+					{owner_request.enable && <>
+						<Typography variant='caption' component={Link} href='#' onClick={owner_request.open}>
+							owner?
+						</Typography>
+						<owner_request.Dialog />
+						</>
+					}
 				</Grid>
 				<Grid item xs={12} sm={8}>
 					<CardContent style={{ flex: '1 0 auto' }}>

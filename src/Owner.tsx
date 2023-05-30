@@ -1,10 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ChangeEvent, useRef, FormEvent } from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ChangeEvent, useRef, FormEvent, Suspense } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAsync } from 'react-use'
 import usePodcast from './hooks/usePodcast'
 import { Podcast } from './types/podcast'
 import PodcastPreview from './components/PodcastPreview'
-import { ListItem, List, TextField, Box, IconButton, Link, Icon, Tooltip, Typography } from '@mui/material'
+import { ListItem, List, TextField, Box, IconButton, Link, Icon, Tooltip, Typography, Button, CircularProgress, MenuItem, Menu, ListItemText, Select, SelectChangeEvent } from '@mui/material'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import EditIcon from '@mui/icons-material/Edit'
 import CheckIcon from '@mui/icons-material/Check'
@@ -13,6 +13,10 @@ import PendingIcon from '@mui/icons-material/Pending'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
 import { useRelatedLinks } from './hooks/useRelatedLinks'
+import { useDialog } from './hooks/useDialog'
+import { supabase, useSession } from './utils/supabase'
+import { Session } from '@supabase/supabase-js'
+import Header from './components/Header'
 
 function useQuery() {
 	const location = useLocation()
@@ -25,26 +29,30 @@ function useQuery() {
 	}, [location.search])
 }
 
-const check_if_valid_owner = async (channel: string, key: string): Promise<boolean> => {
-	const url = `${import.meta.env.VITE_API_PATH}/check_owner?channel=${channel}&key=${key}`
-	const result = await fetch(url)
-	return result.ok
+const OwnerRequest = ({podcast}:{podcast: Podcast}) => {
+	const handleSendEmail = async () => {
+		const url = `${import.meta.env.VITE_API_PATH}/auth?email=${podcast.owner.email}&channel=${podcast.self_url}`
+		const result = await fetch(url, {
+			method: 'POST'
+		})
+		console.info({result})
+	}
+	return (<Button onClick={handleSendEmail}>request</Button>)
 }
 
-
-const CheckOwner = ({ children }: { children: React.ReactNode }) => {
-	const { channel, key } = useQuery()
-	const { loading, error, value } = useAsync(async () => {
-		if (!channel || !key) {
-			return
-		}
-		return check_if_valid_owner(channel, key)
-	}, [channel, key])
-	return (
-		loading ? <>loading...</>
-			: !value || error ? <>invalid</>
-				: <>{children}</>
-	)
+export const useOwnerRequestPopup = (podcast: Podcast) => {
+	const requestable = useMemo(()=>podcast.owner.email!=='',[podcast])
+	const { open, Dialog } = useDialog()
+	const Element = useCallback(() => {
+		return <Dialog title='request ownership'>
+				<OwnerRequest podcast={podcast} />
+			</Dialog>
+	}, [Dialog, podcast])
+	return {
+		enable: requestable,
+		open,
+		Dialog: Element
+	}
 }
 
 const ChannelContext = createContext<{
@@ -64,12 +72,6 @@ const ChannelContextProvider = ({ children }: {
 	return (<ChannelContext.Provider value={{ podcast }}>
 		{children}
 	</ChannelContext.Provider>)
-}
-
-const NotAnOwner = () => {
-	return (
-		<a href={window.origin} target='_self'>not an owner?</a>
-	)
 }
 
 type LinkItemProps = {
@@ -217,8 +219,7 @@ const AddRelatedLink = ({onAdd}:AddRelatedLinkProps) => {
 	)
 }
 
-const RelatedLinks = () => {
-	const { podcast: src } = useContext(ChannelContext)
+const RelatedLinks = ({podcast:src}:{podcast:Podcast}) => {
 	const { value, update } = useRelatedLinks(src?.self_url??'')
 	const handleEdit = (i:number) => async (url: string) => {
 		if(!value) return false
@@ -248,28 +249,141 @@ const RelatedLinks = () => {
 	)
 }
 
-const Manager = () => {
-	const { podcast: src } = useContext(ChannelContext)
-	if (!src) return null
+const Login = () => {
+	const [loading, setLoading] = useState(false)
+	const [email, setEmail] = useState('')
+
+	const handleLogin = async (event: FormEvent) => {
+		event.preventDefault()
+
+		setLoading(true)
+		const { error } = await supabase.auth.signInWithOtp({
+			email,
+			options: {
+				emailRedirectTo: `${import.meta.env.VITE_SITE_ORIGIN}/owner`
+			}
+		})
+
+		if (error) {
+			alert(error.message)
+		} else {
+			alert('Check your email for the login link!')
+		}
+		setLoading(false)
+	}
+
 	return (<>
-		<h1>管理画面: {`${src.title}`}</h1>
-		<NotAnOwner />
-		<hr />
-		<h2>Related Links</h2>
-		<RelatedLinks />
-		<hr />
-		<h2>Preview</h2>
-		<PodcastPreview podcast={src} />
+		<form className="form-widget" onSubmit={handleLogin}>
+			<TextField
+				type="email"
+				placeholder="Your email"
+				value={email}
+				required={true}
+				onChange={(e) => setEmail(e.target.value)}
+			/>
+			<Button disabled={loading} variant='contained' type='submit'>
+				{loading ? <CircularProgress /> : <>Send magic link</>}
+			</Button>
+		</form>
+		</>
+	)
+}
+const CheckAuth = ({ skip, children }: { skip?:boolean, children: React.ReactNode }) => {
+	const { session } = useSession()
+	return (
+		!skip && !session ? <>
+			<p>Login required</p>
+			<Login />
+		</>
+		: <>
+			{children}
+		</>
+	)
+}
+
+const useEditableChannels = () => {
+	const {session} = useSession()
+	const {value, loading, error} = useAsync(async () => {
+		try {
+			const {data} = await supabase.from('editable_channel')
+			.select('owned,shared')
+			.eq('id', session?.user?.id??'dbb0c322-9b8c-409e-8622-80a6a02306d1')
+			.single()
+			return {
+				owned:data?.owned??[],
+				shared:data?.shared??[]
+			}
+		}
+		catch(e: any) {
+			return {owned:[],shared:[]}
+		}
+	}, [session])
+	return {value, loading, error}
+}
+
+const FetchTitle = ({url, do_fetch}:{url:string, do_fetch:boolean}) => {
+	const { podcast } = usePodcast(do_fetch?url:undefined)
+	return (
+		<Typography>{podcast?.title??url}</Typography>
+	)
+}
+
+const SelectChannel = ({items, onChange}:{
+	items:{[key:string]:string[]}
+	onChange: (podcast:Podcast|null)=>void
+}) => {
+	const [value, setValue] = useState(()=>Object.values(items)[0][0]??'')
+	const {podcast, fetchPodcast} = usePodcast(value)
+	const handleSelect = (e: SelectChangeEvent) => {
+		const value = e.target.value
+		setValue(value)
+		fetchPodcast(value)
+	}
+	useEffect(() => {
+		onChange(podcast)
+	}, [podcast])
+	const options = useMemo(() => {
+		return Object.entries(items).reduce<{value:string,disabled?:boolean}[]>((ret, [group, value]) => {
+			return [...ret, {disabled:true, value:group}, ...value.map(v=>({value:v}))]
+		}, [])
+	}, [items])
+	return <Select
+		value={value}
+		onChange={handleSelect}
+	>
+		{options.map(({value,disabled}, idx) =>
+			<MenuItem key={idx} value={value} disabled={disabled}>
+				<FetchTitle url={value} do_fetch={!disabled} />
+			</MenuItem>)}
+	</Select>
+}
+const Manager = () => {
+	const [podcast, setPodcast] = useState<Podcast|null>(null)
+	const { value, loading, error } = useEditableChannels()
+	
+	return (<>
+		<h1>管理画面</h1>
+		{value && <SelectChannel items={value} onChange={setPodcast} />}
+		{podcast && <>
+			<hr />
+			<h2>Related Links</h2>
+			<RelatedLinks podcast={podcast} />
+			<hr />
+			<h2>Preview</h2>
+			<PodcastPreview podcast={podcast} />
+		</>}
 	</>)
 }
 
 const Owner: React.FC = () => {
-	return (
-		<CheckOwner>
+	return (<>
+		<Header />
+		<CheckAuth skip={true}>
 			<ChannelContextProvider>
 				<Manager />
 			</ChannelContextProvider>
-		</CheckOwner>
+		</CheckAuth>
+	</>
 	)
 }
 export default Owner

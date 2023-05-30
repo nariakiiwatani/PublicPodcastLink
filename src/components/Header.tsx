@@ -7,12 +7,15 @@ import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import MenuIcon from '@mui/icons-material/Menu';
 import ShareIcon from '@mui/icons-material/Share';
 import PeopleIcon from '@mui/icons-material/People';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { useTranslation } from '../hooks/useTranslation'
 import { useDialog } from '../hooks/useDialog';
 import { CreateImportURL } from './CreateImportURL';
 import Donation from './Donation';
+import { useSession } from '../utils/supabase';
 
 const Header = () => {
+	const { session, logout } = useSession()
 	const { locale, changeLanguage, t } = useTranslation('header')
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -105,6 +108,13 @@ const Header = () => {
 						</ListItemIcon>
 						<ListItemText primary="GitHub" />
 					</MenuItem>
+					
+					{session && <MenuItem onClick={logout}>
+						<ListItemIcon>
+							<LogoutIcon />
+						</ListItemIcon>
+						<ListItemText primary={t.logout} />
+					</MenuItem>}
 
 				</Menu>
 				<export_dialog.Dialog title={t.export_modal_title}>

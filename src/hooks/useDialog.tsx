@@ -19,6 +19,6 @@ export const useDialog = () => {
 	return {
 		Dialog: DialogNode,
 		open: openDialog,
-		close: closeDialog
+		close: closeDialog,
 	};
 };

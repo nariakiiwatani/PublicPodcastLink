@@ -5,6 +5,9 @@ export type Podcast = {
 	link: string;
 	author: string;
 	self_url: string;
+	owner: {
+		email: string;
+	}
 };
 
 export type Episode = {

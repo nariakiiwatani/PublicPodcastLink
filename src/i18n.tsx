@@ -35,6 +35,10 @@ export default {
 			en: 'Export',
 			ja: 'エクスポート'
 		},
+		logout: {
+			en: 'Logout',
+			ja: 'ログアウト'
+		},
 		export_modal_title: {
 			en: 'Create Share URL',
 			ja: '共有用リンクを作成'
