@@ -1,10 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ChangeEvent, useRef, FormEvent, Suspense } from 'react'
-import { useLocation } from 'react-router-dom'
-import { useAsync } from 'react-use'
+import React, { useState, useEffect, useMemo, ChangeEvent, useRef, FormEvent } from 'react'
 import usePodcast from './hooks/usePodcast'
 import { Podcast } from './types/podcast'
 import PodcastPreview from './components/PodcastPreview'
-import { ListItem, List, TextField, Box, IconButton, Link, Icon, Tooltip, Typography, Button, CircularProgress, MenuItem, Menu, ListItemText, Select, SelectChangeEvent, ListSubheader, TextFieldProps } from '@mui/material'
+import { ListItem, List, TextField, Box, IconButton, Link, Icon, Tooltip, Typography, Button, CircularProgress, MenuItem, Select, SelectChangeEvent, ListSubheader, TextFieldProps } from '@mui/material'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import EditIcon from '@mui/icons-material/Edit'
 import CheckIcon from '@mui/icons-material/Check'
@@ -16,20 +14,11 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import { useRelatedLinks } from './hooks/useRelatedLinks'
 import { useDialog } from './hooks/useDialog'
 import { supabase, useSession } from './utils/supabase'
-import { Session } from '@supabase/supabase-js'
 import Header from './components/Header'
 import { useChannelSharedWith } from './hooks/useChannelSharedWith'
 
-function useQuery() {
-	const location = useLocation()
-	const params = new URLSearchParams(location.search)
-	return useMemo(() => {
-		return {
-			channel: params.get('channel'),
-			key: params.get('key')
-		}
-	}, [location.search])
-}
+const email_for_debug = import.meta.env.VITE_DEBUG_EMAIL
+console.info({email_for_debug})
 
 type LinkItemProps = {
 	url: string
@@ -245,10 +234,10 @@ const Login = () => {
 		</>
 	)
 }
-const CheckAuth = ({ skip, children }: { skip?:boolean, children: React.ReactNode }) => {
+const CheckAuth = ({ children }: { children: React.ReactNode }) => {
 	const { session } = useSession()
 	return (
-		!skip && !session ? <>
+		!email_for_debug && !session ? <>
 			<p>Login required</p>
 			<Login />
 		</>
@@ -263,7 +252,8 @@ const useEditableChannels = () => {
 	const [value, setValue] = useState<ChannelWithOwned[]|null>(null)
 	const { fetchPodcast } = usePodcast()
 	const refresh = async () => {
-		const user_email = session?.user?.email??'nariakiiwatani@gmail.com'
+		const user_email = session?.user?.email??email_for_debug
+		if(!user_email) return
 		const {data} = await supabase.from('channel_shared_with')
 			.select('channel, shared_with')
 			.contains('shared_with', [user_email])
@@ -326,7 +316,7 @@ const SelectChannel = ({owned, shared, onChange}: {
 
 const AddNewChannel = ({onChange}:{onChange:()=>void}) => {
 	const {session} = useSession()
-	const user_email = session?.user?.email??'nariakiiwatani@gmail.com'
+	const user_email = session?.user?.email??email_for_debug
 	const { get:isEditable, add:requestEditable } = useChannelSharedWith(user_email)
 	const { fetchPodcast } = usePodcast()
 	const [error, setError] = useState('')
@@ -380,7 +370,7 @@ const ChannelList = ({owned, shared, onChange}: {
 	onChange: ()=>void
 }) => {
 	const {session} = useSession()
-	const user_email = session?.user?.email??'nariakiiwatani@gmail.com'
+	const user_email = session?.user?.email??email_for_debug
 	const { del:deleteEditable } = useChannelSharedWith(user_email)
 	const handleDelete = (value: string) => {
 		deleteEditable(value)
@@ -437,7 +427,7 @@ const Manager = () => {
 const Owner: React.FC = () => {
 	return (<>
 		<Header />
-		<CheckAuth skip={true}>
+		<CheckAuth>
 			<Manager />
 		</CheckAuth>
 	</>
