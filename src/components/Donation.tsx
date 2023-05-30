@@ -5,7 +5,8 @@ const DonatorList = () => {
 	const { t }  = useTranslation('donation')
 	const list = [
 		'Kendea',
-		'サカプル番外編'
+		'サカプル番外編',
+		'Miko'
 	]
 	return (
 		<div>
