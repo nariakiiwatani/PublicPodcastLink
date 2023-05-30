@@ -3,7 +3,7 @@ const ENDPOINT = `${import.meta.env.VITE_API_PATH}/shared_with`
 const get_db = async (channel: string, email: string): Promise<boolean> => {
 	const url = `${ENDPOINT}?channel=${channel}&email=${email}`
 	const result = await fetch(url)
-	return result.ok
+	return result.ok && await result.json()===true
 }
 
 const post_db = async (channel: string, email: string): Promise<boolean> => {
@@ -28,7 +28,6 @@ export const useChannelSharedWith = (email?: string) => {
 		return await get_db(url, email)
 	}
 	const add = async (url: string) => {
-		console.info({url, email})
 		if(!email) return false
 		return await post_db(url, email)
 	}

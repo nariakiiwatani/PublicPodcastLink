@@ -4,7 +4,7 @@ import { useAsync } from 'react-use'
 import usePodcast from './hooks/usePodcast'
 import { Podcast } from './types/podcast'
 import PodcastPreview from './components/PodcastPreview'
-import { ListItem, List, TextField, Box, IconButton, Link, Icon, Tooltip, Typography, Button, CircularProgress, MenuItem, Menu, ListItemText, Select, SelectChangeEvent, ListSubheader } from '@mui/material'
+import { ListItem, List, TextField, Box, IconButton, Link, Icon, Tooltip, Typography, Button, CircularProgress, MenuItem, Menu, ListItemText, Select, SelectChangeEvent, ListSubheader, TextFieldProps } from '@mui/material'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import EditIcon from '@mui/icons-material/Edit'
 import CheckIcon from '@mui/icons-material/Check'
@@ -115,10 +115,10 @@ const LinkItem = ({ url, icon, onEdit, onDelete }: LinkItemProps) => {
 }
 
 type AddNewStringProps = {
-	disabled?: boolean
 	onAdd: (value: string) => void|boolean|Promise<boolean>
+	textFieldProps?: TextFieldProps
 }
-const AddNewString = ({onAdd, disabled}:AddNewStringProps) => {
+const AddNewString = ({onAdd, textFieldProps}:AddNewStringProps) => {
 	const [value, setValue] = useState('')
 	const [edit, setEdit] = useState(false)
 	const text_field_ref = useRef<HTMLInputElement>(null)
@@ -143,7 +143,6 @@ const AddNewString = ({onAdd, disabled}:AddNewStringProps) => {
 		setEdit(false)
 	}
 	return (
-	<ListItem>
 		<Box sx={{display:'flex', flexDirection:'row', alignItems:'center'}}>
 			<IconButton
 				sx={{marginRight:1, overflow:'visible', width:'32px', height: 'auto'}}
@@ -155,7 +154,8 @@ const AddNewString = ({onAdd, disabled}:AddNewStringProps) => {
 			? <>
 			<form onSubmit={handleSubmit}>
 				<TextField
-					disabled={disabled || !edit}
+					{...textFieldProps}
+					disabled={textFieldProps?.disabled || !edit}
 					value={edit?value:'Add New'}
 					inputRef={text_field_ref}
 					size='small'
@@ -173,7 +173,6 @@ const AddNewString = ({onAdd, disabled}:AddNewStringProps) => {
 			</>
 			: <Typography variant='body2' onClick={handleEdit}>Add New</Typography>}
 		</Box>
-	</ListItem>
 	)
 }
 
@@ -218,7 +217,7 @@ const Login = () => {
 		const { error } = await supabase.auth.signInWithOtp({
 			email,
 			options: {
-				emailRedirectTo: `${import.meta.env.VITE_SITE_ORIGIN}/owner`
+				emailRedirectTo: `${window.origin}/owner`
 			}
 		})
 
@@ -325,34 +324,79 @@ const SelectChannel = ({owned, shared, onChange}: {
 	</Select>
 }
 
-const EditChannelList = ({onChange}:{onChange:()=>void}) => {
+const AddNewChannel = ({onChange}:{onChange:()=>void}) => {
 	const {session} = useSession()
 	const user_email = session?.user?.email??'nariakiiwatani@gmail.com'
-	const { get:isEditable, add:requestEditable, del:deleteEditable } = useChannelSharedWith(user_email)
+	const { get:isEditable, add:requestEditable } = useChannelSharedWith(user_email)
 	const { fetchPodcast } = usePodcast()
 	const [error, setError] = useState('')
 	const [pending, setPending] = useState(false)
 	const handleAdd = (value: string) => {
 		setPending(true)
 		setError('')
-		fetchPodcast(value)
+		isEditable(value)
 		.then(result => {
-			if(!result?.podcast) throw 'failed to fetch'
-			if(result.podcast.owner.email !== user_email) throw 'not yours'
-			return requestEditable(result.podcast.self_url)
+			if(result) {
+				setError('already added')
+				return
+			}
+			return fetchPodcast(value)
+			.then(result => {
+				if(!result?.podcast) throw 'failed to fetch'
+				if(result.podcast.owner.email !== user_email) throw 'not yours'
+				return requestEditable(result.podcast.self_url)
+			})
+			.then(() => {
+				onChange()
+				setError('added')
+			})
+			.catch(setError)
 		})
-		.then(() => {
-			onChange()
-		})
-		.catch(setError)
 		.finally(()=>
 			setPending(false)
 		)
 	}
 	return <>
-		<AddNewString onAdd={handleAdd} disabled={pending} />
+		<AddNewString onAdd={handleAdd} textFieldProps={{disabled:pending}} />
 		<Typography color='error' variant='caption'>{error}</Typography>
 	</>
+}
+
+const DeletableItem = ({value, onDelete}:{
+	value:string
+	onDelete:(url:string)=>void 
+}) => {
+	return (<ListItem
+		secondaryAction={
+			<Button onClick={()=>onDelete(value)} variant='contained' color='error'>delete</Button>
+		}
+	>
+		<FetchTitle url={value} />
+	</ListItem>)
+}
+const ChannelList = ({owned, shared, onChange}: {
+	owned: string[]
+	shared: string[]
+	onChange: ()=>void
+}) => {
+	const {session} = useSession()
+	const user_email = session?.user?.email??'nariakiiwatani@gmail.com'
+	const { del:deleteEditable } = useChannelSharedWith(user_email)
+	const handleDelete = (value: string) => {
+		deleteEditable(value)
+		onChange()
+	}
+	return (<>
+	<List>
+		<ListSubheader>所有する番組</ListSubheader>
+		{owned.map((ch,i)=><DeletableItem key={i} onDelete={handleDelete} value={ch} />)}
+	</List>
+	{shared && shared.length > 0 &&
+	<List>
+		<ListSubheader>共同編集番組</ListSubheader>
+		{shared.map((ch,i)=><DeletableItem key={i} onDelete={handleDelete} value={ch} />)}
+	</List>}
+	</>)
 }
 
 const Manager = () => {
@@ -372,7 +416,8 @@ const Manager = () => {
 			<SettingsIcon />
 		</IconButton>
 		<EditChannelListModal title='番組リストを管理'>
-			<EditChannelList onChange={refresh} />
+			<AddNewChannel onChange={refresh} />
+			<ChannelList owned={owned} shared={shared} onChange={refresh} />
 		</EditChannelListModal>
 		</>}
 		</Box>

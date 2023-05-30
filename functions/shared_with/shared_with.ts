@@ -33,7 +33,7 @@ const upsert = async (event: HandlerEvent, _context: HandlerContext) => {
 		)?.data?.[0]?.shared_with
 	if(current && current.includes(email)) {
 		return {
-			statusCode: 200
+			statusCode: 406
 		}
 	}
 	const new_data = !current ? [email] : [...current, email]
@@ -62,7 +62,6 @@ const delete_db = async (event: HandlerEvent, _context: HandlerContext) => {
 		.eq('channel', channel)
 		)?.data?.[0]?.shared_with
 	if(!current || !current.includes(email)) {
-		console.info({current})
 		return {
 			statusCode: 404
 		}

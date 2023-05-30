@@ -36,7 +36,7 @@ export const useRelatedLinks = (url: string) => {
 	useEffect(() => {
 		get_related_links(url)
 		.then(setResult)
-		.catch(e=>console.info({e}))
+		.catch(e=>console.error({e}))
 	}, [url])
 	const update = useCallback((links: string[]):false|Promise<RelatedLinksResultType> => {
 		return (result && result.id
