@@ -53,7 +53,6 @@ export const Description: React.FC<PodcastPreviewProps> = ({ podcast: src }) => 
 const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 	if (!src) return null;
 	const { value: links } = useRelatedLinks(src.self_url??'')
-	const owner_request = useOwnerRequestPopup(src)
 
 	return (
 		<Card sx={{ marginTop: 2, borderRadius: 2 }}>
@@ -85,13 +84,6 @@ const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 							</IconButton>
 						))}
 					</Box>
-					{owner_request.enable && <>
-						<Typography variant='caption' component={Link} href='#' onClick={owner_request.open}>
-							owner?
-						</Typography>
-						<owner_request.Dialog />
-						</>
-					}
 				</Grid>
 				<Grid item xs={12} sm={8}>
 					<CardContent style={{ flex: '1 0 auto' }}>

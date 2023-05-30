@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { ReturnType as RelatedLinksResultType } from '../../functions/related_links/related_links'
 
+const ENDPOINT =`${import.meta.env.VITE_API_PATH}/related_links` 
+
 const get_related_links = async (channel: string): Promise<RelatedLinksResultType> => {
-	const url = `${import.meta.env.VITE_API_PATH}/related_links?channel=${channel}`
+	const url = `${ENDPOINT}?channel=${channel}`
 	const result = await fetch(url)
 	if(result.status === 404) {
 		return {
@@ -13,7 +15,7 @@ const get_related_links = async (channel: string): Promise<RelatedLinksResultTyp
 }
 
 const update_related_links = async (id: string, links: string[]): Promise<RelatedLinksResultType> => {
-	const url = `${import.meta.env.VITE_API_PATH}/related_links/${id}`
+	const url = `${ENDPOINT}/${id}`
 	const result = await fetch(url, {
 		method: 'PUT',
 		body: links.join(',')
@@ -21,7 +23,7 @@ const update_related_links = async (id: string, links: string[]): Promise<Relate
 	return await result.json()
 }
 const insert_related_links = async (channel: string, links: string[]): Promise<RelatedLinksResultType> => {
-	const url = `${import.meta.env.VITE_API_PATH}/related_links?channel=${channel}`
+	const url = `${ENDPOINT}?channel=${channel}`
 	const result = await fetch(url, {
 		method: 'POST',
 		body: links.join(',')

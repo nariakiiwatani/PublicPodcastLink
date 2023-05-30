@@ -4,7 +4,7 @@ import { useAsync } from 'react-use'
 import usePodcast from './hooks/usePodcast'
 import { Podcast } from './types/podcast'
 import PodcastPreview from './components/PodcastPreview'
-import { ListItem, List, TextField, Box, IconButton, Link, Icon, Tooltip, Typography, Button, CircularProgress, MenuItem, Menu, ListItemText, Select, SelectChangeEvent } from '@mui/material'
+import { ListItem, List, TextField, Box, IconButton, Link, Icon, Tooltip, Typography, Button, CircularProgress, MenuItem, Menu, ListItemText, Select, SelectChangeEvent, ListSubheader } from '@mui/material'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import EditIcon from '@mui/icons-material/Edit'
 import CheckIcon from '@mui/icons-material/Check'
@@ -12,11 +12,13 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import PendingIcon from '@mui/icons-material/Pending'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
+import SettingsIcon from '@mui/icons-material/Settings'
 import { useRelatedLinks } from './hooks/useRelatedLinks'
 import { useDialog } from './hooks/useDialog'
 import { supabase, useSession } from './utils/supabase'
 import { Session } from '@supabase/supabase-js'
 import Header from './components/Header'
+import { useChannelSharedWith } from './hooks/useChannelSharedWith'
 
 function useQuery() {
 	const location = useLocation()
@@ -27,51 +29,6 @@ function useQuery() {
 			key: params.get('key')
 		}
 	}, [location.search])
-}
-
-const OwnerRequest = ({podcast}:{podcast: Podcast}) => {
-	const handleSendEmail = async () => {
-		const url = `${import.meta.env.VITE_API_PATH}/auth?email=${podcast.owner.email}&channel=${podcast.self_url}`
-		const result = await fetch(url, {
-			method: 'POST'
-		})
-		console.info({result})
-	}
-	return (<Button onClick={handleSendEmail}>request</Button>)
-}
-
-export const useOwnerRequestPopup = (podcast: Podcast) => {
-	const requestable = useMemo(()=>podcast.owner.email!=='',[podcast])
-	const { open, Dialog } = useDialog()
-	const Element = useCallback(() => {
-		return <Dialog title='request ownership'>
-				<OwnerRequest podcast={podcast} />
-			</Dialog>
-	}, [Dialog, podcast])
-	return {
-		enable: requestable,
-		open,
-		Dialog: Element
-	}
-}
-
-const ChannelContext = createContext<{
-	podcast: Podcast | null
-}>({
-	podcast: null
-})
-const ChannelContextProvider = ({ children }: {
-	children: React.ReactNode
-}) => {
-	const { channel } = useQuery()
-	const { podcast, fetchPodcast } = usePodcast()
-	useAsync(async () => {
-		if (!channel) return
-		fetchPodcast(channel)
-	}, [channel])
-	return (<ChannelContext.Provider value={{ podcast }}>
-		{children}
-	</ChannelContext.Provider>)
 }
 
 type LinkItemProps = {
@@ -157,10 +114,11 @@ const LinkItem = ({ url, icon, onEdit, onDelete }: LinkItemProps) => {
 	</ListItem>)
 }
 
-type AddRelatedLinkProps = {
-	onAdd: (value: string) => boolean|Promise<boolean>
+type AddNewStringProps = {
+	disabled?: boolean
+	onAdd: (value: string) => void|boolean|Promise<boolean>
 }
-const AddRelatedLink = ({onAdd}:AddRelatedLinkProps) => {
+const AddNewString = ({onAdd, disabled}:AddNewStringProps) => {
 	const [value, setValue] = useState('')
 	const [edit, setEdit] = useState(false)
 	const text_field_ref = useRef<HTMLInputElement>(null)
@@ -197,7 +155,7 @@ const AddRelatedLink = ({onAdd}:AddRelatedLinkProps) => {
 			? <>
 			<form onSubmit={handleSubmit}>
 				<TextField
-					disabled={!edit}
+					disabled={disabled || !edit}
 					value={edit?value:'Add New'}
 					inputRef={text_field_ref}
 					size='small'
@@ -244,7 +202,7 @@ const RelatedLinks = ({podcast:src}:{podcast:Podcast}) => {
 	return (
 		<List>
 			{value?.data.map((value,i) => <LinkItem key={value.url} {...value} onEdit={handleEdit(i)} onDelete={handleDelete(i)} />)}
-			<AddRelatedLink onAdd={handleAdd} />
+			<AddNewString onAdd={handleAdd} />
 		</List>
 	)
 }
@@ -300,39 +258,49 @@ const CheckAuth = ({ skip, children }: { skip?:boolean, children: React.ReactNod
 		</>
 	)
 }
-
+type ChannelWithOwned = {channel:string,owned:boolean}
 const useEditableChannels = () => {
 	const {session} = useSession()
-	const {value, loading, error} = useAsync(async () => {
-		try {
-			const {data} = await supabase.from('editable_channel')
-			.select('owned,shared')
-			.eq('id', session?.user?.id??'dbb0c322-9b8c-409e-8622-80a6a02306d1')
-			.single()
-			return {
-				owned:data?.owned??[],
-				shared:data?.shared??[]
-			}
-		}
-		catch(e: any) {
-			return {owned:[],shared:[]}
-		}
+	const [value, setValue] = useState<ChannelWithOwned[]|null>(null)
+	const { fetchPodcast } = usePodcast()
+	const refresh = async () => {
+		const user_email = session?.user?.email??'nariakiiwatani@gmail.com'
+		const {data} = await supabase.from('channel_shared_with')
+			.select('channel, shared_with')
+			.contains('shared_with', [user_email])
+		if(!data) return
+		setValue(await Promise.all(data.map(({channel}) => 
+			fetchPodcast(channel)
+			.then(result=>({
+				channel,
+				owned: result?.podcast.owner.email === user_email
+			}))
+		)))
+	}
+	const [owned, shared] = useMemo(() => [
+		value?.filter(({owned})=>owned).map(({channel})=>channel),
+		value?.filter(({owned})=>!owned).map(({channel})=>channel),
+	], [value])
+	useEffect(() => {
+		refresh()
 	}, [session])
-	return {value, loading, error}
+
+	return {value, owned, shared, refresh}
 }
 
-const FetchTitle = ({url, do_fetch}:{url:string, do_fetch:boolean}) => {
-	const { podcast } = usePodcast(do_fetch?url:undefined)
+const FetchTitle = ({url}:{url:string}) => {
+	const { podcast } = usePodcast(url)
 	return (
 		<Typography>{podcast?.title??url}</Typography>
 	)
 }
 
-const SelectChannel = ({items, onChange}:{
-	items:{[key:string]:string[]}
+const SelectChannel = ({owned, shared, onChange}: {
+	owned: string[]
+	shared: string[]
 	onChange: (podcast:Podcast|null)=>void
 }) => {
-	const [value, setValue] = useState(()=>Object.values(items)[0][0]??'')
+	const [value, setValue] = useState(()=>owned?.[0]??shared?.[0]??'')
 	const {podcast, fetchPodcast} = usePodcast(value)
 	const handleSelect = (e: SelectChangeEvent) => {
 		const value = e.target.value
@@ -342,29 +310,75 @@ const SelectChannel = ({items, onChange}:{
 	useEffect(() => {
 		onChange(podcast)
 	}, [podcast])
-	const options = useMemo(() => {
-		return Object.entries(items).reduce<{value:string,disabled?:boolean}[]>((ret, [group, value]) => {
-			return [...ret, {disabled:true, value:group}, ...value.map(v=>({value:v}))]
-		}, [])
-	}, [items])
 	return <Select
 		value={value}
 		onChange={handleSelect}
 	>
-		{options.map(({value,disabled}, idx) =>
-			<MenuItem key={idx} value={value} disabled={disabled}>
-				<FetchTitle url={value} do_fetch={!disabled} />
-			</MenuItem>)}
+		<MenuItem value='owned' disabled={true}>owned</MenuItem>
+		{owned.map(ch=><MenuItem key={ch} value={ch}>
+			<FetchTitle url={ch} />
+		</MenuItem>)}
+		<MenuItem value='shared' disabled={true}>shared</MenuItem>
+		{shared.map(ch=><MenuItem key={ch} value={ch}>
+			<FetchTitle url={ch} />
+		</MenuItem>)}
 	</Select>
 }
+
+const EditChannelList = ({onChange}:{onChange:()=>void}) => {
+	const {session} = useSession()
+	const user_email = session?.user?.email??'nariakiiwatani@gmail.com'
+	const { get:isEditable, add:requestEditable, del:deleteEditable } = useChannelSharedWith(user_email)
+	const { fetchPodcast } = usePodcast()
+	const [error, setError] = useState('')
+	const [pending, setPending] = useState(false)
+	const handleAdd = (value: string) => {
+		setPending(true)
+		setError('')
+		fetchPodcast(value)
+		.then(result => {
+			if(!result?.podcast) throw 'failed to fetch'
+			if(result.podcast.owner.email !== user_email) throw 'not yours'
+			return requestEditable(result.podcast.self_url)
+		})
+		.then(() => {
+			onChange()
+		})
+		.catch(setError)
+		.finally(()=>
+			setPending(false)
+		)
+	}
+	return <>
+		<AddNewString onAdd={handleAdd} disabled={pending} />
+		<Typography color='error' variant='caption'>{error}</Typography>
+	</>
+}
+
 const Manager = () => {
 	const [podcast, setPodcast] = useState<Podcast|null>(null)
-	const { value, loading, error } = useEditableChannels()
-	
+	const { owned, shared, refresh } = useEditableChannels()
+	const loading = !owned || !shared
+	const { open:openSettings, Dialog:EditChannelListModal } = useDialog()
+
+	const is_owned = useMemo(() => podcast && owned && owned.includes(podcast.self_url), [podcast, owned])
+
 	return (<>
 		<h1>管理画面</h1>
-		{value && <SelectChannel items={value} onChange={setPodcast} />}
+		<Box sx={{display:'flex', alignItems:'center'}}>
+		{!loading && <>
+		<SelectChannel owned={owned} shared={shared} onChange={setPodcast} />
+		<IconButton onClick={openSettings}>
+			<SettingsIcon />
+		</IconButton>
+		<EditChannelListModal title='番組リストを管理'>
+			<EditChannelList onChange={refresh} />
+		</EditChannelListModal>
+		</>}
+		</Box>
 		{podcast && <>
+			<hr />
+			{is_owned && <>共同管理者をうんたらかんたら</>}
 			<hr />
 			<h2>Related Links</h2>
 			<RelatedLinks podcast={podcast} />
@@ -379,9 +393,7 @@ const Owner: React.FC = () => {
 	return (<>
 		<Header />
 		<CheckAuth skip={true}>
-			<ChannelContextProvider>
-				<Manager />
-			</ChannelContextProvider>
+			<Manager />
 		</CheckAuth>
 	</>
 	)

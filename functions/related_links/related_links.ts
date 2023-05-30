@@ -15,12 +15,12 @@ const makeResult = ({ data, count, error }:PostgrestSingleResponse<{
     link_url: string[];
 }>) => {
 	if (error) {
-		throw {
+		return {
 			statusCode: 406
 		}
 	}
 	if (!data || count === 0) {
-		throw {
+		return {
 			statusCode: 404
 		}
 	}
@@ -41,7 +41,7 @@ const makeResult = ({ data, count, error }:PostgrestSingleResponse<{
 const get = async (event: HandlerEvent, _context: HandlerContext) => {
 	const { channel } = event.queryStringParameters as { channel: string }
 	if (!channel) {
-		throw {
+		return {
 			statusCode: 400
 		}
 	}
@@ -60,7 +60,7 @@ const get = async (event: HandlerEvent, _context: HandlerContext) => {
 const insert = async (event: HandlerEvent, _context: HandlerContext) => {
 	const { channel } = event.queryStringParameters as { channel: string }
 	if (!channel) {
-		throw {
+		return {
 			statusCode: 400
 		}
 	}
@@ -73,7 +73,7 @@ const insert = async (event: HandlerEvent, _context: HandlerContext) => {
 const update = async (event: HandlerEvent, _context: HandlerContext) => {
 	const id = event.path.split('/').slice(-1)[0]
 	if (!id) {
-		throw {
+		return {
 			statusCode: 400
 		}
 	}

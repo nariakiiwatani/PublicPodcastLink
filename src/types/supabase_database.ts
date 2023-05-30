@@ -34,6 +34,27 @@ export interface Database {
   }
   public: {
     Tables: {
+      channel_shared_with: {
+        Row: {
+          channel: string
+          created_at: string | null
+          id: number
+          shared_with: string[] | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string | null
+          id?: number
+          shared_with?: string[] | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string | null
+          id?: number
+          shared_with?: string[] | null
+        }
+        Relationships: []
+      }
       editable_channel: {
         Row: {
           created_at: string | null
