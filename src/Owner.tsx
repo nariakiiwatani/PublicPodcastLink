@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, ChangeEvent, useRef, FormEvent } f
 import usePodcast from './hooks/usePodcast'
 import { Podcast } from './types/podcast'
 import PodcastPreview from './components/PodcastPreview'
-import { ListItem, List, TextField, Box, IconButton, Link, Icon, Tooltip, Typography, Button, CircularProgress, MenuItem, Select, SelectChangeEvent, ListSubheader, TextFieldProps } from '@mui/material'
+import { ListItem, List, TextField, Box, IconButton, Link, Icon, Tooltip, Typography, Button, CircularProgress, MenuItem, Select, SelectChangeEvent, ListSubheader, TextFieldProps, ListItemText } from '@mui/material'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import EditIcon from '@mui/icons-material/Edit'
 import CheckIcon from '@mui/icons-material/Check'
@@ -16,9 +16,6 @@ import { useDialog } from './hooks/useDialog'
 import { supabase, useSession } from './utils/supabase'
 import Header from './components/Header'
 import { useChannelSharedWith } from './hooks/useChannelSharedWith'
-
-const email_for_debug = import.meta.env.VITE_DEBUG_EMAIL
-console.info({email_for_debug})
 
 type LinkItemProps = {
 	url: string
@@ -72,6 +69,7 @@ const LinkItem = ({ url, icon, onEdit, onDelete }: LinkItemProps) => {
 			</Icon>
 			<form onSubmit={handleSubmit}>
 				<TextField
+					type='url'
 					disabled={!edit}
 					value={value}
 					inputRef={text_field_ref}
@@ -83,11 +81,13 @@ const LinkItem = ({ url, icon, onEdit, onDelete }: LinkItemProps) => {
 						minWidth: `${Math.max(value.length, 24) * 0.5}rem`
 					}}
 				/>
-			</form>
-			{edit ? <>
-				<IconButton aria-label='submit' onClick={handleSubmit}>
+			{edit &&
+				<IconButton aria-label='submit' type='submit'>
 					<CheckIcon />
 				</IconButton>
+			}
+			</form>
+			{edit ? <>
 				<IconButton aria-label='delete' onClick={handleDelete}>
 					<DeleteIcon />
 				</IconButton>
@@ -155,10 +155,10 @@ const AddNewString = ({onAdd, textFieldProps}:AddNewStringProps) => {
 						minWidth: `${Math.max(value.length, 24) * 0.5}rem`
 					}}
 				/>
-			</form>
-				<IconButton aria-label='submit' onClick={handleSubmit}>
+				<IconButton aria-label='submit' type='submit'>
 					<CheckIcon />
 				</IconButton>
+			</form>
 			</>
 			: <Typography variant='body2' onClick={handleEdit}>Add New</Typography>}
 		</Box>
@@ -193,6 +193,150 @@ const RelatedLinks = ({podcast:src}:{podcast:Podcast}) => {
 			<AddNewString onAdd={handleAdd} />
 		</List>
 	)
+}
+const EditableListItem = ({defaultValue, textFieldProps, Icon, onEdit, onDelete}:{
+	defaultValue: string
+	textFieldProps?: Partial<TextFieldProps>
+	Icon?: React.ReactNode
+	onEdit: (value: string) => void
+	onDelete: () => void
+}) => {
+	const [value, setValue] = useState(defaultValue)
+	const [edit, setEdit] = useState(false)
+	const text_field_ref = useRef<HTMLInputElement>(null)
+	const handleEdit = () => {
+		setEdit(true)
+	}
+	useEffect(() => {
+		if(edit) {
+			text_field_ref.current?.focus()
+		}
+	}, [edit])
+	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+		setValue(e.target.value)
+	}
+	const handleSubmit = (e: FormEvent<any>) => {
+		e.preventDefault()
+		onEdit(value)
+		setEdit(false)
+	}
+	const handleDelete = () => {
+		onDelete()
+		setEdit(false)
+	}
+	return (
+	<ListItem dense>
+		<Box sx={{display:'flex', flexDirection:'row', alignItems:'center'}}>
+			{Icon}
+			<form onSubmit={handleSubmit}>
+				<TextField
+					disabled={!edit}
+					value={value}
+					inputRef={text_field_ref}
+					size='small'
+					variant='standard'
+					onChange={handleChange}
+					sx={{
+						minWidth: `${Math.max(value.length, 24) * 0.5}rem`
+					}}
+					{...textFieldProps}
+				/>
+				{edit &&
+					<IconButton aria-label='submit' type='submit'>
+						<CheckIcon />
+					</IconButton>}
+				{edit ? <>
+					<IconButton aria-label='delete' onClick={handleDelete}>
+						<DeleteIcon />
+					</IconButton>
+				</> : <>
+					<IconButton aria-label='edit' onClick={handleEdit}>
+						<EditIcon />
+					</IconButton>
+				</>}
+			</form>
+		</Box>
+	</ListItem>)
+}
+const EditableList = ({value, type, onEdit, onDelete, onAdd, is_unique}:{
+	value: string[]
+	type?: string
+	onEdit: (index: number, value: string) => void
+	onDelete: (index: number) => void
+	onAdd: (value: string) => void
+	is_unique?: boolean
+}) => {
+	const handleEdit = is_unique ? (index: number, new_value: string) => {
+		if(value.some((v,i)=>i!==index&&v===new_value)) {
+			return false
+		}
+		onEdit(index, new_value)
+	} : onEdit
+	const handleAdd = is_unique ? (item: string) => {
+		if(value.some(v=>v===item)) {
+			return false
+		}
+		onAdd(item)
+	} : onAdd
+	return (
+		<List>
+			{value.map((value,i) => <EditableListItem
+				key={value}
+				defaultValue={value}
+				textFieldProps={{type}}
+				onEdit={(v)=>handleEdit(i,v)}
+				onDelete={()=>onDelete(i)}
+			/>)}
+			<AddNewString onAdd={handleAdd} textFieldProps={{type}}/>
+		</List>
+	)
+}
+
+const EditSharedMembers = ({podcast:src}:{podcast:Podcast}) => {
+	const { session } = useSession()
+	const { get, add, del } = useChannelSharedWith()
+	const [value, setValue] = useState<string[]>([])
+	const without_me = useMemo(() => value.filter(email => email !== session?.user.email), [value, session])
+	useEffect(() => {
+		if(!session) return
+		get({channel:src.self_url}).then(res => {
+			if(!res) return
+			setValue(res.flatMap(({shared_with})=>shared_with))
+		})
+	}, [src, session])
+	const handleAdd = (item: string) => {
+		add({channel:src.self_url, email:item})
+		.then(result => result.filter(({channel})=>channel===src.self_url))
+		.then(result => {
+			setValue(result[0].shared_with)
+		})
+		.catch(console.error)
+	}
+	const handleEdit = (index: number, new_value: string) => {
+		del({channel:src.self_url, email:without_me[index]})
+		.then(() => add({channel:src.self_url, email:new_value}))
+		.then(result => result.filter(({channel})=>channel===src.self_url))
+		.then(result => {
+			setValue(result[0].shared_with)
+		})
+		.catch(console.error)
+	}
+	const handleDelete = (index: number) => {
+		del({channel:src.self_url, email:without_me[index]})
+		.then(result => result.filter(({channel})=>channel===src.self_url))
+		.then(result => {
+			setValue(result[0].shared_with)
+		})
+		.catch(console.error)
+	}
+	return (<EditableList
+		type='email'
+		is_unique={true}
+		value={without_me}
+		onAdd={handleAdd}
+		onEdit={handleEdit}
+		onDelete={handleDelete}
+	/>)
 }
 
 const Login = () => {
@@ -237,7 +381,7 @@ const Login = () => {
 const CheckAuth = ({ children }: { children: React.ReactNode }) => {
 	const { session } = useSession()
 	return (
-		!email_for_debug && !session ? <>
+		!session ? <>
 			<p>Login required</p>
 			<Login />
 		</>
@@ -252,7 +396,7 @@ const useEditableChannels = () => {
 	const [value, setValue] = useState<ChannelWithOwned[]|null>(null)
 	const { fetchPodcast } = usePodcast()
 	const refresh = async () => {
-		const user_email = session?.user?.email??email_for_debug
+		const user_email = session?.user?.email
 		if(!user_email) return
 		const {data} = await supabase.from('channel_shared_with')
 			.select('channel, shared_with')
@@ -279,14 +423,14 @@ const useEditableChannels = () => {
 
 const FetchTitle = ({url}:{url:string}) => {
 	const { podcast } = usePodcast(url)
-	return (
-		<Typography>{podcast?.title??url}</Typography>
-	)
+	return (<>
+		{podcast?.title??url}
+	</>)
 }
 
 const SelectChannel = ({owned, shared, onChange}: {
-	owned: string[]
-	shared: string[]
+	owned?: string[]
+	shared?: string[]
 	onChange: (podcast:Podcast|null)=>void
 }) => {
 	const [value, setValue] = useState(()=>owned?.[0]??shared?.[0]??'')
@@ -303,12 +447,12 @@ const SelectChannel = ({owned, shared, onChange}: {
 		value={value}
 		onChange={handleSelect}
 	>
-		<MenuItem value='owned' disabled={true}>owned</MenuItem>
-		{owned.map(ch=><MenuItem key={ch} value={ch}>
+		{owned && <MenuItem value='owned' disabled={true}>所有する番組</MenuItem>}
+		{owned && owned.map(ch=><MenuItem key={ch} value={ch}>
 			<FetchTitle url={ch} />
 		</MenuItem>)}
-		<MenuItem value='shared' disabled={true}>shared</MenuItem>
-		{shared.map(ch=><MenuItem key={ch} value={ch}>
+		{shared && <MenuItem value='shared' disabled={true}>共有された番組</MenuItem>}
+		{shared && shared.map(ch=><MenuItem key={ch} value={ch}>
 			<FetchTitle url={ch} />
 		</MenuItem>)}
 	</Select>
@@ -316,15 +460,15 @@ const SelectChannel = ({owned, shared, onChange}: {
 
 const AddNewChannel = ({onChange}:{onChange:()=>void}) => {
 	const {session} = useSession()
-	const user_email = session?.user?.email??email_for_debug
-	const { get:isEditable, add:requestEditable } = useChannelSharedWith(user_email)
+	const user_email = session?.user?.email
+	const { check:isEditable, add:requestEditable } = useChannelSharedWith()
 	const { fetchPodcast } = usePodcast()
 	const [error, setError] = useState('')
 	const [pending, setPending] = useState(false)
 	const handleAdd = (value: string) => {
 		setPending(true)
 		setError('')
-		isEditable(value)
+		isEditable({channel:value, email: user_email})
 		.then(result => {
 			if(result) {
 				setError('already added')
@@ -334,7 +478,7 @@ const AddNewChannel = ({onChange}:{onChange:()=>void}) => {
 			.then(result => {
 				if(!result?.podcast) throw 'failed to fetch'
 				if(result.podcast.owner.email !== user_email) throw 'not yours'
-				return requestEditable(result.podcast.self_url)
+				return requestEditable({channel: result.podcast.self_url, email: user_email})
 			})
 			.then(() => {
 				onChange()
@@ -356,30 +500,40 @@ const DeletableItem = ({value, onDelete}:{
 	value:string
 	onDelete:(url:string)=>void 
 }) => {
+	const { podcast } = usePodcast(value)
+	const typographyProps = {sx:{ maxWidth: '80%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
 	return (<ListItem
+		sx={{width: '70%'}}
 		secondaryAction={
 			<Button onClick={()=>onDelete(value)} variant='contained' color='error'>delete</Button>
 		}
 	>
-		<FetchTitle url={value} />
+		<ListItemText
+			primary={podcast?.title??''}
+			primaryTypographyProps={typographyProps}
+			secondary={value}
+			secondaryTypographyProps={typographyProps}
+			/>
 	</ListItem>)
 }
 const ChannelList = ({owned, shared, onChange}: {
-	owned: string[]
-	shared: string[]
+	owned?: string[]
+	shared?: string[]
 	onChange: ()=>void
 }) => {
 	const {session} = useSession()
-	const user_email = session?.user?.email??email_for_debug
-	const { del:deleteEditable } = useChannelSharedWith(user_email)
+	const user_email = session?.user?.email
+	const { del:deleteEditable } = useChannelSharedWith()
 	const handleDelete = (value: string) => {
-		deleteEditable(value)
+		deleteEditable({channel: value, email: user_email})
 		onChange()
 	}
 	return (<>
-	<List>
+	<List sx={{minWidth: '50vw'}}>
+	{owned && <>
 		<ListSubheader>所有する番組</ListSubheader>
 		{owned.map((ch,i)=><DeletableItem key={i} onDelete={handleDelete} value={ch} />)}
+	</>}
 	</List>
 	{shared && shared.length > 0 &&
 	<List>
@@ -390,9 +544,9 @@ const ChannelList = ({owned, shared, onChange}: {
 }
 
 const Manager = () => {
+	const { session } = useSession()
 	const [podcast, setPodcast] = useState<Podcast|null>(null)
 	const { owned, shared, refresh } = useEditableChannels()
-	const loading = !owned || !shared
 	const { open:openSettings, Dialog:EditChannelListModal } = useDialog()
 
 	const is_owned = useMemo(() => podcast && owned && owned.includes(podcast.self_url), [podcast, owned])
@@ -400,7 +554,7 @@ const Manager = () => {
 	return (<>
 		<h1>管理画面</h1>
 		<Box sx={{display:'flex', alignItems:'center'}}>
-		{!loading && <>
+		{session && <>
 		<SelectChannel owned={owned} shared={shared} onChange={setPodcast} />
 		<IconButton onClick={openSettings}>
 			<SettingsIcon />
@@ -412,8 +566,11 @@ const Manager = () => {
 		</>}
 		</Box>
 		{podcast && <>
-			<hr />
-			{is_owned && <>共同管理者をうんたらかんたら</>}
+			{is_owned && <>
+				<hr />
+				<h2>共同編集者を編集</h2>
+				<EditSharedMembers podcast={podcast} />
+			</>}
 			<hr />
 			<h2>Related Links</h2>
 			<RelatedLinks podcast={podcast} />

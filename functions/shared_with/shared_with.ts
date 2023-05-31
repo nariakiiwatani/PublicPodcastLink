@@ -5,19 +5,24 @@ const table_name = 'channel_shared_with'
 
 const get = async (event: HandlerEvent, _context: HandlerContext) => {
 	const { channel, email } = event.queryStringParameters as { channel: string, email: string }
-	if (!channel || !email) {
+	if (!channel && !email) {
 		return {
 			statusCode: 400
 		}
 	}
-	const result = await supabase.from(table_name)
-		.select('shared_with')
-		.eq('channel', channel)
-		.contains('shared_with', [email])
-		
+	let query = supabase.from(table_name)
+	.select('channel, shared_with')
+	if(channel) query = query.match({channel})
+	if(email) query = query.contains('shared_with', [email])
+	const result = await query;
+	if(!result?.data) {
+		return {
+			statusCode: 404
+		}
+	}
 	return {
 		statusCode: 200,
-		body: JSON.stringify(result.data && result.data.length > 0),
+		body: JSON.stringify(result?.data??[]),
 	}
 }
 const upsert = async (event: HandlerEvent, _context: HandlerContext) => {

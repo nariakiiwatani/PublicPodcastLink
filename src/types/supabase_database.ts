@@ -37,47 +37,23 @@ export interface Database {
       channel_shared_with: {
         Row: {
           channel: string
-          created_at: string | null
-          id: number
-          shared_with: string[] | null
+          owner_id: string | null
+          shared_with: string[]
         }
         Insert: {
           channel: string
-          created_at?: string | null
-          id?: number
-          shared_with?: string[] | null
+          owner_id?: string | null
+          shared_with: string[]
         }
         Update: {
           channel?: string
-          created_at?: string | null
-          id?: number
-          shared_with?: string[] | null
-        }
-        Relationships: []
-      }
-      editable_channel: {
-        Row: {
-          created_at: string | null
-          id: string
-          owned: string[] | null
-          shared: string[] | null
-        }
-        Insert: {
-          created_at?: string | null
-          id: string
-          owned?: string[] | null
-          shared?: string[] | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          owned?: string[] | null
-          shared?: string[] | null
+          owner_id?: string | null
+          shared_with?: string[]
         }
         Relationships: [
           {
-            foreignKeyName: "editable_channel_id_fkey"
-            columns: ["id"]
+            foreignKeyName: "channel_shared_with_owner_id_fkey"
+            columns: ["owner_id"]
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
