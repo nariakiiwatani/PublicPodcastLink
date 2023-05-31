@@ -5,7 +5,6 @@ import { avoidXSS } from '../utils/escape';
 import { OpenInNewButton } from './OpenInNewButton';
 import { ShareButtons } from './ShareButtons'
 import { useRelatedLinks } from '../hooks/useRelatedLinks';
-import { useOwnerRequestPopup } from '../Owner';
 
 type PodcastPreviewProps = {
 	podcast: Podcast | null;
@@ -73,8 +72,7 @@ const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 						justifyContent: 'center',
 						alignContent: 'flex-start'
 					}}>
-						{links?.data
-						.filter(({icon})=>icon)
+						{links.filter(({icon})=>icon)
 						.map(({url,icon},i)=> (
 							<IconButton
 								key={i}

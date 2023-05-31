@@ -37,17 +37,17 @@ export interface Database {
       channel_shared_with: {
         Row: {
           channel: string
-          owner_id: string | null
+          owner_id: string
           shared_with: string[]
         }
         Insert: {
           channel: string
-          owner_id?: string | null
+          owner_id?: string
           shared_with: string[]
         }
         Update: {
           channel?: string
-          owner_id?: string | null
+          owner_id?: string
           shared_with?: string[]
         }
         Relationships: [
@@ -61,22 +61,19 @@ export interface Database {
       }
       related_link: {
         Row: {
+          channel: string
           created_at: string | null
-          id: number
           link_url: string[]
-          rss_url: string
         }
         Insert: {
+          channel: string
           created_at?: string | null
-          id?: number
           link_url: string[]
-          rss_url: string
         }
         Update: {
+          channel?: string
           created_at?: string | null
-          id?: number
           link_url?: string[]
-          rss_url?: string
         }
         Relationships: []
       }

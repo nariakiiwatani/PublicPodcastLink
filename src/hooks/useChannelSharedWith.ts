@@ -1,9 +1,9 @@
-import { supabase } from '../utils/supabase'
-
-const ENDPOINT = `${import.meta.env.VITE_API_PATH}/shared_with` 
+import { useState, useEffect, useMemo } from 'react'
+import { supabase, useSession } from '../utils/supabase'
+const table_name = 'channel_shared_with'
 
 const get_db = async ({channel, email}:{channel?:string, email?: string}) => {
-	let query = supabase.from('channel_shared_with').select('channel, shared_with')
+	let query = supabase.from(table_name).select('channel, shared_with, owner_id')
 	if(channel) query = query.match({channel})
 	if(email) query = query.contains('shared_with', [email])
 	const result = await query
@@ -12,50 +12,100 @@ const get_db = async ({channel, email}:{channel?:string, email?: string}) => {
 	}
 	return (await query).data || []
 }
-
-const check_db = async ({channel, email}:{channel:string, email: string}) => {
-	const got = await get_db({channel, email})
-	return got!==null && got.length > 0
+const set_db = async (channel:string, items: string[]) => {
+	await supabase.from(table_name).upsert({channel, shared_with:items})
+	return items
 }
 
-const post_db = async ({channel, email}:{channel:string, email: string}) => {
-	const query_base = supabase.from('channel_shared_with')
-	const current = await get_db({channel})
-	if(current.length===0) {
-		await query_base.insert({channel, shared_with: [email]})
-		return [{channel, shared_with: [email]}]
+export const useChannelSharedWith = (channel: string) => {
+	const [result, setResult] = useState<string[]>([])
+	useEffect(() => {
+		get_db({channel})
+		.then(result => result.find(({channel:ch})=>ch===channel)?.shared_with)
+		.then(result => {
+			if(!result) {
+				return
+			}
+			setResult(result)
+		})
+		.catch(console.error)
+	}, [channel])
+	const set = (items:string[]) => {
+		return set_db(channel, items)
+		.then(setResult)
+		.catch(console.error)
 	}
-	return Promise.all(current.filter(({shared_with}) => !shared_with.includes(email))
-	.map(async ({channel, shared_with})=> {
-		const new_array = [...shared_with, email]
-		await query_base.upsert({channel, shared_with: new_array})
-		return {channel, shared_with: new_array}
-	}))
+	const check = (item: string) => {
+		return result.includes(item)
+	}
+	const add = (new_value: string) => {
+		return set([...result, new_value])
+	}
+	const del = (index: number) => {
+		const new_array = [...result]
+		new_array.splice(index,1)
+		return set(new_array)
+	}
+	const edit = (index: number, new_value: string) => {
+		const new_array = [...result]
+		new_array[index] = new_value
+		return set(new_array)
+	}
+	return {
+		value:result,
+		check,
+		add,
+		del,
+		edit
+	}
 }
 
-const delete_db = async ({channel, email}:{channel:string, email: string}) => {
-	const query_base = supabase.from('channel_shared_with')
-	const current = await get_db({channel})
-	return Promise.all(current.filter(({shared_with}) => shared_with.includes(email))
-	.map(async ({channel, shared_with})=> {
-		const new_array = shared_with.filter(e=>e!==email)
-		await query_base.upsert({channel, shared_with: new_array})
-		return {channel, shared_with: new_array}
-	}))
-}
+export const useEditableChannel = () => {
+	const { session } = useSession()
+	const email = useMemo(() => session?.user?.email, [session])
+	const [{ result, owned, shared }, setResult] = useState<{result:string[],owned:string[],shared:string[]}>({result:[],owned:[],shared:[]})
+	useEffect(() => {
+		if(!email) return
+		refresh()
+	}, [email])
+	const refresh = () => {
+		get_db({email})
+		.then(result => {
+			setResult({
+				owned: result.filter(({owner_id})=>owner_id===session?.user?.id).map(({channel})=>channel),
+				shared: result.filter(({owner_id})=>owner_id!==session?.user?.id).map(({channel})=>channel),
+				result:result.map(({channel})=>channel)
+			})
+		})
+		.catch(console.error)
+	}
+	const check = (channel: string) => {
+		return result.includes(channel)
+	}
+	const add = async (channel: string) => {
+		if(!email) return result
+		const current = (await get_db({channel})).flatMap(({shared_with})=>shared_with)
+		if(current.includes(email)) {
+			return current
+		}
+		return set_db(channel, [...current, email])
+	}
+	const del = async (channel: string) => {
+		if(!email) return result
+		const current = (await get_db({channel})).flatMap(({shared_with})=>shared_with)
+		if(!current.includes(email)) {
+			return current
+		}
+		return set_db(channel, current.filter(c=>c!==email))
+	}
 
-export const useChannelSharedWith = () => {
-	const get = (query:{channel?:string, email?: string}) => {
-		return get_db(query)
+	return {
+		value:result,
+		owned,
+		shared,
+		check,
+		add,
+		del,
+		refresh
 	}
-	const check = (query:{channel:string, email: string}) => {
-		return check_db(query)
-	}
-	const add = (query:{channel:string, email: string}) => {
-		return post_db(query)
-	}
-	const del = (query:{channel:string, email: string}) => {
-		return delete_db(query)
-	}
-	return {check,add,del,get}
 }
