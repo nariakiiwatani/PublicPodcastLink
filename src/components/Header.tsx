@@ -7,6 +7,7 @@ import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import MenuIcon from '@mui/icons-material/Menu';
 import ShareIcon from '@mui/icons-material/Share';
 import PeopleIcon from '@mui/icons-material/People';
+import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useTranslation } from '../hooks/useTranslation'
 import { useDialog } from '../hooks/useDialog';
@@ -37,6 +38,11 @@ const Header = () => {
 		window.open(url, target)
 		handleMenuClose();
 	};
+
+	const handleLogoutItemClick = () => {
+		handleMenuClose()
+		logout()
+	}
 
 	const export_dialog = useDialog();
 	const donation_dialog = useDialog();
@@ -109,11 +115,16 @@ const Header = () => {
 						<ListItemText primary="GitHub" />
 					</MenuItem>
 					
-					{session && <MenuItem onClick={logout}>
+					{session ? <MenuItem onClick={handleLogoutItemClick}>
 						<ListItemIcon>
 							<LogoutIcon />
 						</ListItemIcon>
 						<ListItemText primary={t.logout} />
+					</MenuItem> : <MenuItem onClick={handleLinkItemClick(`${window.origin}/owner`)}>
+						<ListItemIcon>
+							<LoginIcon />
+						</ListItemIcon>
+						<ListItemText primary={t.login} />
 					</MenuItem>}
 
 				</Menu>

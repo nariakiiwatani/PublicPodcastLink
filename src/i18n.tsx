@@ -35,6 +35,10 @@ export default {
 			en: 'Export',
 			ja: 'エクスポート'
 		},
+		login: {
+			en: 'Login',
+			ja: 'ログイン'
+		},
 		logout: {
 			en: 'Logout',
 			ja: 'ログアウト'
