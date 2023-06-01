@@ -7,7 +7,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import CheckIcon from '@mui/icons-material/Check'
 import DeleteIcon from '@mui/icons-material/Delete'
 import SettingsIcon from '@mui/icons-material/Settings'
-import { RelatedLinksEditor } from './hooks/useRelatedLinks'
+import { RelatedLinksEditor, RelatedLinksProvider } from './hooks/useRelatedLinks'
 import { useDialog } from './hooks/useDialog'
 import { supabase, useSession } from './utils/supabase'
 import Header from './components/Header'
@@ -328,11 +328,13 @@ const Manager = () => {
 				<SharedMembersEditor url={podcast.self_url} />
 			</>}
 			<hr />
-			<h2>Related Links</h2>
-			<RelatedLinksEditor url={podcast.self_url} />
-			<hr />
-			<h2>Preview</h2>
-			<PodcastPreview podcast={podcast} />
+			<RelatedLinksProvider url={podcast.self_url}>
+				<h2>Related Links</h2>
+				<RelatedLinksEditor />
+				<hr />
+				<h2>Preview</h2>
+				<PodcastPreview podcast={podcast} />
+			</RelatedLinksProvider>
 		</>}
 	</>)
 }

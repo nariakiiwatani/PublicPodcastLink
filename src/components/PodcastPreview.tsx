@@ -71,7 +71,7 @@ const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 						justifyContent: 'center',
 						alignContent: 'flex-start'
 					}}>
-						<RelatedLinks url={src.self_url} />
+						<RelatedLinks />
 					</Box>
 				</Grid>
 				<Grid item xs={12} sm={8}>

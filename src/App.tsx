@@ -13,6 +13,7 @@ import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import { useAsync } from 'react-use';
 import { MyHelmet } from './components/MyHelmet';
+import { RelatedLinksProvider } from './hooks/useRelatedLinks';
 
 const theme = createTheme({
 	palette: {
@@ -163,7 +164,9 @@ const App: React.FC = () => {
 								episode={selectedEpisode}
 								Navigator={Navigator}
 							/>}
-						<PodcastPreview podcast={podcast}/>
+						<RelatedLinksProvider url={podcast.self_url}>
+							<PodcastPreview podcast={podcast}/>
+						</RelatedLinksProvider>
 					</>}
 				</Box>
 			</PodcastRecordContext.Provider>

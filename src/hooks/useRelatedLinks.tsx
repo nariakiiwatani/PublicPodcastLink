@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, ChangeEvent, FormEvent, useRef } from 'react'
+import { useState, useEffect, useMemo, ChangeEvent, FormEvent, useRef, createContext, useContext } from 'react'
 import { supabase } from '../utils/supabase'
 import { Box, Icon, IconButton, Link, List, ListItem, TextField, Tooltip } from '@mui/material'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
@@ -38,7 +38,10 @@ export const useRelatedLinks = (channel: string) => {
 				setResult(result)
 				return result
 			})
-			.catch(console.error)
+			.catch(e=>{
+				console.error(e)
+				return [] as string[]
+			})
 	}
 	const add = (new_value: string) => {
 		return set([...result, new_value])
@@ -179,8 +182,24 @@ const LinkItem = ({ url, icon, onEdit, onDelete }: LinkItemProps) => {
 	</ListItem>)
 }
 
-export const RelatedLinks = ({url}:{url: string}) => {
-	const { value } = useRelatedLinks(url)
+const RelatedLinksContext = createContext<ReturnType<typeof useRelatedLinks>>({
+    value: [],
+    add: (_: string): Promise<string[]> => Promise.resolve([]),
+    del: (_: number): Promise<string[]> => Promise.resolve([]),
+    edit: (_: number, __: string): Promise<string[]> => Promise.resolve([]),
+})
+export const RelatedLinksProvider = ({children, url}:{
+	children: React.ReactNode
+	url:string
+}) => {
+	const value = useRelatedLinks(url)
+	return <RelatedLinksContext.Provider value={value}>
+		{children}
+	</RelatedLinksContext.Provider>
+}
+
+export const RelatedLinks = () => {
+	const { value } = useContext(RelatedLinksContext)
 	return (<>
 		{value.filter(({ icon }) => icon)
 			.map(({ url, icon }, i) => (
@@ -194,8 +213,8 @@ export const RelatedLinks = ({url}:{url: string}) => {
 	</>)
 }
 
-export const RelatedLinksEditor = ({url}:{url: string}) => {
-	const { value, add, del, edit } = useRelatedLinks(url)
+export const RelatedLinksEditor = () => {
+	const { value, add, del, edit } = useContext(RelatedLinksContext)
 	const handleEdit = (index: number) => async (url: string) => {
 		if(value.some(({url:u},i)=>i!==index&&u===url)) {
 			return false
