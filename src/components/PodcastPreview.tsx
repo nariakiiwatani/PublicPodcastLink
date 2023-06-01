@@ -58,9 +58,10 @@ const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 
 	const { check } = useEditableChannel()
 	const login_link_text = useMemo(() => {
+		if(path.pathname == '/owner') return null
 		if(check(src.self_url)) return 'edit'
 		return 'owner?'
-	}, [src, check])
+	}, [src, check, path])
 
 	return (
 		<Card sx={{ marginTop: 2, borderRadius: 2 }}>
@@ -83,7 +84,7 @@ const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 					}}>
 						<RelatedLinks />
 					</Box>
-					<Link href={`/owner?channel=${src.self_url}`} target='_blank'>{login_link_text}</Link>
+					{login_link_text && <Link href={`/owner?channel=${src.self_url}`} target='_blank'>{login_link_text}</Link>}
 				</Grid>
 				<Grid item xs={12} sm={8}>
 					<CardContent style={{ flex: '1 0 auto' }}>

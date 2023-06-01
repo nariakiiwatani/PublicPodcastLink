@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, createContext } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import PodcastInput from './components/PodcastInput';
 import PodcastPreview from './components/PodcastPreview';
 import EpisodeList from './components/EpisodeList';
