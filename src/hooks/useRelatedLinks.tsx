@@ -6,8 +6,10 @@ import EditIcon from '@mui/icons-material/Edit'
 import CheckIcon from '@mui/icons-material/Check'
 import DeleteIcon from '@mui/icons-material/Delete'
 import PendingIcon from '@mui/icons-material/Pending'
+import DragHandleIcon from '@mui/icons-material/DragHandle'
 import { AddNewString } from '../components/AddNewString'
 import { useTranslation } from './useTranslation'
+import { Container, Draggable, DropResult } from "react-smooth-dnd"
 
 const table_name = 'related_link'
 
@@ -39,7 +41,7 @@ export const useRelatedLinks = (channel: string) => {
 				setResult(result)
 				return result
 			})
-			.catch(e=>{
+			.catch(e => {
 				console.error(e)
 				return [] as string[]
 			})
@@ -57,12 +59,19 @@ export const useRelatedLinks = (channel: string) => {
 		new_array[index] = new_value
 		return set(new_array)
 	}
+	const move = (index_from: number, index_to: number) => {
+		const new_array = [...result]
+		const [removed] = new_array.splice(index_from, 1)
+		new_array.splice(index_to, 0, removed)
+		return set(new_array)
+	}
 	const value = useMemo(() => result.map(r => ({ url: r, icon: getPlatformIcon(r) })), [result])
 	return {
 		value,
 		add,
 		del,
-		edit
+		edit,
+		move
 	}
 }
 
@@ -110,7 +119,7 @@ type LinkItemProps = {
 	onDelete: () => void
 }
 const LinkItem = ({ url, icon, onEdit, onDelete }: LinkItemProps) => {
-	const  { t } = useTranslation('related_links')
+	const { t } = useTranslation('related_links')
 	const [value, setValue] = useState(url)
 	const [edit, setEdit] = useState(false)
 	const text_field_ref = useRef<HTMLInputElement>(null)
@@ -145,58 +154,59 @@ const LinkItem = ({ url, icon, onEdit, onDelete }: LinkItemProps) => {
 		}
 	}, [icon, edit, url])
 	return (
-	<ListItem>
-		<Box sx={{display:'flex', flexDirection:'row', alignItems:'center'}}>
-			<Icon sx={{marginRight:1, overflow:'visible', width:'32px', height: 'auto'}}>
-				{icon
-				?<img src={icon} width='100%' height='100%' />
-				:<Tooltip title={pending_text}><PendingIcon /></Tooltip>}
-			</Icon>
-			<form onSubmit={handleSubmit}>
-				<TextField
-					type='url'
-					disabled={!edit}
-					value={value}
-					inputRef={text_field_ref}
-					size='small'
-					variant='standard'
-					onChange={handleChange}
-					helperText={pending_text}
-					sx={{
-						minWidth: `${Math.max(value.length, 24) * 0.5}rem`
-					}}
-				/>
-			{edit &&
-				<IconButton aria-label='submit' type='submit'>
-					<CheckIcon />
-				</IconButton>
-			}
-			</form>
-			{edit ? <>
-				<IconButton aria-label='delete' onClick={handleDelete}>
-					<DeleteIcon />
-				</IconButton>
-			</> : <>
-				<IconButton aria-label='edit' onClick={handleEdit}>
-					<EditIcon />
-				</IconButton>
-				<IconButton aria-label='open_in_new' component={Link} href={value} target='_blank'>
-					<OpenInNewIcon />
-				</IconButton>
-			</>}
-		</Box>
-	</ListItem>)
+		<ListItem>
+			<Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+				<Icon sx={{ marginRight: 1, overflow: 'visible', width: '32px', height: 'auto' }}>
+					{icon
+						? <img src={icon} width='100%' height='100%' />
+						: <Tooltip title={pending_text}><PendingIcon /></Tooltip>}
+				</Icon>
+				<form onSubmit={handleSubmit}>
+					<TextField
+						type='url'
+						disabled={!edit}
+						value={value}
+						inputRef={text_field_ref}
+						size='small'
+						variant='standard'
+						onChange={handleChange}
+						helperText={pending_text}
+						sx={{
+							minWidth: `${Math.max(value.length, 24) * 0.5}rem`
+						}}
+					/>
+					{edit &&
+						<IconButton aria-label='submit' type='submit'>
+							<CheckIcon />
+						</IconButton>
+					}
+				</form>
+				{edit ? <>
+					<IconButton aria-label='delete' onClick={handleDelete}>
+						<DeleteIcon />
+					</IconButton>
+				</> : <>
+					<IconButton aria-label='edit' onClick={handleEdit}>
+						<EditIcon />
+					</IconButton>
+					<IconButton aria-label='open_in_new' component={Link} href={value} target='_blank'>
+						<OpenInNewIcon />
+					</IconButton>
+				</>}
+			</Box>
+		</ListItem>)
 }
 
 const RelatedLinksContext = createContext<ReturnType<typeof useRelatedLinks>>({
-    value: [],
-    add: (_: string): Promise<string[]> => Promise.resolve([]),
-    del: (_: number): Promise<string[]> => Promise.resolve([]),
-    edit: (_: number, __: string): Promise<string[]> => Promise.resolve([]),
+	value: [],
+	add: (_: string): Promise<string[]> => Promise.resolve([]),
+	del: (_: number): Promise<string[]> => Promise.resolve([]),
+	edit: (_: number, __: string): Promise<string[]> => Promise.resolve([]),
+	move: (_: number, __: number): Promise<string[]> => Promise.resolve([]),
 })
-export const RelatedLinksProvider = ({children, url}:{
+export const RelatedLinksProvider = ({ children, url }: {
 	children: React.ReactNode
-	url:string
+	url: string
 }) => {
 	const value = useRelatedLinks(url)
 	return <RelatedLinksContext.Provider value={value}>
@@ -219,10 +229,18 @@ export const RelatedLinks = () => {
 	</>)
 }
 
+const DraggableContainer = (props:{children:React.ReactElement}&React.ComponentProps<typeof Container>) => {
+	const { children, render:_, ...rest } = props
+	return (<Container {...rest}>{children}</Container>)
+}
+const DraggableItem = (props:{children:React.ReactElement}&React.ComponentProps<typeof Draggable>) => {
+	const { children, render:_, ...rest } = props
+	return (<Draggable {...rest}>{children}</Draggable>)
+}
 export const RelatedLinksEditor = () => {
-	const { value, add, del, edit } = useContext(RelatedLinksContext)
+	const { value, add, del, edit, move } = useContext(RelatedLinksContext)
 	const handleEdit = (index: number) => async (url: string) => {
-		if(value.some(({url:u},i)=>i!==index&&u===url)) {
+		if(value.some(({ url: u }, i) => i !== index && u === url)) {
 			return false
 		}
 		await edit(index, url)
@@ -233,15 +251,41 @@ export const RelatedLinksEditor = () => {
 		return true
 	}
 	const handleAdd = async (url: string) => {
-		if(value.some(({url:u})=>u===url)) {
+		if(value.some(({ url: u }) => u === url)) {
 			return false
 		}
 		await add(url)
 		return true
 	}
+	const handleDrop = async ({ removedIndex, addedIndex }: DropResult) => {
+		if(removedIndex === null || addedIndex === null) {
+			return false
+		}
+		await move(removedIndex, addedIndex)
+		return true
+	};
 	return (
 		<List>
-			{value.map((value,i) => <LinkItem key={value.url} {...value} onEdit={handleEdit(i)} onDelete={handleDelete(i)} />)}
+			<DraggableContainer
+				onDrop={handleDrop}
+				dragHandleSelector=".dragHandleSelector"
+			>
+				<>
+				{value.map((value, i) => (
+					<DraggableItem key={value.url}>
+						<Box
+							display="flex"
+							justifyContent="space-between"
+							alignItems="center"
+							padding="8px"
+						>
+							<DragHandleIcon className="dragHandleSelector" sx={{ cursor: 'pointer' }}/>
+							<LinkItem {...value} onEdit={handleEdit(i)} onDelete={handleDelete(i)} />
+						</Box>
+					</DraggableItem>
+				))}
+				</>
+			</DraggableContainer >
 			<AddNewString onAdd={handleAdd} />
 		</List>
 	)

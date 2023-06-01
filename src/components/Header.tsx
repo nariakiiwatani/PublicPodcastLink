@@ -121,21 +121,19 @@ const Header = () => {
 						<ListItemText primary="GitHub" />
 					</MenuItem>
 					
-					{session ? <>
-						{!is_dashboard_page && <MenuItem onClick={handleLinkItemClick(`${window.origin}/owner`)}>
+					{session && !is_dashboard_page && <MenuItem onClick={handleLinkItemClick(`${window.origin}/owner`)}>
 						<ListItemIcon>
 							<SettingsIcon />
 						</ListItemIcon>
 						<ListItemText primary={t.to_dashboard} />
 					</MenuItem>}
-					
+					{session ? 
 					<MenuItem onClick={handleLogoutItemClick}>
 						<ListItemIcon>
 							<LogoutIcon />
 						</ListItemIcon>
 						<ListItemText primary={t.logout} />
-					</MenuItem>
-					</> :
+					</MenuItem> :
 					<MenuItem onClick={handleLinkItemClick(`${window.origin}/owner`)}>
 						<ListItemIcon>
 							<LoginIcon />
