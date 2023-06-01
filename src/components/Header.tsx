@@ -1,5 +1,5 @@
 
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useMemo } from 'react';
 import { AppBar, Toolbar, Typography, IconButton, Link, Box, MenuItem, Select, SelectChangeEvent, Menu, ListItemIcon, ListItemText, useMediaQuery, useTheme } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import TwitterIcon from '@mui/icons-material/Twitter';
@@ -9,16 +9,22 @@ import ShareIcon from '@mui/icons-material/Share';
 import PeopleIcon from '@mui/icons-material/People';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
+import SettingsIcon from '@mui/icons-material/Settings'
 import { useTranslation } from '../hooks/useTranslation'
 import { useDialog } from '../hooks/useDialog';
 import { CreateImportURL } from './CreateImportURL';
 import Donation from './Donation';
 import { SessionContext } from '../utils/supabase';
+import { useLocation } from 'react-router-dom';
 
 const Header = () => {
 	const { session, logout } = useContext(SessionContext)
 	const { locale, changeLanguage, t } = useTranslation('header')
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+	const path = useLocation()
+
+	const is_dashboard_page = useMemo(() => path.pathname == '/owner', [path])
 
 	const handleChangeLanguage = (event: SelectChangeEvent<string>) => {
 		changeLanguage(event.target.value)
@@ -115,12 +121,22 @@ const Header = () => {
 						<ListItemText primary="GitHub" />
 					</MenuItem>
 					
-					{session ? <MenuItem onClick={handleLogoutItemClick}>
+					{session ? <>
+						{!is_dashboard_page && <MenuItem onClick={handleLinkItemClick(`${window.origin}/owner`)}>
+						<ListItemIcon>
+							<SettingsIcon />
+						</ListItemIcon>
+						<ListItemText primary={t.to_dashboard} />
+					</MenuItem>}
+					
+					<MenuItem onClick={handleLogoutItemClick}>
 						<ListItemIcon>
 							<LogoutIcon />
 						</ListItemIcon>
 						<ListItemText primary={t.logout} />
-					</MenuItem> : <MenuItem onClick={handleLinkItemClick(`${window.origin}/owner`)}>
+					</MenuItem>
+					</> :
+					<MenuItem onClick={handleLinkItemClick(`${window.origin}/owner`)}>
 						<ListItemIcon>
 							<LoginIcon />
 						</ListItemIcon>

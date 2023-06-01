@@ -39,6 +39,10 @@ export default {
 			en: 'Login',
 			ja: 'ログイン'
 		},
+		to_dashboard: {
+			en: 'Dashboard',
+			ja: '管理画面へ'
+		},
 		logout: {
 			en: 'Logout',
 			ja: 'ログアウト'
