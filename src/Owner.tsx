@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, ChangeEvent, useRef, FormEvent, createContext, useContext } from 'react'
-import usePodcast from './hooks/usePodcast'
+import React, { useState, useEffect, useMemo, ChangeEvent, useRef, FormEvent, createContext, useContext, useCallback } from 'react'
+import usePodcast, { fetch_podcast } from './hooks/usePodcast'
 import { Podcast } from './types/podcast'
 import PodcastPreview from './components/PodcastPreview'
 import { ListItem, List, TextField, Box, IconButton, Typography, Button, CircularProgress, MenuItem, Select, SelectChangeEvent, ListSubheader, TextFieldProps, ListItemText } from '@mui/material'
@@ -13,6 +13,7 @@ import { supabase, useSession } from './utils/supabase'
 import Header from './components/Header'
 import { useChannelSharedWith, useEditableChannel } from './hooks/useChannelSharedWith'
 import { AddNewString } from './components/AddNewString'
+import { useLocation } from 'react-router-dom'
 
 
 const EditableListItem = ({defaultValue, textFieldProps, Icon, onEdit, onDelete}:{
@@ -132,15 +133,17 @@ const SharedMembersEditor = ({url}:{url: string}) => {
 const Login = () => {
 	const [loading, setLoading] = useState(false)
 	const [email, setEmail] = useState('')
+	const query = useQuery()
 
 	const handleLogin = async (event: FormEvent) => {
 		event.preventDefault()
 
 		setLoading(true)
+		const channel = query.get('channel')
 		const { error } = await supabase.auth.signInWithOtp({
 			email,
 			options: {
-				emailRedirectTo: `${window.origin}/owner`
+				emailRedirectTo: `${window.origin}/owner${channel?`?channel=${channel}`:''}`
 			}
 		})
 
@@ -188,12 +191,30 @@ const FetchTitle = ({url}:{url:string}) => {
 	</>)
 }
 
+
 const SelectChannel = ({onChange}: {
 	onChange: (podcast:Podcast|null)=>void
 }) => {
-	const { owned, shared } = useContext(EditableChannelContext)
-
+	const { owned, shared, refresh } = useContext(EditableChannelContext)
 	const [value, setValue] = useState(()=>owned?.[0]??shared?.[0]??'')
+
+	const { request: requestNew } = useRequestChannel()
+	const query = useQuery()
+	useEffect(() => {
+		const url = query.get('channel')
+		const req = async (url: string) => {
+			return await requestNew(url)
+		}
+		if(url) {
+			req(url).then(result => {
+				if(result) {
+					setValue(url)
+					refresh()
+				}
+			})
+		}
+	}, [query, requestNew])
+
 	const {podcast, fetchPodcast} = usePodcast(value)
 	const handleSelect = (e: SelectChangeEvent) => {
 		const value = e.target.value
@@ -222,7 +243,6 @@ const AddNewChannel = () => {
 	const {session} = useSession()
 	const user_email = session?.user?.email
 	const { check: alreadyAdded, add, refresh } = useContext(EditableChannelContext)
-	const { fetchPodcast } = usePodcast()
 	const [error, setError] = useState('')
 	const [pending, setPending] = useState(false)
 	const handleAdd = (value: string) => {
@@ -234,7 +254,7 @@ const AddNewChannel = () => {
 			}
 			resolve(value)
 		})
-		.then(value => fetchPodcast(value))
+		.then(value => fetch_podcast(value))
 		.then(result => {
 			if(!result?.podcast) throw 'failed to fetch'
 			if(result.podcast.owner.email !== user_email) throw 'not yours'
@@ -259,16 +279,16 @@ const AddNewChannel = () => {
 	</>
 }
 
-const DeletableItem = ({value, onDelete}:{
+const ChannelListItem = ({value, onDelete}:{
 	value:string
-	onDelete:(url:string)=>void 
+	onDelete?:(url:string)=>void 
 }) => {
 	const { podcast } = usePodcast(value)
 	const typographyProps = {sx:{ maxWidth: '80%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
 	return (<ListItem
 		sx={{width: '70%'}}
 		secondaryAction={
-			<Button onClick={()=>onDelete(value)} variant='contained' color='error'>delete</Button>
+			onDelete && <Button onClick={()=>onDelete(value)} variant='contained' color='error'>delete</Button>
 		}
 	>
 		<ListItemText
@@ -288,19 +308,47 @@ const ChannelList = () => {
 	<List sx={{minWidth: '50vw'}}>
 	{owned && <>
 		<ListSubheader>所有する番組</ListSubheader>
-		{owned.map((ch,i)=><DeletableItem key={i} onDelete={handleDelete} value={ch} />)}
+		{owned.map((ch,i)=><ChannelListItem key={i} value={ch} />)}
 	</>}
 	</List>
 	{shared && shared.length > 0 &&
 	<List>
 		<ListSubheader>共同編集番組</ListSubheader>
-		{shared.map((ch,i)=><DeletableItem key={i} onDelete={handleDelete} value={ch} />)}
+		{shared.map((ch,i)=><ChannelListItem key={i} onDelete={handleDelete} value={ch} />)}
 	</List>}
 	</>)
 }
 
+function useQuery() {
+	return new URLSearchParams(useLocation().search);
+}
+
+const useRequestChannel = () => {
+	const { session } = useSession()
+	const add_new = useContext(EditableChannelContext)
+
+	const request = useCallback((url: string) => {
+		if(add_new.check(url)) {
+			return true
+		}
+
+		return fetch_podcast(url)
+		.then(result => {
+			if(!result) return false
+			const {podcast} = result
+			if(podcast.owner.email === session?.user.email) {
+				add_new.add(podcast.self_url)
+				return true
+			}
+			return false
+		})
+	},[session])
+	return {request}
+}
+
 const Manager = () => {
 	const { session } = useSession()
+	
 	const [podcast, setPodcast] = useState<Podcast|null>(null)
 	const { owned } = useContext(EditableChannelContext)
 	const { open:openSettings, Dialog:EditChannelListModal } = useDialog()
