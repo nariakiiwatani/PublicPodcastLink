@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
 import { Podcast } from '../types/podcast';
-import { Typography, Card, CardContent, CardMedia, Box, Grid, CardHeader, IconButton, Link } from '@mui/material'
+import { Typography, Card, CardContent, CardMedia, Box, Grid, CardHeader } from '@mui/material'
 import { avoidXSS } from '../utils/escape';
 import { OpenInNewButton } from './OpenInNewButton';
 import { ShareButtons } from './ShareButtons'
-import { useRelatedLinks } from '../hooks/useRelatedLinks';
+import { RelatedLinks } from '../hooks/useRelatedLinks';
 
 type PodcastPreviewProps = {
 	podcast: Podcast | null;
@@ -51,7 +51,6 @@ export const Description: React.FC<PodcastPreviewProps> = ({ podcast: src }) => 
 
 const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 	if (!src) return null;
-	const { value: links } = useRelatedLinks(src.self_url??'')
 
 	return (
 		<Card sx={{ marginTop: 2, borderRadius: 2 }}>
@@ -72,15 +71,7 @@ const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 						justifyContent: 'center',
 						alignContent: 'flex-start'
 					}}>
-						{links.filter(({icon})=>icon)
-						.map(({url,icon},i)=> (
-							<IconButton
-								key={i}
-								component={Link} href={url} target='_blank'
-							>
-								<img src={icon!} width='32px' height='auto' />
-							</IconButton>
-						))}
+						<RelatedLinks url={src.self_url} />
 					</Box>
 				</Grid>
 				<Grid item xs={12} sm={8}>

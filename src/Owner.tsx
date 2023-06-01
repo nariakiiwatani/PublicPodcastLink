@@ -1,192 +1,20 @@
-import React, { useState, useEffect, useMemo, ChangeEvent, useRef, FormEvent } from 'react'
+import React, { useState, useEffect, useMemo, ChangeEvent, useRef, FormEvent, createContext, useContext } from 'react'
 import usePodcast from './hooks/usePodcast'
 import { Podcast } from './types/podcast'
 import PodcastPreview from './components/PodcastPreview'
-import { ListItem, List, TextField, Box, IconButton, Link, Icon, Tooltip, Typography, Button, CircularProgress, MenuItem, Select, SelectChangeEvent, ListSubheader, TextFieldProps, ListItemText } from '@mui/material'
-import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+import { ListItem, List, TextField, Box, IconButton, Typography, Button, CircularProgress, MenuItem, Select, SelectChangeEvent, ListSubheader, TextFieldProps, ListItemText } from '@mui/material'
 import EditIcon from '@mui/icons-material/Edit'
 import CheckIcon from '@mui/icons-material/Check'
 import DeleteIcon from '@mui/icons-material/Delete'
-import PendingIcon from '@mui/icons-material/Pending'
-import AddCircleIcon from '@mui/icons-material/AddCircle'
-import CancelIcon from '@mui/icons-material/Cancel'
 import SettingsIcon from '@mui/icons-material/Settings'
-import { useRelatedLinks } from './hooks/useRelatedLinks'
+import { RelatedLinksEditor } from './hooks/useRelatedLinks'
 import { useDialog } from './hooks/useDialog'
 import { supabase, useSession } from './utils/supabase'
 import Header from './components/Header'
 import { useChannelSharedWith, useEditableChannel } from './hooks/useChannelSharedWith'
+import { AddNewString } from './components/AddNewString'
 
-type LinkItemProps = {
-	url: string
-	icon: string | null
-	onEdit: (value: string) => void
-	onDelete: () => void
-}
-const LinkItem = ({ url, icon, onEdit, onDelete }: LinkItemProps) => {
-	const [value, setValue] = useState(url)
-	const [edit, setEdit] = useState(false)
-	const text_field_ref = useRef<HTMLInputElement>(null)
-	const handleEdit = () => {
-		setEdit(true)
-	}
-	useEffect(() => {
-		if(edit) {
-			text_field_ref.current?.focus()
-		}
-	}, [edit])
-	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-		setValue(e.target.value)
-	}
-	const handleSubmit = async (e: FormEvent<any>) => {
-		e.preventDefault()
-		onEdit(value)
-		setEdit(false)
-	}
-	const handleDelete = () => {
-		onDelete()
-		setEdit(false)
-	}
-	const pending_text = useMemo(() => {
-		if(icon || edit) return null
-		try {
-			const origin = new URL(url).origin
-			return `approval request for "${origin}" have sent. please wait for manual approval.`
-		}
-		catch(e: any) {
-			return `not an URL?`
-		}
-	}, [icon, edit, url])
-	return (
-	<ListItem>
-		<Box sx={{display:'flex', flexDirection:'row', alignItems:'center'}}>
-			<Icon sx={{marginRight:1, overflow:'visible', width:'32px', height: 'auto'}}>
-				{icon
-				?<img src={icon} width='100%' height='100%' />
-				:<Tooltip title={pending_text}><PendingIcon /></Tooltip>}
-			</Icon>
-			<form onSubmit={handleSubmit}>
-				<TextField
-					type='url'
-					disabled={!edit}
-					value={value}
-					inputRef={text_field_ref}
-					size='small'
-					variant='standard'
-					onChange={handleChange}
-					helperText={pending_text}
-					sx={{
-						minWidth: `${Math.max(value.length, 24) * 0.5}rem`
-					}}
-				/>
-			{edit &&
-				<IconButton aria-label='submit' type='submit'>
-					<CheckIcon />
-				</IconButton>
-			}
-			</form>
-			{edit ? <>
-				<IconButton aria-label='delete' onClick={handleDelete}>
-					<DeleteIcon />
-				</IconButton>
-			</> : <>
-				<IconButton aria-label='edit' onClick={handleEdit}>
-					<EditIcon />
-				</IconButton>
-				<IconButton aria-label='open_in_new' component={Link} href={value} target='_blank'>
-					<OpenInNewIcon />
-				</IconButton>
-			</>}
-		</Box>
-	</ListItem>)
-}
 
-type AddNewStringProps = {
-	onAdd: (value: string) => void
-	textFieldProps?: TextFieldProps
-}
-const AddNewString = ({onAdd, textFieldProps}:AddNewStringProps) => {
-	const [value, setValue] = useState('')
-	const [edit, setEdit] = useState(false)
-	const text_field_ref = useRef<HTMLInputElement>(null)
-	const handleEdit = () => {
-		setEdit(true)
-	}
-	useEffect(() => {
-		if(edit) {
-			text_field_ref.current?.focus()
-		}
-	}, [edit])
-	const handleCancel = () => {
-		setEdit(false)
-	}
-	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-		setValue(e.target.value)
-	}
-	const handleSubmit = (e: FormEvent<any>) => {
-		e.preventDefault()
-		onAdd(value)
-		setValue('')
-		setEdit(false)
-	}
-	return (
-		<Box sx={{display:'flex', flexDirection:'row', alignItems:'center'}}>
-			<IconButton
-				sx={{marginRight:1, overflow:'visible', width:'32px', height: 'auto'}}
-				onClick={edit?handleCancel:handleEdit}
-			>
-				{edit ? <CancelIcon /> : <AddCircleIcon />}
-			</IconButton>
-			{edit
-			? <>
-			<form onSubmit={handleSubmit}>
-				<TextField
-					{...textFieldProps}
-					disabled={textFieldProps?.disabled || !edit}
-					value={edit?value:'Add New'}
-					inputRef={text_field_ref}
-					size='small'
-					variant='standard'
-					onChange={handleChange}
-					onClick={handleEdit}
-					sx={{
-						minWidth: `${Math.max(value.length, 24) * 0.5}rem`
-					}}
-				/>
-				<IconButton aria-label='submit' type='submit'>
-					<CheckIcon />
-				</IconButton>
-			</form>
-			</>
-			: <Typography variant='body2' onClick={handleEdit}>Add New</Typography>}
-		</Box>
-	)
-}
-
-const RelatedLinks = ({podcast:src}:{podcast:Podcast}) => {
-	const { value, add, del, edit } = useRelatedLinks(src?.self_url??'')
-	const handleEdit = (index: number) => async (url: string) => {
-		if(value.some(({url:u},i)=>i!==index&&u===url)) {
-			return
-		}
-		edit(index, url)
-	}
-	const handleDelete = (index: number) => async () => {
-		del(index)
-	}
-	const handleAdd = async (url: string) => {
-		if(value.some(({url:u})=>u===url)) {
-			return
-		}
-		add(url)
-	}
-	return (
-		<List>
-			{value.map((value,i) => <LinkItem key={value.url} {...value} onEdit={handleEdit(i)} onDelete={handleDelete(i)} />)}
-			<AddNewString onAdd={handleAdd} />
-		</List>
-	)
-}
 const EditableListItem = ({defaultValue, textFieldProps, Icon, onEdit, onDelete}:{
 	defaultValue: string
 	textFieldProps?: Partial<TextFieldProps>
@@ -254,22 +82,24 @@ const EditableListItem = ({defaultValue, textFieldProps, Icon, onEdit, onDelete}
 const EditableList = ({value, type, onEdit, onDelete, onAdd, is_unique}:{
 	value: string[]
 	type?: string
-	onEdit: (index: number, value: string) => void
-	onDelete: (index: number) => void
-	onAdd: (value: string) => void
+	onEdit: (index: number, value: string) => Promise<any>
+	onDelete: (index: number) => Promise<any>
+	onAdd: (value: string) => Promise<any>
 	is_unique?: boolean
 }) => {
-	const handleEdit = is_unique ? (index: number, new_value: string) => {
+	const handleEdit = is_unique ? async (index: number, new_value: string) => {
 		if(value.some((v,i)=>i!==index&&v===new_value)) {
 			return false
 		}
-		onEdit(index, new_value)
+		await onEdit(index, new_value)
+		return true
 	} : onEdit
-	const handleAdd = is_unique ? (item: string) => {
+	const handleAdd = is_unique ? async (item: string) => {
 		if(value.some(v=>v===item)) {
 			return false
 		}
-		onAdd(item)
+		await onAdd(item)
+		return true
 	} : onAdd
 	return (
 		<List>
@@ -285,9 +115,9 @@ const EditableList = ({value, type, onEdit, onDelete, onAdd, is_unique}:{
 	)
 }
 
-const EditSharedMembers = ({podcast:src}:{podcast:Podcast}) => {
+const SharedMembersEditor = ({url}:{url: string}) => {
 	const { session } = useSession()
-	const { value, add, del, edit } = useChannelSharedWith(src.self_url)
+	const { value, add, del, edit } = useChannelSharedWith(url)
 	const without_me = useMemo(() => value.filter(email => email !== session?.user.email), [value, session])
 	return (<EditableList
 		type='email'
@@ -358,11 +188,11 @@ const FetchTitle = ({url}:{url:string}) => {
 	</>)
 }
 
-const SelectChannel = ({owned, shared, onChange}: {
-	owned?: string[]
-	shared?: string[]
+const SelectChannel = ({onChange}: {
 	onChange: (podcast:Podcast|null)=>void
 }) => {
+	const { owned, shared } = useContext(EditableChannelContext)
+
 	const [value, setValue] = useState(()=>owned?.[0]??shared?.[0]??'')
 	const {podcast, fetchPodcast} = usePodcast(value)
 	const handleSelect = (e: SelectChangeEvent) => {
@@ -388,31 +218,37 @@ const SelectChannel = ({owned, shared, onChange}: {
 	</Select>
 }
 
-const AddNewChannel = ({onChange}:{onChange:()=>void}) => {
+const AddNewChannel = () => {
 	const {session} = useSession()
 	const user_email = session?.user?.email
-	const { check: alreadyAdded, add } = useEditableChannel()
+	const { check: alreadyAdded, add, refresh } = useContext(EditableChannelContext)
 	const { fetchPodcast } = usePodcast()
 	const [error, setError] = useState('')
 	const [pending, setPending] = useState(false)
 	const handleAdd = (value: string) => {
-		if(alreadyAdded(value)) {
-			setError('already added')
-			return
-		}
 		setError('')
 		setPending(true)
-		return fetchPodcast(value)
+		return new Promise<string>((resolve, reject) => {
+			if(alreadyAdded(value)) {
+				return reject('already added')
+			}
+			resolve(value)
+		})
+		.then(value => fetchPodcast(value))
 		.then(result => {
 			if(!result?.podcast) throw 'failed to fetch'
 			if(result.podcast.owner.email !== user_email) throw 'not yours'
 			return add(result.podcast.self_url)
 		})
 		.then(() => {
-			onChange()
+			refresh()
 			setError('added')
+			return true
 		})
-		.catch(setError)
+		.catch(e=>{
+			setError(e)
+			return false
+		})
 		.finally(()=>
 			setPending(false)
 		)
@@ -443,21 +279,22 @@ const DeletableItem = ({value, onDelete}:{
 			/>
 	</ListItem>)
 }
-const ChannelList = ({onChange}: {
-	onChange: ()=>void
-}) => {
-	const { owned, shared, del } = useEditableChannel()
+const ChannelList = () => {
+	const { owned, shared, del, refresh } = useContext(EditableChannelContext)
+	const handleDelete = (url: string) => {
+		del(url).then(()=>refresh())
+	}
 	return (<>
 	<List sx={{minWidth: '50vw'}}>
 	{owned && <>
 		<ListSubheader>所有する番組</ListSubheader>
-		{owned.map((ch,i)=><DeletableItem key={i} onDelete={del} value={ch} />)}
+		{owned.map((ch,i)=><DeletableItem key={i} onDelete={handleDelete} value={ch} />)}
 	</>}
 	</List>
 	{shared && shared.length > 0 &&
 	<List>
 		<ListSubheader>共同編集番組</ListSubheader>
-		{shared.map((ch,i)=><DeletableItem key={i} onDelete={del} value={ch} />)}
+		{shared.map((ch,i)=><DeletableItem key={i} onDelete={handleDelete} value={ch} />)}
 	</List>}
 	</>)
 }
@@ -465,7 +302,7 @@ const ChannelList = ({onChange}: {
 const Manager = () => {
 	const { session } = useSession()
 	const [podcast, setPodcast] = useState<Podcast|null>(null)
-	const { owned, shared, refresh } = useEditableChannel()
+	const { owned } = useContext(EditableChannelContext)
 	const { open:openSettings, Dialog:EditChannelListModal } = useDialog()
 
 	const is_owned = useMemo(() => podcast && owned && owned.includes(podcast.self_url), [podcast, owned])
@@ -474,25 +311,25 @@ const Manager = () => {
 		<h1>管理画面</h1>
 		<Box sx={{display:'flex', alignItems:'center'}}>
 		{session && <>
-		<SelectChannel owned={owned} shared={shared} onChange={setPodcast} />
+		<SelectChannel onChange={setPodcast} />
 		<IconButton onClick={openSettings}>
 			<SettingsIcon />
 		</IconButton>
 		<EditChannelListModal title='番組リストを管理'>
-			<AddNewChannel onChange={refresh} />
-			<ChannelList onChange={refresh} />
+			<AddNewChannel />
+			<ChannelList />
 		</EditChannelListModal>
 		</>}
 		</Box>
 		{podcast && <>
 			{is_owned && <>
 				<hr />
-				<h2>共同編集者を編集</h2>
-				<EditSharedMembers podcast={podcast} />
+				<h2>共同編集者</h2>
+				<SharedMembersEditor url={podcast.self_url} />
 			</>}
 			<hr />
 			<h2>Related Links</h2>
-			<RelatedLinks podcast={podcast} />
+			<RelatedLinksEditor url={podcast.self_url} />
 			<hr />
 			<h2>Preview</h2>
 			<PodcastPreview podcast={podcast} />
@@ -500,11 +337,29 @@ const Manager = () => {
 	</>)
 }
 
+const EditableChannelContext = createContext<ReturnType<typeof useEditableChannel>>({
+	value:[],
+	owned:[],
+	shared:[],
+	check: (_: string): boolean => false,
+	add: (_: string): Promise<string[]> => Promise.resolve([]),
+	del: (_: string): Promise<string[]> => Promise.resolve([]),
+	refresh: () => {}
+})
+const EditableChannelContextProvider = ({children}:{children:React.ReactNode}) => {
+	const value = useEditableChannel()
+	return <EditableChannelContext.Provider value={value}>
+		{children}
+	</EditableChannelContext.Provider>
+}
+
 const Owner: React.FC = () => {
 	return (<>
 		<Header />
 		<CheckAuth>
-			<Manager />
+			<EditableChannelContextProvider>
+				<Manager />
+			</EditableChannelContextProvider>
 		</CheckAuth>
 	</>
 	)
