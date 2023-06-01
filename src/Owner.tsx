@@ -15,6 +15,7 @@ import { useChannelSharedWith, useEditableChannel } from './hooks/useChannelShar
 import { AddNewString } from './components/AddNewString'
 import { useQuery } from './hooks/useQuery'
 import { useTranslation } from './hooks/useTranslation'
+import { useNavigate } from 'react-router-dom'
 
 
 const EditableListItem = ({defaultValue, textFieldProps, Icon, onEdit, onDelete}:{
@@ -199,8 +200,10 @@ const SelectChannel = ({onChange}: {
 	onChange: (podcast:Podcast|null)=>void
 }) => {
 	const { t } = useTranslation('owner')
-	const { owned, shared, refresh } = useContext(EditableChannelContext)
+	const { owned, shared } = useContext(EditableChannelContext)
 	const [value, setValue] = useState(()=>owned?.[0]??shared?.[0]??'')
+
+	const navigate = useNavigate()
 
 	const { request: requestNew } = useRequestChannel()
 	const query = useQuery()
@@ -213,17 +216,20 @@ const SelectChannel = ({onChange}: {
 			req(url).then(result => {
 				if(result) {
 					setValue(url)
-					refresh()
 				}
 			})
 		}
-	}, [query, requestNew, refresh])
+	}, [query, requestNew])
 
 	const {podcast, fetchPodcast} = usePodcast(value)
 	const handleSelect = (e: SelectChangeEvent) => {
 		const value = e.target.value
 		setValue(value)
 		fetchPodcast(value)
+		.then(result => {
+			if(!result) return
+			navigate(`/owner?channel=${value}`)
+		})
 	}
 	useEffect(() => {
 		onChange(podcast)
@@ -344,7 +350,7 @@ const useRequestChannel = () => {
 			}
 			return false
 		})
-	},[session])
+	},[session, add_new.check, add_new.add, fetch_podcast])
 	return {request}
 }
 
