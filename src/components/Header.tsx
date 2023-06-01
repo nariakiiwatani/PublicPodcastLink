@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { AppBar, Toolbar, Typography, IconButton, Link, Box, MenuItem, Select, SelectChangeEvent, Menu, ListItemIcon, ListItemText, useMediaQuery, useTheme } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import TwitterIcon from '@mui/icons-material/Twitter';
@@ -13,10 +13,10 @@ import { useTranslation } from '../hooks/useTranslation'
 import { useDialog } from '../hooks/useDialog';
 import { CreateImportURL } from './CreateImportURL';
 import Donation from './Donation';
-import { useSession } from '../utils/supabase';
+import { SessionContext } from '../utils/supabase';
 
 const Header = () => {
-	const { session, logout } = useSession()
+	const { session, logout } = useContext(SessionContext)
 	const { locale, changeLanguage, t } = useTranslation('header')
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 

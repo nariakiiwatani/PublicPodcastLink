@@ -1,10 +1,11 @@
 import React, { useMemo } from 'react';
 import { Podcast } from '../types/podcast';
-import { Typography, Card, CardContent, CardMedia, Box, Grid, CardHeader } from '@mui/material'
+import { Typography, Card, CardContent, CardMedia, Box, Grid, CardHeader, Link } from '@mui/material'
 import { avoidXSS } from '../utils/escape';
 import { OpenInNewButton } from './OpenInNewButton';
 import { ShareButtons } from './ShareButtons'
 import { RelatedLinks } from '../hooks/useRelatedLinks';
+import { useEditableChannel } from '../hooks/useChannelSharedWith';
 
 type PodcastPreviewProps = {
 	podcast: Podcast | null;
@@ -52,6 +53,12 @@ export const Description: React.FC<PodcastPreviewProps> = ({ podcast: src }) => 
 const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 	if (!src) return null;
 
+	const { check } = useEditableChannel()
+	const login_link_text = useMemo(() => {
+		if(check(src.self_url)) return 'edit'
+		return 'owner?'
+	}, [src, check])
+
 	return (
 		<Card sx={{ marginTop: 2, borderRadius: 2 }}>
 			<CardHeader
@@ -73,6 +80,7 @@ const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 					}}>
 						<RelatedLinks />
 					</Box>
+					<Link href={`/owner?channel=${src.self_url}`} target='_blank'>{login_link_text}</Link>
 				</Grid>
 				<Grid item xs={12} sm={8}>
 					<CardContent style={{ flex: '1 0 auto' }}>

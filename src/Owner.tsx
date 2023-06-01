@@ -9,7 +9,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { RelatedLinksEditor, RelatedLinksProvider } from './hooks/useRelatedLinks'
 import { useDialog } from './hooks/useDialog'
-import { supabase, useSession } from './utils/supabase'
+import { SessionContext, supabase } from './utils/supabase'
 import Header from './components/Header'
 import { useChannelSharedWith, useEditableChannel } from './hooks/useChannelSharedWith'
 import { AddNewString } from './components/AddNewString'
@@ -117,7 +117,7 @@ const EditableList = ({value, type, onEdit, onDelete, onAdd, is_unique}:{
 }
 
 const SharedMembersEditor = ({url}:{url: string}) => {
-	const { session } = useSession()
+	const { session } = useContext(SessionContext)
 	const { value, add, del, edit } = useChannelSharedWith(url)
 	const without_me = useMemo(() => value.filter(email => email !== session?.user.email), [value, session])
 	return (<EditableList
@@ -172,7 +172,7 @@ const Login = () => {
 	)
 }
 const CheckAuth = ({ children }: { children: React.ReactNode }) => {
-	const { session } = useSession()
+	const { session } = useContext(SessionContext)
 	return (
 		!session ? <>
 			<p>Login required</p>
@@ -240,7 +240,7 @@ const SelectChannel = ({onChange}: {
 }
 
 const AddNewChannel = () => {
-	const {session} = useSession()
+	const { session } = useContext(SessionContext)
 	const user_email = session?.user?.email
 	const { check: alreadyAdded, add, refresh } = useContext(EditableChannelContext)
 	const [error, setError] = useState('')
@@ -324,7 +324,7 @@ function useQuery() {
 }
 
 const useRequestChannel = () => {
-	const { session } = useSession()
+	const { session } = useContext(SessionContext)
 	const add_new = useContext(EditableChannelContext)
 
 	const request = useCallback((url: string) => {
@@ -347,7 +347,7 @@ const useRequestChannel = () => {
 }
 
 const Manager = () => {
-	const { session } = useSession()
+	const { session } = useContext(SessionContext)
 	
 	const [podcast, setPodcast] = useState<Podcast|null>(null)
 	const { owned } = useContext(EditableChannelContext)

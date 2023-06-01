@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react'
-import { supabase, useSession } from '../utils/supabase'
+import { useState, useEffect, useMemo, useCallback, useContext } from 'react'
+import { supabase, SessionContext } from '../utils/supabase'
 const table_name = 'channel_shared_with'
 
 const get_db = async ({channel, email}:{channel?:string, email?: string}) => {
@@ -61,7 +61,7 @@ export const useChannelSharedWith = (channel: string) => {
 }
 
 export const useEditableChannel = () => {
-	const { session } = useSession()
+	const { session } = useContext(SessionContext)
 	const email = useMemo(() => session?.user?.email, [session])
 	const [{ result, owned, shared }, setResult] = useState<{result:string[],owned:string[],shared:string[]}>({result:[],owned:[],shared:[]})
 	useEffect(() => {
@@ -79,9 +79,9 @@ export const useEditableChannel = () => {
 		})
 		.catch(console.error)
 	}
-	const check = (channel: string) => {
+	const check = useCallback((channel: string) => {
 		return result.includes(channel)
-	}
+	}, [result])
 	const add = async (channel: string) => {
 		if(!email) return result
 		const current = (await get_db({channel})).flatMap(({shared_with})=>shared_with)
