@@ -14,6 +14,7 @@ import Header from './components/Header'
 import { useChannelSharedWith, useEditableChannel } from './hooks/useChannelSharedWith'
 import { AddNewString } from './components/AddNewString'
 import { useQuery } from './hooks/useQuery'
+import { useTranslation } from './hooks/useTranslation'
 
 
 const EditableListItem = ({defaultValue, textFieldProps, Icon, onEdit, onDelete}:{
@@ -131,6 +132,7 @@ const SharedMembersEditor = ({url}:{url: string}) => {
 }
 
 const Login = () => {
+	const { t } = useTranslation('login')
 	const [loading, setLoading] = useState(false)
 	const [email, setEmail] = useState('')
 	const query = useQuery()
@@ -150,7 +152,7 @@ const Login = () => {
 		if (error) {
 			alert(error.message)
 		} else {
-			alert('Check your email for the login link!')
+			alert(t.check_email)
 		}
 		setLoading(false)
 	}
@@ -196,6 +198,7 @@ const FetchTitle = ({url}:{url:string}) => {
 const SelectChannel = ({onChange}: {
 	onChange: (podcast:Podcast|null)=>void
 }) => {
+	const { t } = useTranslation('owner')
 	const { owned, shared, refresh } = useContext(EditableChannelContext)
 	const [value, setValue] = useState(()=>owned?.[0]??shared?.[0]??'')
 
@@ -229,11 +232,11 @@ const SelectChannel = ({onChange}: {
 		value={value}
 		onChange={handleSelect}
 	>
-		{owned && <MenuItem value='owned' disabled={true}>所有する番組</MenuItem>}
+		{owned && <MenuItem value='owned' disabled={true}>{t.label_owned}</MenuItem>}
 		{owned && owned.map(ch=><MenuItem key={ch} value={ch}>
 			<FetchTitle url={ch} />
 		</MenuItem>)}
-		{shared && <MenuItem value='shared' disabled={true}>共有された番組</MenuItem>}
+		{shared && <MenuItem value='shared' disabled={true}>{t.label_shared}</MenuItem>}
 		{shared && shared.map(ch=><MenuItem key={ch} value={ch}>
 			<FetchTitle url={ch} />
 		</MenuItem>)}
@@ -241,6 +244,7 @@ const SelectChannel = ({onChange}: {
 }
 
 const AddNewChannel = () => {
+	const { t } = useTranslation('owner')
 	const { session } = useContext(SessionContext)
 	const user_email = session?.user?.email
 	const { check: alreadyAdded, add, refresh } = useContext(EditableChannelContext)
@@ -251,19 +255,19 @@ const AddNewChannel = () => {
 		setPending(true)
 		return new Promise<string>((resolve, reject) => {
 			if(alreadyAdded(value)) {
-				return reject('already added')
+				return reject(t.already_added)
 			}
 			resolve(value)
 		})
 		.then(value => fetch_podcast(value))
 		.then(result => {
-			if(!result?.podcast) throw 'failed to fetch'
-			if(result.podcast.owner.email !== user_email) throw 'not yours'
+			if(!result?.podcast) throw t.rss_fetch_failed
+			if(result.podcast.owner.email !== user_email) throw t.not_yours
 			return add(result.podcast.self_url)
 		})
 		.then(() => {
 			refresh()
-			setError('added')
+			setError(t.added)
 			return true
 		})
 		.catch(e=>{
@@ -301,6 +305,7 @@ const ChannelListItem = ({value, onDelete}:{
 	</ListItem>)
 }
 const ChannelList = () => {
+	const { t } = useTranslation('owner')
 	const { owned, shared, del, refresh } = useContext(EditableChannelContext)
 	const handleDelete = (url: string) => {
 		del(url).then(()=>refresh())
@@ -308,13 +313,13 @@ const ChannelList = () => {
 	return (<>
 	<List sx={{minWidth: '50vw'}}>
 	{owned && <>
-		<ListSubheader>所有する番組</ListSubheader>
+		<ListSubheader>{t.label_owned}</ListSubheader>
 		{owned.map((ch,i)=><ChannelListItem key={i} value={ch} />)}
 	</>}
 	</List>
 	{shared && shared.length > 0 &&
 	<List>
-		<ListSubheader>共同編集番組</ListSubheader>
+		<ListSubheader>{t.label_shared}</ListSubheader>
 		{shared.map((ch,i)=><ChannelListItem key={i} onDelete={handleDelete} value={ch} />)}
 	</List>}
 	</>)
@@ -344,6 +349,7 @@ const useRequestChannel = () => {
 }
 
 const Manager = () => {
+	const { t }  = useTranslation('owner')
 	const { session } = useContext(SessionContext)
 	
 	const [podcast, setPodcast] = useState<Podcast|null>(null)
@@ -353,14 +359,14 @@ const Manager = () => {
 	const is_owned = useMemo(() => podcast && owned && owned.includes(podcast.self_url), [podcast, owned])
 
 	return (<>
-		<h1>管理画面</h1>
+		<h1>{t.title}</h1>
 		<Box sx={{display:'flex', alignItems:'center'}}>
 		{session && <>
 		<SelectChannel onChange={setPodcast} />
 		<IconButton onClick={openSettings}>
 			<SettingsIcon />
 		</IconButton>
-		<EditChannelListModal title='番組リストを管理'>
+		<EditChannelListModal title={t.channel_list}>
 			<AddNewChannel />
 			<ChannelList />
 		</EditChannelListModal>
@@ -369,15 +375,15 @@ const Manager = () => {
 		{podcast && <>
 			{is_owned && <>
 				<hr />
-				<h2>共同編集者</h2>
+				<h2>{t.shared_members}</h2>
 				<SharedMembersEditor url={podcast.self_url} />
 			</>}
 			<hr />
 			<RelatedLinksProvider url={podcast.self_url}>
-				<h2>Related Links</h2>
+				<h2>{t.related_links}</h2>
 				<RelatedLinksEditor />
 				<hr />
-				<h2>Preview</h2>
+				<h2>{t.preview}</h2>
 				<PodcastPreview podcast={podcast} />
 			</RelatedLinksProvider>
 		</>}

@@ -7,6 +7,7 @@ import CheckIcon from '@mui/icons-material/Check'
 import DeleteIcon from '@mui/icons-material/Delete'
 import PendingIcon from '@mui/icons-material/Pending'
 import { AddNewString } from '../components/AddNewString'
+import { useTranslation } from './useTranslation'
 
 const table_name = 'related_link'
 
@@ -105,6 +106,7 @@ type LinkItemProps = {
 	onDelete: () => void
 }
 const LinkItem = ({ url, icon, onEdit, onDelete }: LinkItemProps) => {
+	const  { t } = useTranslation('related_links')
 	const [value, setValue] = useState(url)
 	const [edit, setEdit] = useState(false)
 	const text_field_ref = useRef<HTMLInputElement>(null)
@@ -132,10 +134,10 @@ const LinkItem = ({ url, icon, onEdit, onDelete }: LinkItemProps) => {
 		if(icon || edit) return null
 		try {
 			const origin = new URL(url).origin
-			return `approval request for "${origin}" have sent. please wait for manual approval.`
+			return t.not_approved(origin)
 		}
 		catch(e: any) {
-			return `not an URL?`
+			return t.not_url
 		}
 	}, [icon, edit, url])
 	return (

@@ -116,5 +116,67 @@ export default {
 			en: 'Failed to copy text.',
 			ja: 'コピーに失敗しました。'
 		}
+	},
+	login: {
+		check_email: {
+			en: 'Check your email for the login link!',
+			ja: 'ログインリンクを記載したEメールを送信しました'
+		}
+	},
+	owner: {
+		title: {
+			en: 'Dashboard',
+			ja: '管理画面'
+		},
+		shared_members: {
+			en: 'shared members',
+			ja: '共同編集者'
+		},
+		related_links: {
+			en: 'Related Links',
+			ja: '関連リンク'
+		},
+		preview: {
+			en: 'Preview',
+			ja: 'プレビュー'
+		},
+		channel_list: {
+			en: 'Channels you can edit',
+			ja: '管理番組のリスト'
+		},
+		label_owned: {
+			en: 'channels you own',
+			ja: '所有する番組'
+		},
+		label_shared: {
+			en: 'shared channels',
+			ja: '共有された番組'
+		},
+		already_added: {
+			en: 'already added',
+			ja: '追加済み'
+		},
+		rss_fetch_failed: {
+			en: 'failed to fetch RSS',
+			ja: 'RSSの取得に失敗'
+		},
+		not_yours: {
+			en: "It seems you're not the owner. Please ask the owner to invite you as co-editor.",
+			ja: 'あなたが所有していない番組のようです。所有者に連絡して、共同編集者として追加してもらってください。'
+		},
+		added: {
+			en: 'added',
+			ja: '追加しました'
+		}
+	},
+	related_links: {
+		not_approved: {
+			en: (origin: string) => `approval request for "${origin}" have sent. please wait for manual approval.`,
+			ja: (origin: string) => `${origin}を追加できるようにするリクエストがサイト管理者に送信されました。手動での承認をお待ちください。`
+		},
+		not_url: {
+			en: 'not an URL?',
+			ja: 'URLではないようです'
+		}
 	}
 };
