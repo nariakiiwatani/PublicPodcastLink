@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, ChangeEvent, useRef, FormEvent, cr
 import usePodcast, { fetch_podcast } from './hooks/usePodcast'
 import { Podcast } from './types/podcast'
 import PodcastPreview from './components/PodcastPreview'
-import { ListItem, List, TextField, Box, IconButton, Typography, Button, CircularProgress, MenuItem, Select, SelectChangeEvent, ListSubheader, TextFieldProps, ListItemText } from '@mui/material'
+import { ListItem, List, TextField, Box, IconButton, Typography, Button, CircularProgress, MenuItem, Select, SelectChangeEvent, ListSubheader, TextFieldProps, ListItemText, CssBaseline } from '@mui/material'
 import EditIcon from '@mui/icons-material/Edit'
 import CheckIcon from '@mui/icons-material/Check'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -415,12 +415,15 @@ const EditableChannelContextProvider = ({children}:{children:React.ReactNode}) =
 
 const Owner: React.FC = () => {
 	return (<>
+		<CssBaseline />
 		<Header />
-		<CheckAuth>
-			<EditableChannelContextProvider>
-				<Manager />
-			</EditableChannelContextProvider>
-		</CheckAuth>
+		<Box sx={{ margin: 2 }}>
+			<CheckAuth>
+				<EditableChannelContextProvider>
+					<Manager />
+				</EditableChannelContextProvider>
+			</CheckAuth>
+		</Box>
 	</>
 	)
 }
