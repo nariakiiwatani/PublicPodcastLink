@@ -132,6 +132,7 @@ const SharedMembersEditor = ({url}:{url: string}) => {
 	/>)
 }
 
+const redirectURL = (channel: string|null) => `${window.origin}/owner${channel?`?channel=${channel}`:''}`
 const Login = () => {
 	const { t } = useTranslation('login')
 	const [loading, setLoading] = useState(false)
@@ -146,7 +147,7 @@ const Login = () => {
 		const { error } = await supabase.auth.signInWithOtp({
 			email,
 			options: {
-				emailRedirectTo: `${window.origin}/owner${channel?`?channel=${channel}`:''}`
+				emailRedirectTo: redirectURL(channel)
 			}
 		})
 
@@ -268,7 +269,7 @@ const AddNewChannel = () => {
 		.then(value => fetch_podcast(value))
 		.then(result => {
 			if(!result?.podcast) throw t.rss_fetch_failed
-			if(result.podcast.owner.email !== user_email) throw t.not_yours
+			if(result.podcast.owner.email !== user_email) throw t.not_yours(redirectURL(result.podcast.self_url))
 			return add(result.podcast.self_url)
 		})
 		.then(() => {

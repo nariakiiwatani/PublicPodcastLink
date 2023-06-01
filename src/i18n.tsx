@@ -161,8 +161,8 @@ export default {
 			ja: 'RSSの取得に失敗'
 		},
 		not_yours: {
-			en: "It seems you're not the owner. Please ask the owner to invite you as co-editor.",
-			ja: 'あなたが所有していない番組のようです。所有者に連絡して、共同編集者として追加してもらってください。'
+			en: (url:string)=>`It seems you're not the owner. Please ask the owner to invite you via this URL( ${url} ).`,
+			ja: (url:string)=>`あなたが所有していない番組のようです。所有者にこのURL( ${url} )を案内して、共同編集者として追加してもらってください。`
 		},
 		added: {
 			en: 'added',
