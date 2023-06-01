@@ -14,16 +14,13 @@ import SkipNextIcon from '@mui/icons-material/SkipNext';
 import { useAsync } from 'react-use';
 import { MyHelmet } from './components/MyHelmet';
 import { RelatedLinksProvider } from './hooks/useRelatedLinks';
+import { useQuery } from './hooks/useQuery'
 
 const theme = createTheme({
 	palette: {
 		mode: 'light',
 	},
 });
-
-function useQuery() {
-	return new URLSearchParams(useLocation().search);
-}
 
 type PodcastRecord = { url: string, title: string }
 

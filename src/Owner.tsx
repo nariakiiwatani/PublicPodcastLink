@@ -13,7 +13,7 @@ import { SessionContext, supabase } from './utils/supabase'
 import Header from './components/Header'
 import { useChannelSharedWith, useEditableChannel } from './hooks/useChannelSharedWith'
 import { AddNewString } from './components/AddNewString'
-import { useLocation } from 'react-router-dom'
+import { useQuery } from './hooks/useQuery'
 
 
 const EditableListItem = ({defaultValue, textFieldProps, Icon, onEdit, onDelete}:{
@@ -158,8 +158,9 @@ const Login = () => {
 	return (<>
 		<form className="form-widget" onSubmit={handleLogin}>
 			<TextField
+				fullWidth
 				type="email"
-				placeholder="Your email"
+				label="email"
 				value={email}
 				required={true}
 				onChange={(e) => setEmail(e.target.value)}
@@ -213,7 +214,7 @@ const SelectChannel = ({onChange}: {
 				}
 			})
 		}
-	}, [query, requestNew])
+	}, [query, requestNew, refresh])
 
 	const {podcast, fetchPodcast} = usePodcast(value)
 	const handleSelect = (e: SelectChangeEvent) => {
@@ -317,10 +318,6 @@ const ChannelList = () => {
 		{shared.map((ch,i)=><ChannelListItem key={i} onDelete={handleDelete} value={ch} />)}
 	</List>}
 	</>)
-}
-
-function useQuery() {
-	return new URLSearchParams(useLocation().search);
 }
 
 const useRequestChannel = () => {

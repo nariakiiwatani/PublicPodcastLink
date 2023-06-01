@@ -68,7 +68,7 @@ export const useEditableChannel = () => {
 		if(!email) return
 		refresh()
 	}, [email])
-	const refresh = () => {
+	const refresh = useCallback(() => {
 		get_db({email})
 		.then(result => {
 			setResult({
@@ -78,26 +78,26 @@ export const useEditableChannel = () => {
 			})
 		})
 		.catch(console.error)
-	}
+	},[get_db, setResult])
 	const check = useCallback((channel: string) => {
 		return result.includes(channel)
 	}, [result])
-	const add = async (channel: string) => {
+	const add = useCallback(async (channel: string) => {
 		if(!email) return result
 		const current = (await get_db({channel})).flatMap(({shared_with})=>shared_with)
 		if(current.includes(email)) {
 			return current
 		}
 		return set_db(channel, [...current, email])
-	}
-	const del = async (channel: string) => {
+	}, [email, get_db, set_db])
+	const del = useCallback(async (channel: string) => {
 		if(!email) return result
 		const current = (await get_db({channel})).flatMap(({shared_with})=>shared_with)
 		if(!current.includes(email)) {
 			return current
 		}
 		return set_db(channel, current.filter(c=>c!==email))
-	}
+	}, [email, get_db, set_db])
 
 	return {
 		value:result,

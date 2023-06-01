@@ -13,8 +13,8 @@ export const useDialog = (defaultOpen?:boolean) => {
 		</Dialog>
 	), [open]);
 
-	const openDialog = () => setOpen(true);
-	const closeDialog = () => setOpen(false);
+	const openDialog = useCallback(() => setOpen(true), [setOpen])
+	const closeDialog = useCallback(() => setOpen(false), [setOpen])
 
 	return {
 		Dialog: DialogNode,

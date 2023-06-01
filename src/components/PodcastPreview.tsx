@@ -6,6 +6,7 @@ import { OpenInNewButton } from './OpenInNewButton';
 import { ShareButtons } from './ShareButtons'
 import { RelatedLinks } from '../hooks/useRelatedLinks';
 import { useEditableChannel } from '../hooks/useChannelSharedWith';
+import { useLocation } from 'react-router-dom';
 
 type PodcastPreviewProps = {
 	podcast: Podcast | null;
@@ -52,6 +53,8 @@ export const Description: React.FC<PodcastPreviewProps> = ({ podcast: src }) => 
 
 const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 	if (!src) return null;
+
+	const path = useLocation()
 
 	const { check } = useEditableChannel()
 	const login_link_text = useMemo(() => {
