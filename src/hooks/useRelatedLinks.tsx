@@ -101,6 +101,8 @@ export const getPlatformIcon = (url: string) => {
 		'https://(.*\.)?zenn\.dev/': 'zenn',
 		'https://(.*\.)?qiita\.com/': 'qiita',
 		'https://(.*\.)?linkedin\.com/': 'linkedin',
+		'https://(.*\.)?anchor\.fm/': 'anchor',
+		'https://(.*\.)?stand\.fm/': 'standfm',
 	}
 	const found_key = Object.keys(approved_list).find(tester => new RegExp(tester).test(url))
 	if (found_key) {
