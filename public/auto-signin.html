@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<script type="text/javascript">
+  var pageUrl = window.location.href;
+  var paramIndex = pageUrl.indexOf('confirmation_url=');
+  if (paramIndex >= 0) {
+    var confirmationUrl = pageUrl.substring(paramIndex + 'confirmation_url='.length);
+    window.location.href = decodeURIComponent(confirmationUrl);
+  }
+</script>
+<div id="status">invalid url parameter.</div>
+</body>
+</html>

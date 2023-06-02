@@ -10,6 +10,11 @@ command = "yarn build"
 node_bundler = "esbuild"
 
 [[redirects]]
+from = "/auto-signin.html"
+to = "/auto-signin.html"
+status = 200
+
+[[redirects]]
 from = "/*"
 to = "/index.html"
 status = 200
