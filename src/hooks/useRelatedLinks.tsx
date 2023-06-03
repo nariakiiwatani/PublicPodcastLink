@@ -103,6 +103,9 @@ export const getPlatformIcon = (url: string) => {
 		'https://(.*\.)?linkedin\.com/': 'linkedin',
 		'https://(.*\.)?anchor\.fm/': 'anchor',
 		'https://(.*\.)?stand\.fm/': 'standfm',
+		'https://(.*\.)?pocketcasts\.com/': ['pocketcasts', 'svg'],
+		'https://pca\.st/': ['pocketcasts', 'svg'],
+		'https://(.*\.)?wixsite\.com/': 'wix',
 	}
 	const found_key = Object.keys(approved_list).find(tester => new RegExp(tester).test(url))
 	if (found_key) {
