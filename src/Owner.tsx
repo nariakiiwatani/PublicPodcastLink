@@ -271,7 +271,7 @@ const AddNewChannel = () => {
 		.then(value => fetch_podcast(value))
 		.then(result => {
 			if(!result?.podcast) throw t.rss_fetch_failed
-			if(!compare_icase(result.podcast.owner.email, user_email)) throw t.not_yours(redirectURL(result.podcast.self_url))
+			if(!user_email || !compare_icase(result.podcast.owner.email, user_email)) throw t.not_yours(redirectURL(result.podcast.self_url))
 			return add(result.podcast.self_url)
 		})
 		.then(() => {
