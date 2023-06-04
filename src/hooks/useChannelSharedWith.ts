@@ -2,13 +2,15 @@ import { useState, useEffect, useMemo, useCallback, useContext } from 'react'
 import { supabase, SessionContext } from '../utils/supabase'
 const table_name = 'channel_shared_with'
 
+const includes_icase = (array: string[], value: string) => array.some(a=>a.toLowerCase()===value.toLowerCase())
+
 const get_db = async ({channel, email}:{channel?:string, email?: string}) => {
 	let query = supabase.from(table_name).select('channel, shared_with, owner_id')
 	if(channel) query = query.match({channel})
-	if(email) query = query.contains('shared_with', [email])
 	const result = await query
 	if(email) {
-		result.data?.map(data=>({...data, shared_with: [email]}))
+		return result.data?.filter(data=>includes_icase(data.shared_with, email))
+		.map(data=>({...data, shared_with: [email]}))??[]
 	}
 	return (await query).data || []
 }
@@ -36,7 +38,7 @@ export const useChannelSharedWith = (channel: string) => {
 		.catch(console.error)
 	}
 	const check = (item: string) => {
-		return result.includes(item)
+		return includes_icase(result, item)
 	}
 	const add = (new_value: string) => {
 		return set([...result, new_value])
@@ -74,18 +76,18 @@ export const useEditableChannel = () => {
 			setResult({
 				owned: result.filter(({owner_id})=>owner_id===session?.user?.id).map(({channel})=>channel),
 				shared: result.filter(({owner_id})=>owner_id!==session?.user?.id).map(({channel})=>channel),
-				result:result.map(({channel})=>channel)
+				result: result.map(({channel})=>channel)
 			})
 		})
 		.catch(console.error)
 	},[get_db, setResult])
 	const check = useCallback((channel: string) => {
-		return result.includes(channel)
+		return includes_icase(result, channel)
 	}, [result])
 	const add = useCallback(async (channel: string) => {
 		if(!email) return result
 		const current = (await get_db({channel})).flatMap(({shared_with})=>shared_with)
-		if(current.includes(email)) {
+		if(includes_icase(current, email)) {
 			return current
 		}
 		return set_db(channel, [...current, email])
@@ -93,7 +95,7 @@ export const useEditableChannel = () => {
 	const del = useCallback(async (channel: string) => {
 		if(!email) return result
 		const current = (await get_db({channel})).flatMap(({shared_with})=>shared_with)
-		if(!current.includes(email)) {
+		if(!includes_icase(current, email)) {
 			return current
 		}
 		return set_db(channel, current.filter(c=>c!==email))

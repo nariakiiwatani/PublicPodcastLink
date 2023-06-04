@@ -250,6 +250,8 @@ const SelectChannel = ({onChange}: {
 	</Select>
 }
 
+const compare_icase = (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
+
 const AddNewChannel = () => {
 	const { t } = useTranslation('owner')
 	const { session } = useContext(SessionContext)
@@ -269,7 +271,7 @@ const AddNewChannel = () => {
 		.then(value => fetch_podcast(value))
 		.then(result => {
 			if(!result?.podcast) throw t.rss_fetch_failed
-			if(result.podcast.owner.email !== user_email) throw t.not_yours(redirectURL(result.podcast.self_url))
+			if(!compare_icase(result.podcast.owner.email, user_email)) throw t.not_yours(redirectURL(result.podcast.self_url))
 			return add(result.podcast.self_url)
 		})
 		.then(() => {
@@ -345,7 +347,7 @@ const useRequestChannel = () => {
 		.then(result => {
 			if(!result) return false
 			const {podcast} = result
-			if(podcast.owner.email === session?.user.email) {
+			if(session?.user.email && compare_icase(podcast.owner.email, session?.user.email)) {
 				add_new.add(podcast.self_url)
 				return true
 			}
