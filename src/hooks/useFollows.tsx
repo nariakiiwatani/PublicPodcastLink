@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect, createContext } from 'react'
+import React, { useState, useCallback, useEffect, createContext } from 'react'
 import { fetch_podcast } from './usePodcast'
+import { Button, ButtonProps } from '@mui/material'
 
 export type PodcastRecord = { url: string, title: string }
 
@@ -7,7 +8,8 @@ export const FollowingContext = createContext({
 	podcasts: [] as PodcastRecord[],
 	add: (_url: string):Promise<boolean>|boolean => false,
 	del: (_url: string):Promise<boolean>|boolean => false,
-	check: (_url: string):Promise<boolean>|boolean => false
+	check: (_url: string):Promise<boolean>|boolean => false,
+	ToggleButton: ({url:_}:{url:string}): React.ReactElement => <></>
 })
 export const FollowingProvider = ({children}:{children:React.ReactNode}) => {
 	const value = useFollows()
@@ -24,19 +26,23 @@ export const useFollows = () => {
 		if(!title) {
 			return false
 		}
-		const ret = [...podcasts]
-		const found = ret.find(r=>r.url === url)
-		if(found && found.title === title) {
-			return false
-		}
-		if(found) {
-			found.title = title
-		}
-		else {
-			ret.push({url, title})
-		}
-		setPodcasts(ret)
-		return true
+		let result = false
+		setPodcasts(prev => {
+			const ret = [...prev]
+			const found = ret.find(r=>r.url === url)
+			if(found && found.title === title) {
+				return prev
+			}
+			if(found) {
+				found.title = title
+			}
+			else {
+				ret.push({url, title})
+			}
+			result = true
+			return ret
+		})
+		return result
 	}, [podcasts])
 	const del = useCallback((url: string) => {
 		const found = podcasts.find(r=>r.url === url)
@@ -49,5 +55,25 @@ export const useFollows = () => {
 	const check = useCallback((url: string) => {
 		return podcasts.find(p=>p.url === url) !== undefined
 	}, [podcasts])
-	return { podcasts, add, del, check }
+
+	const ToggleButton = useCallback(({url}:{
+		url: string
+	}) => {
+		const props: ButtonProps = {
+			variant: "text",
+			size: "small",
+			...(check(url) ? {
+				color: "error",
+				onClick: () => del(url)
+			} : {
+				color: "primary",
+				onClick: () => add(url)
+			})
+		}
+		return <Button
+			{...props}
+		>{check(url) ? 'unfollow' : 'follow'}</Button>
+	}, [check, add, del])
+
+	return { podcasts, add, del, check, ToggleButton }
 }

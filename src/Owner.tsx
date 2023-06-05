@@ -16,7 +16,7 @@ import { AddNewString } from './components/AddNewString'
 import { useQuery } from './hooks/useQuery'
 import { useTranslation } from './hooks/useTranslation'
 import { useNavigate } from 'react-router-dom'
-
+import { FetchTitle } from './utils/FetchTitle'
 
 const EditableListItem = ({defaultValue, textFieldProps, Icon, onEdit, onDelete}:{
 	defaultValue: string
@@ -188,14 +188,6 @@ const CheckAuth = ({ children }: { children: React.ReactNode }) => {
 		</>
 	)
 }
-
-const FetchTitle = ({url}:{url:string}) => {
-	const { podcast } = usePodcast(url)
-	return (<>
-		{podcast?.title??url}
-	</>)
-}
-
 
 const SelectChannel = ({onChange}: {
 	onChange: (podcast:Podcast|null)=>void

@@ -14,32 +14,14 @@ type PodcastPreviewProps = {
 };
 
 export const Title: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
-	const { add: follow, del: unfollow, check: isFollowing } = useContext(FollowingContext)
-	const FollowButton = useMemo(() => {
-		if (!src?.self_url) return <></>
-		const props: ButtonProps = {
-			variant: "text",
-			size: "small",
-			...(isFollowing(src.self_url) ? {
-				color: "error",
-				onClick: () => unfollow(src.self_url)
-			} : {
-				color: "primary",
-				onClick: () => follow(src.self_url)
-			})
-		}
-		return <Button
-			{...props}
-		>{isFollowing(src.self_url) ? 'unfollow' : 'follow'}</Button>
-	}, [src, follow, unfollow])
-
+	const { ToggleButton } = useContext(FollowingContext)
 	if (!src) return null;
 	return (<>
 		<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
 			<Typography variant='h5'>
 				{src.title}<OpenInNewButton url={src.link} />
 			</Typography>
-			<Typography variant='subtitle1'>{FollowButton}</Typography>
+			<Typography variant='subtitle1'><ToggleButton url={src.self_url} /></Typography>
 		</Box>
 	</>)
 }
