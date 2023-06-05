@@ -1,4 +1,4 @@
-import { useState, useContext, useMemo } from 'react';
+import { useState, useContext, useMemo, useEffect } from 'react';
 import { Checkbox, List, ListItem, ListItemText, ListItemSecondaryAction, Typography, Box, Divider, Button } from '@mui/material';
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import LinkIcon from '@mui/icons-material/Link';
@@ -6,6 +6,7 @@ import { importlink } from '../utils/permalink';
 import { useTranslation } from '../hooks/useTranslation';
 import { FollowingContext } from '../hooks/useFollows';
 import { FetchTitle } from '../utils/FetchTitle';
+import { fetch_podcast } from '../hooks/usePodcast'
 
 export const CreateImportURL = () => {
 	const { t } = useTranslation('create_import_url')
@@ -24,11 +25,21 @@ export const CreateImportURL = () => {
 	const handleToggleAll = () => {
 		setSelectedItems(new Array(items.length).fill(!isAllSelected));
 	};
+	const [titles, setTitles] = useState<{[url:string]:string}>({})
+	useEffect(() => {
+		items.filter(p=>!(p in titles))
+		.forEach(url => {
+			fetch_podcast(url).then(result => {
+				if(!result) return
+				setTitles(prev=> ({
+					...prev,
+					[url]: result.podcast.title
+				}))
+			})
+		})
+	}, [items])
 
-	const resultUrl = importlink(items
-		.filter((_, index) => selectedItems[index])
-		.map(item => item.url)
-	)
+	const resultUrl = importlink(items.filter((_, index) => selectedItems[index]))
 
 	return (
 		<div>
@@ -52,11 +63,11 @@ export const CreateImportURL = () => {
 				{items.map((item, index) => (
 					<ListItem key={index}>
 						<ListItemText
-							primary={item.title}
+							primary={titles[item]??''}
 							secondary={<Typography
 								variant='caption'
 								color='primary'
-							>{item.url}</Typography>
+							>{item}</Typography>
 							}
 						/>
 						<ListItemSecondaryAction>
@@ -96,7 +107,7 @@ export const ImportChannels = ({ channels: items }: ImportChannelsProps) => {
 	const [pending, setPending] = useState(false)
 	const followAll = async () => {
 		setPending(true)
-		await Promise.all(items.filter(item=>!check(item)).map(add))
+		await add(items.filter(item=>!check(item)))
 		setPending(false)
 	}
 

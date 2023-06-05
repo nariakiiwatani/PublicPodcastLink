@@ -59,6 +59,31 @@ export interface Database {
           }
         ]
       }
+      following: {
+        Row: {
+          channels: string[]
+          created_at: string | null
+          user_id: string
+        }
+        Insert: {
+          channels?: string[]
+          created_at?: string | null
+          user_id: string
+        }
+        Update: {
+          channels?: string[]
+          created_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "following_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       related_link: {
         Row: {
           channel: string
@@ -77,9 +102,30 @@ export interface Database {
         }
         Relationships: []
       }
+      whitelist: {
+        Row: {
+          id: number
+          pattern: string | null
+        }
+        Insert: {
+          id?: number
+          pattern?: string | null
+        }
+        Update: {
+          id?: number
+          pattern?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      non_whitelisted_urls: {
+        Row: {
+          channel: string | null
+          unnested_url: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never

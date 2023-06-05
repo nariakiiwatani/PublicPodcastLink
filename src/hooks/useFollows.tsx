@@ -1,13 +1,13 @@
-import React, { useState, useCallback, useEffect, createContext } from 'react'
-import { fetch_podcast } from './usePodcast'
+import React, { useState, useCallback, useEffect, useContext, createContext } from 'react'
 import { Button, ButtonProps } from '@mui/material'
+import { SessionContext, supabase } from '../utils/supabase'
 
-export type PodcastRecord = { url: string, title: string }
+export type PodcastRecord = string
 
 export const FollowingContext = createContext({
 	podcasts: [] as PodcastRecord[],
-	add: (_url: string):Promise<boolean>|boolean => false,
-	del: (_url: string):Promise<boolean>|boolean => false,
+	add: (_url: string|string[]):Promise<boolean>|boolean => false,
+	del: (_url: string|string[]):Promise<boolean>|boolean => false,
 	check: (_url: string):Promise<boolean>|boolean => false,
 	ToggleButton: ({url:_}:{url:string}): React.ReactElement => <></>
 })
@@ -17,43 +17,55 @@ export const FollowingProvider = ({children}:{children:React.ReactNode}) => {
 }
 
 export const useFollows = () => {
-	const [podcasts, setPodcasts] = useState<PodcastRecord[]>(JSON.parse(localStorage.getItem('podcasts') ?? '[]'));
-	useEffect(() => {
-		localStorage.setItem('podcasts', JSON.stringify(podcasts))
-	}, [podcasts])
-	const add = useCallback(async (url: string) => {
-		const title = (await fetch_podcast(url))?.podcast.title
-		if(!title) {
-			return false
+	const { session } = useContext(SessionContext)
+	const [podcasts, setPodcasts] = useState<PodcastRecord[]>(()=> {
+		const value = JSON.parse(localStorage.getItem('podcasts') ?? '[]')
+		if(value.length>0 && value[0].url) {
+			return value.map((value:{url:string})=>value.url)
 		}
-		let result = false
-		setPodcasts(prev => {
-			const ret = [...prev]
-			const found = ret.find(r=>r.url === url)
-			if(found && found.title === title) {
-				return prev
-			}
-			if(found) {
-				found.title = title
+		return value
+	});
+	useEffect(() => {
+		if(!session) return
+		const query = supabase.from('following').select('channels')
+		query.then(result => {
+			if(result.error) return
+			if(!result?.data || result.data.length === 0) {
+				supabase.from('following').upsert({user_id:session.user.id, channels:podcasts})
 			}
 			else {
-				ret.push({url, title})
+				setPodcasts(result.data.flatMap(data=>data.channels))
 			}
-			result = true
-			return ret
+		})
+	}, [session])
+	useEffect(() => {
+		if(session) {
+			supabase.from('following').upsert({user_id:session.user.id, channels:podcasts})
+		}
+		else {
+			localStorage.setItem('podcasts', JSON.stringify(podcasts))
+		}
+	}, [podcasts, session])
+	const add = useCallback((url: string|string[]) => {
+		let result = false
+		setPodcasts(prev => {
+			const new_url = (Array.isArray(url) ? url : [url]).filter(url=>!prev.includes(url))
+			result = new_url.length > 0
+			return result ? [...prev, ...new_url] : prev
 		})
 		return result
 	}, [podcasts])
-	const del = useCallback((url: string) => {
-		const found = podcasts.find(r=>r.url === url)
-		if(!found) {
-			return false
-		}
-		setPodcasts(prev => prev.filter(p=>p.url !== url))
+	const del = useCallback((url: string|string[]) => {
+		let result = false
+		setPodcasts(prev => {
+			const new_url = prev.filter(current=>!(Array.isArray(url) ? url : [url]).includes(current))
+			result = new_url.length === prev.length
+			return result ? [...new_url] : prev
+		})
 		return true
 	}, [podcasts])
 	const check = useCallback((url: string) => {
-		return podcasts.find(p=>p.url === url) !== undefined
+		return podcasts.includes(url)
 	}, [podcasts])
 
 	const ToggleButton = useCallback(({url}:{
