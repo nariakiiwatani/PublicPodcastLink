@@ -95,16 +95,17 @@ export const Login = () => {
 	)
 }
 export const CheckAuth = ({ children }: { children: React.ReactNode }) => {
+	const { t } = useTranslation('login')
 	const { session } = useContext(SessionContext)
 	const [is_signup, setIsSignup] = useState(false)
 	const toggleMode = () => { setIsSignup(prev=>!prev) }
 	return (
 		!session ?
 			is_signup ? <>
-				<Typography variant='h6'>Sign up <Link variant='caption' onClick={toggleMode}>or log in?</Link></Typography>
+				<Typography variant='h6'>{t.signup}<Link variant='caption' onClick={toggleMode} sx={{marginLeft: 1}}>{t.or_log_in}</Link></Typography>
 				<Signup />
 			</> : <>
-				<Typography variant='h6'>Log in <Link variant='caption' onClick={toggleMode}>or sign up?</Link></Typography>
+				<Typography variant='h6'>{t.login}<Link variant='caption' onClick={toggleMode} sx={{marginLeft: 1}}>{t.or_sign_up}</Link></Typography>
 				<Login />
 			</>
 			: <>

@@ -151,6 +151,22 @@ export default {
 		login_button:  {
 			en: 'Log in',
 			ja: 'ログイン'
+		},
+		login:  {
+			en: 'Log in',
+			ja: 'ログイン'
+		},
+		signup:  {
+			en: 'Sign up',
+			ja: 'サインアップ'
+		},
+		or_log_in: {
+			en: 'or log in?',
+			ja: 'パスワード設定済みの場合はこちら'
+		},
+		or_sign_up: {
+			en: "or sign up / forgot password / don't use password?",
+			ja: '未ログイン / パスワード再設定 / パスワード未設定の場合はこちら'
 		}
 	},
 	owner: {
