@@ -1,10 +1,10 @@
-import { useState, useContext } from 'react';
-import { Checkbox, List, ListItem, ListItemText, ListItemSecondaryAction, Typography, Box, Divider } from '@mui/material';
+import { useState, useContext, useMemo } from 'react';
+import { Checkbox, List, ListItem, ListItemText, ListItemSecondaryAction, Typography, Box, Divider, Button } from '@mui/material';
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import LinkIcon from '@mui/icons-material/Link';
 import { importlink } from '../utils/permalink';
 import { useTranslation } from '../hooks/useTranslation';
-import { FollowingContext } from '../hooks/useFollows';
+import { FollowingContext, PodcastRecord } from '../hooks/useFollows';
 
 export const CreateImportURL = () => {
 	const { t } = useTranslation('create_import_url')
@@ -79,6 +79,80 @@ export const CreateImportURL = () => {
 						>{t.copy}</Typography>
 					</>}
 				/>
+			</Box>
+		</div>
+	);
+}
+
+type ImportChannelsProps = {
+	channels: string[]
+}
+export const ImportChannels = ({channels}:ImportChannelsProps) => {
+	const { t } = useTranslation('import_channels')
+	const items = useMemo(() => {
+		return channels.map((channel, index) => ({url:channel, title:index}))
+	}, [channels])
+	const [selectedItems, setSelectedItems] = useState<Array<boolean>>(new Array(items.length).fill(true));
+
+	const handleToggle = (index: number) => () => {
+		const newSelectedItems = [...selectedItems];
+		newSelectedItems[index] = !newSelectedItems[index];
+		setSelectedItems(newSelectedItems);
+	};
+	const numSelectedItems = selectedItems.filter(s => s).length
+	const isAllSelected = numSelectedItems === items.length;
+	const isSomeSelected = numSelectedItems > 0;
+
+	const handleToggleAll = () => {
+		setSelectedItems(new Array(items.length).fill(!isAllSelected));
+	};
+
+	const handleSubmit = async () => {
+
+	}
+
+	return (
+		<div>
+			<List>
+				<ListItem>
+					<ListItemText
+						primary={<Typography variant='subtitle1'>{t.all}</Typography>}
+					/>
+					<ListItemSecondaryAction>
+						<Checkbox
+							edge='end'
+							checked={isAllSelected}
+							indeterminate={isSomeSelected && !isAllSelected}
+							onChange={handleToggleAll}
+						/>
+					</ListItemSecondaryAction>
+				</ListItem>
+			</List>
+			<Divider />
+			<List sx={{ maxHeight: '50vh', overflow: 'scroll' }}>
+				{items.map((item, index) => (
+					<ListItem key={index}>
+						<ListItemText
+							primary={item.title}
+							secondary={<Typography
+								variant='caption'
+								color='primary'
+							>{item.url}</Typography>
+							}
+						/>
+						<ListItemSecondaryAction>
+							<Checkbox edge="end" checked={selectedItems[index]} onChange={handleToggle(index)} />
+						</ListItemSecondaryAction>
+					</ListItem>
+				))}
+			</List>
+			<Divider />
+			<Box sx={{ marginTop: 2 }}>
+				<Typography>{t.selected(numSelectedItems)}</Typography>
+				<Button
+					onClick={handleSubmit}
+					disabled={numSelectedItems === 0}
+				>{t.import}</Button>
 			</Box>
 		</div>
 	);

@@ -7,7 +7,7 @@ import EpisodePreview from './components/EpisodePreview';
 import usePodcast from './hooks/usePodcast';
 import { CssBaseline, ThemeProvider, createTheme, Box } from '@mui/material';
 import Header from './components/Header';
-import { permalink as createPermalink } from './utils/permalink';
+import { permalink as createPermalink, importlink } from './utils/permalink';
 import { NavigatorButtons } from './components/NavigatorButtons';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
@@ -16,6 +16,8 @@ import { MyHelmet } from './components/MyHelmet';
 import { RelatedLinksProvider } from './hooks/useRelatedLinks';
 import { useQuery } from './hooks/useQuery'
 import { FollowingProvider } from './hooks/useFollows'
+import { useDialog } from './hooks/useDialog';
+import { ImportChannels } from './components/CreateImportURL';
 
 const theme = createTheme({
 	palette: {
@@ -27,9 +29,17 @@ const App: React.FC = () => {
 	const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | null>(null);
 	const { podcast, episodes, fetchPodcast } = usePodcast();
 
-	const navigate = useNavigate()
-
 	const query = useQuery();
+	const import_channels = useMemo(() => query.get('channels')?.split(','), [query])
+	const import_dialog = useDialog()
+	useEffect(() => {
+		if(!import_channels) {
+			return
+		}
+		import_dialog.open()
+	}, [import_channels])
+
+	const navigate = useNavigate()
 
 	const handleUrlInput = (value: string) => {
 		try {
@@ -42,21 +52,21 @@ const App: React.FC = () => {
 	}
 
 	useAsync(async () => {
-		const url = query.get('channel')??query.get('channels')
+		const url = query.get('channel')
 		if (url) {
 			const list = url.split(',')
-			await Promise.all(list.map(url => {
-				let guid = query.get('item')
-				url = decodeURIComponent(url)
-				if (guid) guid = decodeURIComponent(guid)
-				return updateSelected(url, guid)
-			}))
+			if(list.length > 1) {
+				navigate(`?channels=${list.join(',')}`)
+				return
+			}
+			let guid = query.get('item')
+			if (guid) guid = decodeURIComponent(guid)
+			return updateSelected(decodeURIComponent(url), guid)
 		}
 	}, [])
 
 	useEffect(() => {
 		if(!podcast) {
-			navigate('/')
 			return
 		}
 		const permalink = createPermalink(podcast.self_url, selectedEpisodeId || undefined, '/')
@@ -130,6 +140,9 @@ const App: React.FC = () => {
 						</RelatedLinksProvider>
 					</>}
 				</Box>
+				{import_channels && <import_dialog.Dialog title='インポート'>
+					<ImportChannels channels={import_channels} />
+				</import_dialog.Dialog>}
 			</FollowingProvider>
 		</ThemeProvider>
 	);

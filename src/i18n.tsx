@@ -66,6 +66,20 @@ export default {
 			ja: (num: number) => `${num} 番組を選択中`
 		}
 	},
+	import_channels: {
+		all: {
+			en: 'all',
+			ja: '全て'
+		},
+		copy: {
+			en: 'Click to copy',
+			ja: 'クリックしてコピー'
+		},
+		selected: {
+			en: (num: number) => `${num > 0 ? num : 'no'} item${num > 1 ? 's' : ''} selected.`,
+			ja: (num: number) => `${num} 番組を選択中`
+		}
+	},
 	donation: {
 		list_header: {
 			en: 'Supporters',
