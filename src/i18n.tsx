@@ -50,6 +50,10 @@ export default {
 		export_modal_title: {
 			en: 'Create Share URL',
 			ja: '共有用リンクを作成'
+		},
+		change_password_title: {
+			en: 'Change Password',
+			ja: 'パスワードを変更'
 		}
 	},
 	create_import_url: {
@@ -135,6 +139,18 @@ export default {
 		check_email: {
 			en: 'Check your email for the login link!',
 			ja: 'ログインリンクを記載したEメールを送信しました'
+		},
+		password_reset_prompt: {
+			en: 'Successfully changed password.',
+			ja: 'パスワードを変更しました'
+		},
+		reset_password_button:  {
+			en: 'Reset Password',
+			ja: '送信'
+		},
+		login_button:  {
+			en: 'Log in',
+			ja: 'ログイン'
 		}
 	},
 	owner: {

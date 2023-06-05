@@ -10,12 +10,14 @@ import PeopleIcon from '@mui/icons-material/People';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
 import SettingsIcon from '@mui/icons-material/Settings'
+import LockResetIcon from '@mui/icons-material/LockReset';
 import { useTranslation } from '../hooks/useTranslation'
 import { useDialog } from '../hooks/useDialog';
 import { CreateImportURL } from './CreateImportURL';
 import Donation from './Donation';
 import { SessionContext } from '../utils/supabase';
 import { useLocation } from 'react-router-dom';
+import { ResetPassword } from './Login';
 
 const Header = () => {
 	const { session, logout } = useContext(SessionContext)
@@ -50,8 +52,13 @@ const Header = () => {
 		logout()
 	}
 
+	const handlePasswordChange = () => {
+		password_dialog.close()
+	}
+
 	const export_dialog = useDialog();
 	const donation_dialog = useDialog();
+	const password_dialog = useDialog();
 
 	return (
 		<AppBar position="static">
@@ -127,6 +134,12 @@ const Header = () => {
 						</ListItemIcon>
 						<ListItemText primary={t.to_dashboard} />
 					</MenuItem>}
+					{session && <MenuItem onClick={password_dialog.open}>
+						<ListItemIcon>
+							<LockResetIcon />
+						</ListItemIcon>
+						<ListItemText primary={t.change_password_title} />
+					</MenuItem>}
 					{session ? 
 					<MenuItem onClick={handleLogoutItemClick}>
 						<ListItemIcon>
@@ -148,6 +161,9 @@ const Header = () => {
 				<donation_dialog.Dialog title={t.about_donation}>
 					<Donation />
 				</donation_dialog.Dialog>
+				<password_dialog.Dialog title={t.change_password_title}>
+					<ResetPassword onChange={handlePasswordChange}/>
+				</password_dialog.Dialog>
 			</Toolbar>
 		</AppBar>
 	);
