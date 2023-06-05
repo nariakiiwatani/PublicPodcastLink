@@ -16,15 +16,30 @@ export const FollowingProvider = ({children}:{children:React.ReactNode}) => {
 	return <FollowingContext.Provider value={value}>{children}</FollowingContext.Provider>
 }
 
+const setDB = (user_id: string, channels: string[]) => {
+	return supabase.from('following').upsert({user_id, channels})
+}
+const setStorage = (channels: string[]) => {
+	localStorage.setItem('podcasts', JSON.stringify(channels))
+}
+
 export const useFollows = () => {
 	const { session } = useContext(SessionContext)
 	const [podcasts, setPodcasts] = useState<PodcastRecord[]>(()=> {
 		const value = JSON.parse(localStorage.getItem('podcasts') ?? '[]')
-		if(value.length>0 && value[0].url) {
+		if(value.length>0 && value[0].url) {	// old format to new format
 			return value.map((value:{url:string})=>value.url)
 		}
 		return value
 	});
+	const update = useCallback(async (channels: string[]) => {
+		if(session) {
+			await setDB(session.user.id, channels)
+		}
+		else {
+			setStorage(channels)
+		}
+	},[session])
 	useEffect(() => {
 		if(!session) return
 		const query = supabase.from('following').select('channels')
@@ -38,32 +53,34 @@ export const useFollows = () => {
 			}
 		})
 	}, [session])
-	useEffect(() => {
-		if(session) {
-			supabase.from('following').upsert({user_id:session.user.id, channels:podcasts})
-		}
-		else {
-			localStorage.setItem('podcasts', JSON.stringify(podcasts))
-		}
-	}, [podcasts, session])
 	const add = useCallback((url: string|string[]) => {
 		let result = false
 		setPodcasts(prev => {
 			const new_url = (Array.isArray(url) ? url : [url]).filter(url=>!prev.includes(url))
 			result = new_url.length > 0
-			return result ? [...prev, ...new_url] : prev
+			if(!result) {
+				return prev
+			}
+			const new_array = result ? [...prev, ...new_url] : prev
+			update(new_array)
+			return new_array
 		})
 		return result
-	}, [podcasts])
+	}, [podcasts, update])
 	const del = useCallback((url: string|string[]) => {
 		let result = false
 		setPodcasts(prev => {
 			const new_url = prev.filter(current=>!(Array.isArray(url) ? url : [url]).includes(current))
-			result = new_url.length === prev.length
-			return result ? [...new_url] : prev
+			result = new_url.length !== prev.length
+			if(!result) {
+				return prev
+			}
+			const new_array = result ? [...new_url] : prev
+			update(new_array)
+			return new_array
 		})
 		return true
-	}, [podcasts])
+	}, [podcasts, update])
 	const check = useCallback((url: string) => {
 		return podcasts.includes(url)
 	}, [podcasts])
@@ -71,10 +88,11 @@ export const useFollows = () => {
 	const ToggleButton = useCallback(({url}:{
 		url: string
 	}) => {
+		const is_following = check(url)
 		const props: ButtonProps = {
 			variant: "text",
 			size: "small",
-			...(check(url) ? {
+			...(is_following ? {
 				color: "error",
 				onClick: () => del(url)
 			} : {
@@ -84,7 +102,7 @@ export const useFollows = () => {
 		}
 		return <Button
 			{...props}
-		>{check(url) ? 'unfollow' : 'follow'}</Button>
+		>{is_following ? 'unfollow' : 'follow'}</Button>
 	}, [check, add, del])
 
 	return { podcasts, add, del, check, ToggleButton }
