@@ -67,6 +67,10 @@ export default {
 		}
 	},
 	import_channels: {
+		title: {
+			en: 'Import Channels',
+			ja: 'インポート'
+		},
 		all: {
 			en: 'follow all',
 			ja: '全てフォロー'

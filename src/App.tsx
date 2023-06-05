@@ -7,7 +7,7 @@ import EpisodePreview from './components/EpisodePreview';
 import usePodcast from './hooks/usePodcast';
 import { CssBaseline, ThemeProvider, createTheme, Box } from '@mui/material';
 import Header from './components/Header';
-import { permalink as createPermalink, importlink } from './utils/permalink';
+import { permalink as createPermalink } from './utils/permalink';
 import { NavigatorButtons } from './components/NavigatorButtons';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
@@ -18,6 +18,7 @@ import { useQuery } from './hooks/useQuery'
 import { FollowingProvider } from './hooks/useFollows'
 import { useDialog } from './hooks/useDialog';
 import { ImportChannels } from './components/CreateImportURL';
+import { useTranslation } from './hooks/useTranslation';
 
 const theme = createTheme({
 	palette: {
@@ -26,6 +27,7 @@ const theme = createTheme({
 });
 
 const App: React.FC = () => {
+	const { t } = useTranslation()
 	const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | null>(null);
 	const { podcast, episodes, fetchPodcast } = usePodcast();
 
@@ -140,7 +142,7 @@ const App: React.FC = () => {
 						</RelatedLinksProvider>
 					</>}
 				</Box>
-				{import_channels && <import_dialog.Dialog title='インポート'>
+				{import_channels && <import_dialog.Dialog title={t.import_channels.title}>
 					<ImportChannels channels={import_channels} />
 				</import_dialog.Dialog>}
 			</FollowingProvider>

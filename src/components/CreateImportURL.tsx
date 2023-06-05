@@ -4,7 +4,7 @@ import { CopyToClipboardButton } from './CopyToClipboardButton';
 import LinkIcon from '@mui/icons-material/Link';
 import { importlink } from '../utils/permalink';
 import { useTranslation } from '../hooks/useTranslation';
-import { FollowingContext, useFollows } from '../hooks/useFollows';
+import { FollowingContext } from '../hooks/useFollows';
 import { FetchTitle } from '../utils/FetchTitle';
 
 export const CreateImportURL = () => {
@@ -99,7 +99,6 @@ export const ImportChannels = ({ channels: items }: ImportChannelsProps) => {
 		await Promise.all(items.filter(item=>!check(item)).map(add))
 		setPending(false)
 	}
-
 
 	return (
 		<div>
