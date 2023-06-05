@@ -16,7 +16,7 @@ export const SessionProvider = ({children}:{children:React.ReactNode}) => {
 	</SessionContext.Provider>
 }
 
-export const useSession = () => {
+const useSession = () => {
 	const [session, setSession] = useState<Session | null>(null)
 
 	useEffect(() => {

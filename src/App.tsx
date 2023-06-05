@@ -15,6 +15,7 @@ import { useAsync } from 'react-use';
 import { MyHelmet } from './components/MyHelmet';
 import { RelatedLinksProvider } from './hooks/useRelatedLinks';
 import { useQuery } from './hooks/useQuery'
+import { useFollows, PodcastRecord } from './hooks/useFollows'
 
 const theme = createTheme({
 	palette: {
@@ -22,12 +23,10 @@ const theme = createTheme({
 	},
 });
 
-type PodcastRecord = { url: string, title: string }
-
 export const PodcastRecordContext = createContext<PodcastRecord[]>([])
 
 const App: React.FC = () => {
-	const [podcasts, setPodcasts] = useState<PodcastRecord[]>(JSON.parse(localStorage.getItem('podcasts') ?? '[]'));
+	const { podcasts, add:addPodcast, del:deletePodcast } = useFollows()
 	const [url, setUrl_] = useState('');
 	const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | null>(null);
 	const { podcast, episodes, fetchPodcast, clearPodcast } = usePodcast();
@@ -43,20 +42,15 @@ const App: React.FC = () => {
 	}
 
 	const deleteUrl = (url: string) => {
-		const newPodcasts = [...podcasts]
-		let index = newPodcasts.findIndex(p => p.url === url)
-		if (index >= 0) {
-			newPodcasts.splice(index, 1)
-			setPodcasts(newPodcasts)
-			index = Math.min(index, newPodcasts.length - 1)
+		if(deletePodcast(url)) {
+			const index = Math.min(podcasts.findIndex(p => p.url === url)+1, podcasts.length-2)
 			if (index >= 0) {
-				setUrl(newPodcasts[index].url)
+				setUrl(podcasts[index].url)
 			}
 			else {
 				clearPodcast()
 				navigate(`/`)
 			}
-			localStorage.setItem('podcasts', JSON.stringify(newPodcasts))
 		}
 	}
 
@@ -91,18 +85,7 @@ const App: React.FC = () => {
 		return fetchPodcast(url).then((result) => {
 			if (result) {
 				const { podcast: pod, episodes: epi } = result
-				setPodcasts(podcasts => {
-					const newPodcasts = [...podcasts]
-					const prev = newPodcasts.find(({ url: prev_url }) => url === prev_url)
-					if (prev) {
-						prev.title = pod.title
-					}
-					else {
-						newPodcasts.push({ url, title: pod.title })
-					}
-					localStorage.setItem('podcasts', JSON.stringify(newPodcasts));
-					return newPodcasts
-				});
+				addPodcast(url, pod.title)
 				if (epi.length > 0) {
 					if (episode_id && epi.find(({ id }: { id: string }) => id === episode_id)) {
 						setSelectedEpisodeId(episode_id)
@@ -113,7 +96,7 @@ const App: React.FC = () => {
 				}
 			}
 		});
-	}, [fetchPodcast, podcasts, setPodcasts])
+	}, [fetchPodcast, podcasts, addPodcast])
 
 	const selectedEpisode = episodes.find((episode) => episode.id === selectedEpisodeId) ?? null;
 
