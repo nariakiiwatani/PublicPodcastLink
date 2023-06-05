@@ -2,7 +2,7 @@ import { useState, useContext } from 'react';
 import { Checkbox, List, ListItem, ListItemText, ListItemSecondaryAction, Typography, Box, Divider } from '@mui/material';
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import LinkIcon from '@mui/icons-material/Link';
-import { permalink } from '../utils/permalink';
+import { importlink } from '../utils/permalink';
 import { useTranslation } from '../hooks/useTranslation';
 import { FollowingContext } from '../hooks/useFollows';
 
@@ -24,10 +24,10 @@ export const CreateImportURL = () => {
 		setSelectedItems(new Array(items.length).fill(!isAllSelected));
 	};
 
-	const resultUrl = permalink(items
+	const resultUrl = importlink(items
 		.filter((_, index) => selectedItems[index])
 		.map(item => item.url)
-		.join(','));
+		)
 
 	return (
 		<div>

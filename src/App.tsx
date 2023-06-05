@@ -42,7 +42,7 @@ const App: React.FC = () => {
 	}
 
 	useAsync(async () => {
-		const url = query.get('channel')
+		const url = query.get('channel')??query.get('channels')
 		if (url) {
 			const list = url.split(',')
 			await Promise.all(list.map(url => {
