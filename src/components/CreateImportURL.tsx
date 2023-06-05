@@ -2,13 +2,13 @@ import { useState, useContext } from 'react';
 import { Checkbox, List, ListItem, ListItemText, ListItemSecondaryAction, Typography, Box, Divider } from '@mui/material';
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import LinkIcon from '@mui/icons-material/Link';
-import { PodcastRecordContext } from '../App';
 import { permalink } from '../utils/permalink';
 import { useTranslation } from '../hooks/useTranslation';
+import { FollowingContext } from '../hooks/useFollows';
 
 export const CreateImportURL = () => {
 	const { t } = useTranslation('create_import_url')
-	const items = useContext(PodcastRecordContext)
+	const { podcasts:items } = useContext(FollowingContext)
 	const [selectedItems, setSelectedItems] = useState<Array<boolean>>(new Array(items.length).fill(true));
 
 	const handleToggle = (index: number) => () => {

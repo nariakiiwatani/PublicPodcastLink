@@ -1,20 +1,25 @@
-import React, { useState, useMemo } from 'react';
-import { IconButton, ListItemText, TextField, Autocomplete } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import React, { useState, useMemo, useContext, useEffect } from 'react';
+import { ListItemText, TextField, Autocomplete } from '@mui/material';
 import { useTranslation } from '../hooks/useTranslation';
+import { FollowingContext } from '../hooks/useFollows';
 
 type PodcastInputProps = {
-	url: string;
 	setUrl: (url: string) => void;
-	podcasts: { url: string, title: string }[];
-	deleteUrl: (url: string) => void;
 };
 
-const PodcastInput: React.FC<PodcastInputProps> = ({ url, setUrl, podcasts, deleteUrl }) => {
+const is_url = (value: string) => new RegExp('https?://.+').test(value)
+
+const PodcastInput: React.FC<PodcastInputProps> = ({ setUrl }) => {
+	const [value, setValue] = useState('---')
+	const { podcasts } = useContext(FollowingContext)
 	const { t } = useTranslation('select_channel')
-	const [pending, setPending] = useState<string>('---')
-	const selectedPodcast = podcasts.find(podcast => podcast.url === url) ?? { url: '', title: pending };
+	const selectedPodcast = podcasts.find(p=>p.url === value) ?? { url: '', title: value };
 	const options = useMemo(() => selectedPodcast.url === '' ? [selectedPodcast, ...podcasts] : podcasts, [podcasts, selectedPodcast])
+	useEffect(() => {
+		if(is_url(value)) {
+			setUrl(value)
+		}
+	}, [value])
 
 	return (
 		<Autocomplete
@@ -23,31 +28,21 @@ const PodcastInput: React.FC<PodcastInputProps> = ({ url, setUrl, podcasts, dele
 			options={options}
 			value={selectedPodcast}
 			getOptionLabel={(option) => option.title}
-			onChange={(_, value) => value && setUrl(value.url)}
+			isOptionEqualToValue={(option, value) => option.url === value.url}
+			onChange={(_, value) => value && setValue(value.url)}
 			onInputChange={(_, value) => {
 				if (value) {
-					setUrl(value)
-					setPending(value)
+					if(is_url(value)) {
+						setValue(value)
+					}
 				}
 				else {
-					setUrl('')
-					setPending('')
+					setValue('')
 				}
 			}}
 			renderOption={(props, option, { selected:_ }) => (
 				<li {...props}>
 					<ListItemText primary={option.title} />
-					{option.url !== '' && 
-					<IconButton
-						edge="end"
-						aria-label="delete"
-						onClick={(event) => {
-							event.stopPropagation();
-							deleteUrl(option.url);
-						}}
-					>
-						<DeleteIcon />
-					</IconButton>}
 				</li>
 			)}
 			renderInput={(params) => (

@@ -1,28 +1,42 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useContext } from 'react';
 import { Podcast } from '../types/podcast';
-import { Typography, Card, CardContent, CardMedia, Box, Grid, CardHeader, Link } from '@mui/material'
+import { Typography, Card, CardContent, CardMedia, Box, Grid, CardHeader, Link, Button, ButtonProps } from '@mui/material'
 import { avoidXSS } from '../utils/escape';
 import { OpenInNewButton } from './OpenInNewButton';
 import { ShareButtons } from './ShareButtons'
 import { RelatedLinks } from '../hooks/useRelatedLinks';
 import { useEditableChannel } from '../hooks/useChannelSharedWith';
 import { useLocation } from 'react-router-dom';
+import { FollowingContext } from '../hooks/useFollows';
 
 type PodcastPreviewProps = {
 	podcast: Podcast | null;
 };
 
 export const Title: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
+	const { add:follow, del:unfollow, check: isFollowing } = useContext(FollowingContext)
+	const FollowButton = useMemo(() => {
+		if(!src?.self_url) return <></>
+		const props: ButtonProps = {
+			variant:"text",
+			color:"primary",
+			size:"small",
+		}
+		return <Button
+		{...props}
+		onClick={() => isFollowing(src.self_url) ? unfollow(src.self_url) : follow(src.self_url)}
+		>hoge</Button>
+	}, [src, follow, unfollow])
+
 	if (!src) return null;
 	return (<>
-		<Typography
-				variant='h5'
-			>{src.title}<OpenInNewButton url={src.link} />
-			</Typography>
-			<Typography
-				variant='subtitle1'
-			>{src.author}
-			</Typography>
+		<Typography variant='h5'>
+			{src.title}<OpenInNewButton url={src.link} />
+			{FollowButton}
+		</Typography>
+		<Typography variant='subtitle1'>
+			{src.author}
+		</Typography>
 	</>)
 }
 
@@ -55,13 +69,13 @@ const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 	if (!src) return null;
 
 	const path = useLocation()
-
-	const { check } = useEditableChannel()
+	const { check: isEditable } = useEditableChannel()
 	const login_link_text = useMemo(() => {
 		if(path.pathname == '/owner') return null
-		if(check(src.self_url)) return 'edit'
+		if(isEditable(src.self_url)) return 'edit'
 		return 'owner?'
-	}, [src, check, path])
+	}, [src, isEditable, path])
+
 
 	return (
 		<Card sx={{ marginTop: 2, borderRadius: 2 }}>

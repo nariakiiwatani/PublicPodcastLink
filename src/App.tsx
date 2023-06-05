@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, createContext } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom'
 import PodcastInput from './components/PodcastInput';
 import PodcastPreview from './components/PodcastPreview';
@@ -15,7 +15,7 @@ import { useAsync } from 'react-use';
 import { MyHelmet } from './components/MyHelmet';
 import { RelatedLinksProvider } from './hooks/useRelatedLinks';
 import { useQuery } from './hooks/useQuery'
-import { useFollows, PodcastRecord } from './hooks/useFollows'
+import { FollowingProvider } from './hooks/useFollows'
 
 const theme = createTheme({
 	palette: {
@@ -23,34 +23,21 @@ const theme = createTheme({
 	},
 });
 
-export const PodcastRecordContext = createContext<PodcastRecord[]>([])
-
 const App: React.FC = () => {
-	const { podcasts, add:addPodcast, del:deletePodcast } = useFollows()
-	const [url, setUrl_] = useState('');
 	const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | null>(null);
-	const { podcast, episodes, fetchPodcast, clearPodcast } = usePodcast();
+	const { podcast, episodes, fetchPodcast } = usePodcast();
 
 	const navigate = useNavigate()
 
 	const query = useQuery();
 
-	const setUrl = (url: string) => {
-		if (!podcasts.find(({ title }) => title === url)) {
-			setUrl_(url)
+	const handleUrlInput = (value: string) => {
+		try {
+			const url = new URL(value)
+			updateSelected(url.toString(), null)
 		}
-	}
-
-	const deleteUrl = (url: string) => {
-		if(deletePodcast(url)) {
-			const index = Math.min(podcasts.findIndex(p => p.url === url)+1, podcasts.length-2)
-			if (index >= 0) {
-				setUrl(podcasts[index].url)
-			}
-			else {
-				clearPodcast()
-				navigate(`/`)
-			}
+		catch(e) {
+			console.error(e)
 		}
 	}
 
@@ -64,28 +51,22 @@ const App: React.FC = () => {
 				if (guid) guid = decodeURIComponent(guid)
 				return updateSelected(url, guid)
 			}))
-			setUrl(list[0])
 		}
 	}, [])
 
 	useEffect(() => {
-		if (url) {
-			updateSelected(url, selectedEpisodeId)
-		}
-	}, [url]);
-	useEffect(() => {
-		if (url === '') {
+		if(!podcast) {
+			navigate('/')
 			return
 		}
-		const permalink = createPermalink(url, selectedEpisodeId || undefined, '/')
+		const permalink = createPermalink(podcast.self_url, selectedEpisodeId || undefined, '/')
 		navigate(permalink)
 	}, [podcast, selectedEpisodeId]);
 
 	const updateSelected = useCallback((url: string, episode_id: string | null) => {
 		return fetchPodcast(url).then((result) => {
 			if (result) {
-				const { podcast: pod, episodes: epi } = result
-				addPodcast(url, pod.title)
+				const { episodes: epi } = result
 				if (epi.length > 0) {
 					if (episode_id && epi.find(({ id }: { id: string }) => id === episode_id)) {
 						setSelectedEpisodeId(episode_id)
@@ -96,7 +77,7 @@ const App: React.FC = () => {
 				}
 			}
 		});
-	}, [fetchPodcast, podcasts, addPodcast])
+	}, [fetchPodcast])
 
 	const selectedEpisode = episodes.find((episode) => episode.id === selectedEpisodeId) ?? null;
 
@@ -130,12 +111,12 @@ const App: React.FC = () => {
 
 	return (
 		<ThemeProvider theme={theme}>
-			<PodcastRecordContext.Provider value={podcasts}>
+			<FollowingProvider>
 				<CssBaseline />
 				<MyHelmet podcast={podcast} episode={selectedEpisode} />
 				<Header />
 				<Box sx={{ margin: 2 }}>
-					<PodcastInput url={url} setUrl={setUrl} deleteUrl={deleteUrl} podcasts={podcasts} />
+					<PodcastInput setUrl={handleUrlInput} />
 					{podcast && <>
 						<EpisodeList episodes={episodes} selectedEpisodeId={selectedEpisodeId} setSelectedEpisodeId={setSelectedEpisodeId} />
 						{selectedEpisode &&
@@ -149,7 +130,7 @@ const App: React.FC = () => {
 						</RelatedLinksProvider>
 					</>}
 				</Box>
-			</PodcastRecordContext.Provider>
+			</FollowingProvider>
 		</ThemeProvider>
 	);
 };
