@@ -14,29 +14,33 @@ type PodcastPreviewProps = {
 };
 
 export const Title: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
-	const { add:follow, del:unfollow, check: isFollowing } = useContext(FollowingContext)
+	const { add: follow, del: unfollow, check: isFollowing } = useContext(FollowingContext)
 	const FollowButton = useMemo(() => {
-		if(!src?.self_url) return <></>
+		if (!src?.self_url) return <></>
 		const props: ButtonProps = {
-			variant:"text",
-			color:"primary",
-			size:"small",
+			variant: "text",
+			size: "small",
+			...(isFollowing(src.self_url) ? {
+				color: "error",
+				onClick: () => unfollow(src.self_url)
+			} : {
+				color: "primary",
+				onClick: () => follow(src.self_url)
+			})
 		}
 		return <Button
-		{...props}
-		onClick={() => isFollowing(src.self_url) ? unfollow(src.self_url) : follow(src.self_url)}
-		>hoge</Button>
+			{...props}
+		>{isFollowing(src.self_url) ? 'unfollow' : 'follow'}</Button>
 	}, [src, follow, unfollow])
 
 	if (!src) return null;
 	return (<>
-		<Typography variant='h5'>
-			{src.title}<OpenInNewButton url={src.link} />
-			{FollowButton}
-		</Typography>
-		<Typography variant='subtitle1'>
-			{src.author}
-		</Typography>
+		<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+			<Typography variant='h5'>
+				{src.title}<OpenInNewButton url={src.link} />
+			</Typography>
+			<Typography variant='subtitle1'>{FollowButton}</Typography>
+		</Box>
 	</>)
 }
 
@@ -51,7 +55,7 @@ export const Thumbnail: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 }
 
 export const Description: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
-	if(!src) return null
+	if (!src) return null
 	const safeDescription = useMemo(() => avoidXSS(src.description), [src.description])
 	return (<Typography
 		variant="subtitle1"
@@ -71,8 +75,8 @@ const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 	const path = useLocation()
 	const { check: isEditable } = useEditableChannel()
 	const login_link_text = useMemo(() => {
-		if(path.pathname == '/owner') return null
-		if(isEditable(src.self_url)) return 'edit'
+		if (path.pathname == '/owner') return null
+		if (isEditable(src.self_url)) return 'edit'
 		return 'owner?'
 	}, [src, isEditable, path])
 
@@ -81,6 +85,7 @@ const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 		<Card sx={{ marginTop: 2, borderRadius: 2 }}>
 			<CardHeader
 				title={<Title podcast={src} />}
+				subheader={src.author}
 				style={{ textAlign: 'center' }}
 			/>
 			<Grid container direction="row" justifyContent="center" alignItems="flex-start">
@@ -92,7 +97,7 @@ const PodcastPreview: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 					<Box sx={{
 						maxWidth: '80%',
 						marginTop: 1,
-						display:'flex', flexDirection:'row', flexWrap: 'wrap',
+						display: 'flex', flexDirection: 'row', flexWrap: 'wrap',
 						justifyContent: 'center',
 						alignContent: 'flex-start'
 					}}>

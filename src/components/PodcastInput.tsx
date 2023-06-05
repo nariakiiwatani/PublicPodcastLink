@@ -41,7 +41,7 @@ const PodcastInput: React.FC<PodcastInputProps> = ({ setUrl }) => {
 				}
 			}}
 			renderOption={(props, option, { selected:_ }) => (
-				<li {...props}>
+				<li {...props} key={option.url}>
 					<ListItemText primary={option.title} />
 				</li>
 			)}
