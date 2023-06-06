@@ -219,6 +219,10 @@ export default {
 				en: 'Channels',
 				ja: '番組管理'
 			},
+			playlist: {
+				en: 'Playlist',
+				ja: 'プレイリスト'
+			},
 			account: {
 				en: 'Account',
 				ja: 'アカウント'

@@ -297,7 +297,6 @@ const useRequestChannel = () => {
 
 const Manager = () => {
 	const { t } = useTranslation('owner')
-	const { session } = useContext(SessionContext)
 
 	const [podcast, setPodcast] = useState<Podcast | null>(null)
 	const { owned } = useContext(EditableChannelContext)
@@ -307,16 +306,14 @@ const Manager = () => {
 
 	return (<>
 		<Box sx={{ display: 'flex', alignItems: 'center' }}>
-			{session && <>
-				<SelectChannel onChange={setPodcast} />
-				<IconButton onClick={openSettings}>
-					<SettingsIcon />
-				</IconButton>
-				<EditChannelListModal title={t.channel_list}>
-					<AddNewChannel />
-					<ChannelList />
-				</EditChannelListModal>
-			</>}
+			<SelectChannel onChange={setPodcast} />
+			<IconButton onClick={openSettings}>
+				<SettingsIcon />
+			</IconButton>
+			<EditChannelListModal title={t.channel_list}>
+				<AddNewChannel />
+				<ChannelList />
+			</EditChannelListModal>
 		</Box>
 		{podcast && <>
 			{is_owned && <>
@@ -353,7 +350,7 @@ const EditableChannelContextProvider = ({ children }: { children: React.ReactNod
 }
 
 const Account = () => {
-	const { t } = useTranslation(['owner','account'])
+	const { t } = useTranslation(['owner', 'account'])
 	return (<>
 		<Box>
 			<Typography variant='h6'>{t.change_password}</Typography>
@@ -361,17 +358,21 @@ const Account = () => {
 		</Box>
 	</>)
 }
+const Playlist = () => {
+	return <>playlist</>
+}
 const Owner: React.FC = () => {
-	const { t } = useTranslation(['owner','tab'])
+	const { t } = useTranslation(['owner', 'tab'])
 	return (<>
 		<CssBaseline />
 		<Header />
 		<Box sx={{ margin: 2 }}>
 			<CheckAuth>
-				<TabPanel labels={[t.channels, t.account]}>
+				<TabPanel labels={[t.channels, t.playlist, t.account]}>
 					<EditableChannelContextProvider>
 						<Manager />
 					</EditableChannelContextProvider>
+					<Playlist />
 					<Account />
 				</TabPanel>
 			</CheckAuth>
