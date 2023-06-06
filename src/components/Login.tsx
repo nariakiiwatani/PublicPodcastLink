@@ -1,4 +1,4 @@
-import { TextField, Button, CircularProgress, Link, Typography } from '@mui/material'
+import { TextField, Button, CircularProgress, Link, Typography, Alert, Snackbar } from '@mui/material'
 import { useState, FormEvent, useContext, useRef, useEffect } from 'react'
 import { useQuery } from '../hooks/useQuery'
 import { useTranslation } from '../hooks/useTranslation'
@@ -115,7 +115,7 @@ export const CheckAuth = ({ children }: { children: React.ReactNode }) => {
 }
 
 type ResetPasswordProps = {
-	onChange: ()=>void
+	onChange?: ()=>void
 }
 export const ResetPassword = ({onChange}:ResetPasswordProps) => {
 	const { t } = useTranslation('login')
@@ -136,7 +136,8 @@ export const ResetPassword = ({onChange}:ResetPasswordProps) => {
 			alert(error.message)
 		}
 		else {
-			onChange()
+			onChange&&onChange()
+			setOpen(true)
 		}
 		setLoading(false)
 	}
@@ -145,6 +146,11 @@ export const ResetPassword = ({onChange}:ResetPasswordProps) => {
 		if(!checkRef.current) return
 		checkRef.current?.setCustomValidity(value === check ? '' : 'mismatch')
 	}, [checkRef.current, value, check])
+
+	const [open, setOpen] = useState(false)
+	const handleClose = () => {
+		setOpen(false)
+	}
 
 	return (<>
 		<form className="form-widget" onSubmit={handleSubmit}>
@@ -169,6 +175,11 @@ export const ResetPassword = ({onChange}:ResetPasswordProps) => {
 				{loading ? <CircularProgress /> : <>{t.reset_password_button}</>}
 			</Button>
 		</form>
+		<Snackbar open={open} autoHideDuration={3000} onClose={handleClose}>
+			<Alert onClose={handleClose} severity="info" sx={{ width: '100%' }}>
+				{t.password_reset_success}
+			</Alert>
+		</Snackbar>
 	</>
 	)
 }

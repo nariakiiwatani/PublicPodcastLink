@@ -140,7 +140,7 @@ export default {
 			en: 'Check your email for the login link!',
 			ja: 'ログインリンクを記載したEメールを送信しました'
 		},
-		password_reset_prompt: {
+		password_reset_success: {
 			en: 'Successfully changed password.',
 			ja: 'パスワードを変更しました'
 		},
@@ -213,6 +213,22 @@ export default {
 		added: {
 			en: 'added',
 			ja: '追加しました'
+		},
+		tab: {
+			channels: {
+				en: 'Channels',
+				ja: '番組管理'
+			},
+			account: {
+				en: 'Account',
+				ja: 'アカウント'
+			},
+		},
+		account: {
+			change_password: {
+				en: 'Change Password',
+				ja: 'パスワードを変更'
+			},
 		}
 	},
 	related_links: {

@@ -17,7 +17,8 @@ import { useQuery } from './hooks/useQuery'
 import { useTranslation } from './hooks/useTranslation'
 import { useNavigate } from 'react-router-dom'
 import { FetchTitle } from './utils/FetchTitle'
-import { CheckAuth, redirectURL } from './components/Login'
+import { CheckAuth, ResetPassword, redirectURL } from './components/Login'
+import { TabPanel } from './components/TabPanel'
 
 const EditableListItem = ({ defaultValue, textFieldProps, Icon, onEdit, onDelete }: {
 	defaultValue: string
@@ -305,7 +306,6 @@ const Manager = () => {
 	const is_owned = useMemo(() => podcast && owned && owned.includes(podcast.self_url), [podcast, owned])
 
 	return (<>
-		<h1>{t.title}</h1>
 		<Box sx={{ display: 'flex', alignItems: 'center' }}>
 			{session && <>
 				<SelectChannel onChange={setPodcast} />
@@ -352,15 +352,28 @@ const EditableChannelContextProvider = ({ children }: { children: React.ReactNod
 	</EditableChannelContext.Provider>
 }
 
+const Account = () => {
+	const { t } = useTranslation(['owner','account'])
+	return (<>
+		<Box>
+			<Typography variant='h6'>{t.change_password}</Typography>
+			<ResetPassword />
+		</Box>
+	</>)
+}
 const Owner: React.FC = () => {
+	const { t } = useTranslation(['owner','tab'])
 	return (<>
 		<CssBaseline />
 		<Header />
 		<Box sx={{ margin: 2 }}>
 			<CheckAuth>
-				<EditableChannelContextProvider>
-					<Manager />
-				</EditableChannelContextProvider>
+				<TabPanel labels={[t.channels, t.account]}>
+					<EditableChannelContextProvider>
+						<Manager />
+					</EditableChannelContextProvider>
+					<Account />
+				</TabPanel>
 			</CheckAuth>
 		</Box>
 	</>
