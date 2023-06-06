@@ -11,13 +11,17 @@ const fetch_via_api = (url: string) => {
 	const new_url = `${window.origin}${import.meta.env.VITE_API_PATH}/get_rss?url=${encodeURIComponent(url)}`
 	return fetch(new_url)
 }
-export const fetch_podcast = async (url: string):Promise<{
+const rss_cache:{[url:string]:any} = {}
+export const fetch_podcast = async (url: string, reload?:boolean):Promise<{
 	podcast: Podcast,
 	episodes: Episode[]
 }|null> => {
 	try {
-		const rss_string = await (await fetch_via_api(url)).text()
-		const rss = parser.parse(rss_string).rss;
+		const rss = await (async () => {
+			if(!reload && url in rss_cache) return rss_cache[url]
+			rss_cache[url] = fetch_via_api(url).then(result=>result.text()).then(result=>parser.parse(result).rss);
+			return rss_cache[url]
+		})()
 		if (rss) {
 			const { channel } = rss
 			if (channel) {

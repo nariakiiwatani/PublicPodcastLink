@@ -7,7 +7,7 @@ import EpisodePreview from './components/EpisodePreview';
 import usePodcast from './hooks/usePodcast';
 import { CssBaseline, ThemeProvider, createTheme, Box } from '@mui/material';
 import Header from './components/Header';
-import { permalink as createPermalink } from './utils/permalink';
+import { permalink as createPermalink, importlink as createImportLink } from './utils/permalink';
 import { NavigatorButtons } from './components/NavigatorButtons';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
@@ -58,7 +58,7 @@ const App: React.FC = () => {
 		if (url) {
 			const list = url.split(',')
 			if(list.length > 1) {
-				navigate(`?channels=${list.join(',')}`)
+				navigate(createImportLink(list, '/'))
 				return
 			}
 			let guid = query.get('item')
