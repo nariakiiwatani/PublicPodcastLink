@@ -8,7 +8,6 @@ export const handler: Handler = async (event: HandlerEvent, _context: HandlerCon
 		.from('playlist')
 		.select('rss')
 		.eq('alias', id)
-		.single()
 
 	if (error) {
 		return {
@@ -16,7 +15,7 @@ export const handler: Handler = async (event: HandlerEvent, _context: HandlerCon
 			body: 'An error occurred: ' + error.message,
 		}
 	}
-	if (!data) {
+	if (!data || data.length === 0) {
 		return {
 			statusCode: 404,
 			body: 'Not found.',
@@ -28,6 +27,6 @@ export const handler: Handler = async (event: HandlerEvent, _context: HandlerCon
 		headers: {
 			'Content-Type': 'application/rss+xml',
 		},
-		body: data.rss,
+		body: data[0].rss,
 	}
 }
