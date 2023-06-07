@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom'
 import { FetchTitle } from './utils/FetchTitle'
 import { CheckAuth, ResetPassword, redirectURL } from './components/Login'
 import { TabPanel } from './components/TabPanel'
+import Playlist from './components/playlist'
 
 const EditableListItem = ({ defaultValue, textFieldProps, Icon, onEdit, onDelete }: {
 	defaultValue: string
@@ -357,9 +358,6 @@ const Account = () => {
 			<ResetPassword />
 		</Box>
 	</>)
-}
-const Playlist = () => {
-	return <>playlist</>
 }
 const Owner: React.FC = () => {
 	const { t } = useTranslation(['owner', 'tab'])

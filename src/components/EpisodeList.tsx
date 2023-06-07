@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
+import React, { FormEvent, FormEventHandler, useState } from 'react';
 import { Episode } from '../types/podcast';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { InputLabel } from '@mui/material';
+import { InputLabel, List, ListItem } from '@mui/material';
 import { useTranslation } from '../hooks/useTranslation'
 
 type EpisodeListProps = {
 	episodes: Episode[];
-	onChange: (id: string) => void;
+	onSelect: (id: string) => void;
 };
 
-const EpisodeList: React.FC<EpisodeListProps> = ({ episodes, onChange }) => {
+export const EpisodeSelect: React.FC<EpisodeListProps> = ({ episodes, onSelect }) => {
 	const { t } = useTranslation('select_episode')
 	const [value, setValue] = useState('')
 	const handleChange = (e: SelectChangeEvent) => {
 		const v = e.target.value
 		setValue(v)
-		onChange(v)
+		onSelect(v)
 	}
 	return (
 		<FormControl fullWidth sx={{ marginTop: 1 }}>
@@ -41,5 +41,25 @@ const EpisodeList: React.FC<EpisodeListProps> = ({ episodes, onChange }) => {
 		</FormControl>
 	);
 };
-
-export default EpisodeList;
+export const EpisodeList: React.FC<EpisodeListProps> = ({ episodes, onSelect }) => {
+	const { t } = useTranslation('select_episode')
+	const handleClick = (id: string) => {
+		onSelect(id)
+	}
+	return (
+		<FormControl fullWidth sx={{ marginTop: 1 }}>
+			<InputLabel variant="standard" htmlFor="episode-select-element">
+				{t.label}
+			</InputLabel>
+			<List
+				dense
+			>
+				{episodes.map((episode) => (
+					<ListItem key={episode.id} value={episode.id} onClick={()=>handleClick(episode.id)}>
+						{episode.title}
+					</ListItem>
+				))}
+			</List>
+		</FormControl>
+	);
+};

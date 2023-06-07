@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import EpisodeList from '../components/EpisodeList';
+import { EpisodeList, EpisodeSelect } from '../components/EpisodeList';
 import { NavigatorButtons } from '../components/NavigatorButtons';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
@@ -31,10 +31,9 @@ export const useEpisodeSelect = () => {
 	const handleChangeEpisode = useCallback((id: string) => {
 		setSelectedEpisodeId(id)
 	}, [setSelectedEpisodeId])
-	const Selector = useMemo(() => () => <>
-		<PodcastInput setUrl={handleUrlInput} option={podcast} />
-		{podcast && <EpisodeList episodes={episodes} onChange={handleChangeEpisode} />}
-	</>, [podcast, episodes])
+	const Input = useCallback(() => <PodcastInput setUrl={handleUrlInput} option={podcast} />, [podcast])
+	const Select = useCallback(() => <EpisodeSelect episodes={episodes} onSelect={handleChangeEpisode} />, [episodes])
+	const List = useCallback(() => <EpisodeList episodes={episodes} onSelect={handleChangeEpisode} />, [episodes])
 
 	const Navigator = useMemo(() =>
 		<NavigatorButtons
@@ -57,8 +56,10 @@ export const useEpisodeSelect = () => {
 		podcast,
 		episode,
 		episodes,
-		Selector,
 		Navigator,
+		Input,
+		List,
+		Select,
 		fetch_rss
 	}
 }

@@ -9,7 +9,6 @@ const usePageTracking = () => {
 
 	useEffect(() => {
 		if(!GA_ID || GA_ID === '') return
-		console.info({GA_ID})
 		ReactGA.initialize(GA_ID);
 		ReactGA.send({
 			hitType: "pageview",

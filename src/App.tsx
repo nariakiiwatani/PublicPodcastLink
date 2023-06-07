@@ -33,7 +33,7 @@ const App: React.FC = () => {
 		import_dialog.open()
 	}, [import_channels])
 
-	const { podcast, episode, fetch_rss, Selector, Navigator } = useEpisodeSelect()
+	const { podcast, episode, fetch_rss, Input:PodcastInput, List:EpisodeSelect, Navigator } = useEpisodeSelect()
 
 	const navigate = useNavigate()
 
@@ -67,8 +67,9 @@ const App: React.FC = () => {
 				<MyHelmet podcast={podcast} episode={episode} />
 				<Header />
 				<Box sx={{ margin: 2 }}>
-					<Selector />
+					<PodcastInput />
 					{podcast && <>
+						<EpisodeSelect />
 						{episode &&
 							<EpisodePreview
 								channel={podcast}

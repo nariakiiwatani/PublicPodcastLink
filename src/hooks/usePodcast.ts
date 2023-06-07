@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { XMLParser } from 'fast-xml-parser';
+import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import { Podcast, Episode } from '../types/podcast';
 
-const parser = new XMLParser({
+const fxpOption = {
 	attributeNamePrefix: "",
 	ignoreAttributes: false
-})
+}
+
+const parser = new XMLParser(fxpOption)
+const builder = new XMLBuilder(fxpOption)
 
 const fetch_via_api = (url: string) => {
 	const new_url = `${window.origin}${import.meta.env.VITE_API_PATH}/get_rss?url=${encodeURIComponent(url)}`
@@ -34,7 +37,8 @@ export const fetch_podcast = async (url: string, reload?:boolean):Promise<{
 					self_url: url,
 					owner: {
 						email: channel['itunes:owner']?.['itunes:email'] || ''
-					}
+					},
+					src: builder.build(channel)
 				};
 
 				const items = channel?.item ? Array.isArray(channel.item) ? channel.item : [channel.item] : []
@@ -46,7 +50,8 @@ export const fetch_podcast = async (url: string, reload?:boolean):Promise<{
 					audioUrl: item.enclosure?.url || '',
 					imageUrl: item['itunes:image']?.href || '',
 					pubDate: item.pubDate || '',
-					type: item.enclosure?.type || ''
+					type: item.enclosure?.type || '',
+					src: builder.build(item)
 				}))
 
 				return {podcast:newPodcast, episodes:newItems}
