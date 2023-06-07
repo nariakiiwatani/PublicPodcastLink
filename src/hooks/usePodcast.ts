@@ -1,14 +1,6 @@
 import { useState, useEffect } from 'react';
-import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import { Podcast, Episode } from '../types/podcast';
-
-const fxpOption = {
-	attributeNamePrefix: "",
-	ignoreAttributes: false
-}
-
-const parser = new XMLParser(fxpOption)
-const builder = new XMLBuilder(fxpOption)
+import { parser, builder } from '../utils/XmlParser';
 
 const fetch_via_api = (url: string) => {
 	const new_url = `${window.origin}${import.meta.env.VITE_API_PATH}/get_rss?url=${encodeURIComponent(url)}`
@@ -19,10 +11,11 @@ export const fetch_podcast = async (url: string, reload?:boolean):Promise<{
 	podcast: Podcast,
 	episodes: Episode[]
 }|null> => {
+	const p = parser()
 	try {
 		const rss = await (async () => {
 			if(!reload && url in rss_cache) return rss_cache[url]
-			rss_cache[url] = fetch_via_api(url).then(result=>result.text()).then(result=>parser.parse(result).rss);
+			rss_cache[url] = fetch_via_api(url).then(result=>result.text()).then(result=>p.parse(result).rss);
 			return rss_cache[url]
 		})()
 		if (rss) {
@@ -38,7 +31,7 @@ export const fetch_podcast = async (url: string, reload?:boolean):Promise<{
 					owner: {
 						email: channel['itunes:owner']?.['itunes:email'] || ''
 					},
-					src: builder.build(channel)
+					src: channel
 				};
 
 				const items = channel?.item ? Array.isArray(channel.item) ? channel.item : [channel.item] : []
@@ -47,11 +40,11 @@ export const fetch_podcast = async (url: string, reload?:boolean):Promise<{
 					title: item.title || '',
 					description: item.description || '',
 					link: item.link || '',
-					audioUrl: item.enclosure?.url || '',
-					imageUrl: item['itunes:image']?.href || '',
+					audioUrl: item.enclosure?.['@url'] || '',
+					imageUrl: item['itunes:image']?.['@href'] || '',
 					pubDate: item.pubDate || '',
-					type: item.enclosure?.type || '',
-					src: builder.build(item)
+					type: item.enclosure?.['@type'] || '',
+					src: item
 				}))
 
 				return {podcast:newPodcast, episodes:newItems}

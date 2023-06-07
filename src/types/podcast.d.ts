@@ -8,7 +8,7 @@ export type Podcast = {
 	owner: {
 		email: string;
 	},
-	src?: string
+	src?: any
 };
 
 export type Episode = {
@@ -20,5 +20,5 @@ export type Episode = {
 	type: string;
 	imageUrl: string;
 	pubDate: string;
-	src?: string
+	src?: any
 };

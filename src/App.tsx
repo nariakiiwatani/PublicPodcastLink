@@ -33,7 +33,7 @@ const App: React.FC = () => {
 		import_dialog.open()
 	}, [import_channels])
 
-	const { podcast, episode, fetch_rss, Input:PodcastInput, List:EpisodeSelect, Navigator } = useEpisodeSelect()
+	const { podcast, episode, fetch_rss, Input:PodcastInput, Select:EpisodeSelect, Navigator } = useEpisodeSelect()
 
 	const navigate = useNavigate()
 
