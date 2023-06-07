@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { FormControl, InputLabel, Select, MenuItem, Button, SelectChangeEvent } from "@mui/material";
+import { Playlist } from '.';
 
 type Props = {
-	playlists: string[],
+	playlists: {id: string, alias: string}[],
 	onSelect: (value: string) => void,
 	onNew: () => void
 }
@@ -30,7 +31,7 @@ const PlaylistSelection = ({ playlists, onSelect, onNew }: Props) => {
 					onChange={handlePlaylistChange}
 				>
 					{playlists.map((playlist) => (
-						<MenuItem key={playlist} value={playlist}>{playlist}</MenuItem>
+						<MenuItem key={playlist.id} value={playlist.id}>{playlist.alias}</MenuItem>
 					))}
 				</Select>
 			</FormControl>

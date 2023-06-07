@@ -84,6 +84,37 @@ export interface Database {
           }
         ]
       }
+      playlist: {
+        Row: {
+          alias: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          rss: string
+        }
+        Insert: {
+          alias: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          rss: string
+        }
+        Update: {
+          alias?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          rss?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playlist_created_by_fkey"
+            columns: ["created_by"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       related_link: {
         Row: {
           channel: string

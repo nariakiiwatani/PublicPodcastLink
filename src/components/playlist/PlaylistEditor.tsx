@@ -1,38 +1,38 @@
-import React, { useState, useEffect, useMemo, useRef, useImperativeHandle, useContext } from "react";
-import { TextField, Button, List, ListItem, Grid } from "@mui/material";
+import React, { useState, useEffect, useRef, useImperativeHandle, FormEvent } from "react";
+import { TextField, List, ListItem, Grid, Button } from "@mui/material";
 import { useEpisodeSelect } from '../../hooks/useEpisodeSelect';
-import { Podcast, Episode } from '../../types/podcast'
+import { Episode } from '../../types/podcast'
 import { Playlist } from '.';
 import { useContextPack } from '../../hooks/useContextPack';
 import { ReorderableList } from '../ReorderList';
-import { builder } from '../../utils/XmlParser';
-import { Session } from '@supabase/supabase-js';
-import { SessionContext } from '../../utils/supabase';
 
 type PlaylistChannelEditorProps = {
-	value: Podcast,
+	value: Playlist,
 }
 interface PlaylistChannelEditorRef {
-	getValue: () => Podcast;
+	getValue: () => Playlist;
 }
 const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, PlaylistChannelEditorProps>(({value}, ref) => {
-	const [title, setTitle] = useState(value.title)
-	const [description, setDescription] = useState(value.description)
-	const [link, setLink] = useState(value.link)
+	const [alias, setAlias] = useState(value.alias)
+	const [title, setTitle] = useState(value.channel.title)
+	const [description, setDescription] = useState(value.channel.description)
 
 	useImperativeHandle(ref, () => ({
 		getValue: () => ({
 			...value,
-			title,
-			description,
-			link
+			alias,
+			channel: {
+				...value.channel,
+				title,
+				description,
+			}
 		}),
 	}))
 
 	useEffect(() => {
-		setTitle(value.title)
-		setDescription(value.description)
-		setLink(value.link)
+		setAlias(value.alias)
+		setTitle(value.channel.title)
+		setDescription(value.channel.description)
 	}, [value])
 
 	const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,8 +43,8 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 		setDescription(e.target.value)
 	}
 
-	const handleLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setLink(e.target.value)
+	const handleAliasChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setAlias(e.target.value)
 	}
 
 	return (<>
@@ -61,9 +61,9 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 		/>
 
 		<TextField
-			label="Link"
-			value={link}
-			onChange={handleLinkChange}
+			label="Alias"
+			value={alias}
+			onChange={handleAliasChange}
 		/>
 	</>)
 })
@@ -123,115 +123,32 @@ const PlaylistItemEditor = React.forwardRef<PlaylistItemEditorRef, PlaylistItemE
 	</Grid>
 })
 
-const CDATA = (unsafe: string) => {
-	const result = `<![CDATA[${unsafe.replaceAll(']]>', ']]><![CDATA[')}]]>`
-	return result
-}
-
-const ESCAPE = (unsafe: string) => {
-    return unsafe.replace(/[<>&'"]/g, (c: string) => {
-        switch (c) {
-            case '<': return '&lt;';
-            case '>': return '&gt;';
-            case '&': return '&amp;';
-            case '\'': return '&apos;';
-            case '"': return '&quot;';
-			case '©': return '&#xA9;';
-			case '℗': return '&#x2117;';
-			case '™': return '&#x2122;';
-        }
-		return c
-    });
-}
-const create_xml = (podcast: Podcast, episodes: Episode[], id: string, session: Session) => {
-	const link = `${window.origin}/playlist/${id}`
-	const rss_url = `${link}/rss`
-	const author = session.user.id
-	const email = session.user.email
-	const image_url = `${window.origin}/playlist/${id}/thumbnail`
-	if(!email) {
-		throw new Error('email not set')
-	}
-	const channel = {
-		title: {
-			__cdata: podcast.title
-		},
-		description: {
-			__cdata: podcast.description
-		},
-		link,
-		image: {
-			url: image_url,
-			title: podcast.title,
-			link
-		},
-		generator: 'PublicPodcastLink Playlist Creator',
-		lastBuildDate: new Date().toUTCString(),
-		'atom:link': {
-			'@href': rss_url,
-			'@rel': 'self',
-			'@type': 'application/rss+xml'
-		},
-		'itunes:author': author,
-		'itunes:summary': podcast.description,
-		'itunes:type': 'episodic',
-		'itunes:owner': {
-			'itunes:name': author,
-			'itunes:email': email
-		},
-		'itunes:image': {
-			'@href': image_url
-		},
-		item: episodes.map(({src})=>src)
-	}
-	return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0"
-	xmlns:dc="http://purl.org/dc/elements/1.1/"
-	xmlns:content="http://purl.org/rss/1.0/modules/content/"
-	xmlns:atom="http://www.w3.org/2005/Atom"
-	xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
->
-	${builder({cdataPropName:'__cdata'}).build({
-		channel
-	})}
-</rss>`
-}
 type PlaylistEditorProps = {
 	value: Playlist,
-	onSave: (value: Podcast, episodes: Episode[]) => void
+	onSave: (value: Playlist) => void
 }
 const PlaylistEditor = ({value, onSave}:PlaylistEditorProps) => {
-	const {session} = useContext(SessionContext)
-	const [channel, setChannel] = useState(value.channel)
-	const [items, setItems] = useState(value.items)
-	useEffect(() => {
-		setChannel(value.channel)
-		setItems(value.items)
-	}, [value])
-	const rss = useMemo(() => {
-		if(!session) throw new Error('not logged in')
-		const result = create_xml(channel, items, 'test_id', session)
-		navigator.clipboard.writeText(result);
-		return result
-	}, [channel, items])
 	const channel_ref = useRef<PlaylistChannelEditorRef>(null)
 	const item_ref = useRef<PlaylistItemEditorRef>(null)
-	const handleSave = () => {
+	const handleSave = (e: FormEvent) => {
+		e.preventDefault()
 		if(!channel_ref.current || !item_ref.current) return
-		onSave(channel_ref.current.getValue(), item_ref.current.getValue())
+		onSave({
+			...channel_ref.current.getValue(),
+			items: item_ref.current.getValue()
+		})
 	}
-	return <>
+	return <form onSubmit={handleSave}>
 		<PlaylistChannelEditor
 			ref={channel_ref}
-			value={channel}
+			value={value}
 		/>
 		<PlaylistItemEditor
 			ref={item_ref}
-			value={items}
+			value={value.items}
 		/>
-		<Button onClick={handleSave}>save</Button>
-		<div>{rss}</div>
-	</>
+		<Button type='submit'>save</Button>
+	</form>
 };
 
 export default PlaylistEditor;
