@@ -10,13 +10,15 @@ import { FollowingProvider } from '../../hooks/useFollows'
 import PlaylistEditor from './PlaylistEditor'
 import PlaylistSelection from './PlaylistSelection'
 
-export const playlist_url = (id:string)=>`${window.origin}/playlist/${id}/view`
-export const playlist_rss_url = (id:string)=>`${window.origin}/playlist/${id}/rss`
-export const playlist_thumbnail_url = (id:string)=>`${window.origin}/playlist/${id}/thumbnail`
+export const playlist_url = (name:string)=>`${window.origin}/playlist/${name}/view`
+export const playlist_rss_url = (name:string)=>`${window.origin}/playlist/${name}/rss`
+export const playlist_thumbnail_url = (name:string)=>`${window.origin}/playlist/${name}/thumbnail`
 
 export type Playlist = {
 	id: string,
 	alias: string,
+	thumbnail?: File,
+	author?: string,
 	channel: Podcast,
 	items: Episode[]
 }
@@ -24,8 +26,8 @@ export type Playlist = {
 const create_xml = (playlist: Playlist, user: User) => {
 	const link = playlist_url(playlist.alias)
 	const rss_url = playlist_rss_url(playlist.alias)
-	const image_url = playlist_thumbnail_url(playlist.alias)
-	const author = user.id
+	const image_url = playlist_thumbnail_url(playlist.id)
+	const author = playlist.author
 	const email = user.email
 	const title = playlist.channel.title
 	const description = playlist.channel.description
@@ -116,9 +118,18 @@ const useDB = () => {
 		value, update, refresh, del
 	}
 }
+const useBucket = (bucket_name: string) => {
+	const upload = (file: File, filename: string) => {
+		const filepath = `thumbnail/${filename}`
+		return supabase.storage.from(bucket_name).upload(filepath, file)
+		.then(({data}) => data?.path)
+	}
+	return { upload }
+}
 
 export default () => {
 	const db = useDB()
+	const bucket = useBucket('playlist')
 	const {session} = useContext(SessionContext)
 	const [value, setValue] = useState<Playlist>(() => make_empty_playlist())
 	const handleSelect = (id: string) => {
@@ -138,12 +149,15 @@ export default () => {
 		setValue(make_empty_playlist())
 	}
 	const handleSave = (value: Playlist) => {
-		if(!session?.user) throw new Error('not logged in')
-		db.update(
-			value.id, {
-				alias: value.alias,
-				rss: create_xml(value, session.user)
-			}
+		if(!session?.user) throw new Error('not logged in');
+		(value.thumbnail ? bucket.upload(value.thumbnail, value.id) : Promise.resolve())
+		.then(() => 
+			db.update(
+				value.id, {
+					alias: value.alias,
+					rss: create_xml(value, session.user)
+				}
+			)
 		)
 		setValue(value)
 	}

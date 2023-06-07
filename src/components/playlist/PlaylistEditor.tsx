@@ -16,11 +16,13 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 	const [alias, setAlias] = useState(value.alias)
 	const [title, setTitle] = useState(value.channel.title)
 	const [description, setDescription] = useState(value.channel.description)
+	const [thumbnail, setThumbnail] = useState<File|undefined>()
 
 	useImperativeHandle(ref, () => ({
 		getValue: () => ({
 			...value,
 			alias,
+			thumbnail,
 			channel: {
 				...value.channel,
 				title,
@@ -33,6 +35,7 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 		setAlias(value.alias)
 		setTitle(value.channel.title)
 		setDescription(value.channel.description)
+		setThumbnail(value.thumbnail)
 	}, [value])
 
 	const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,6 +48,12 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 
 	const handleAliasChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setAlias(e.target.value)
+	}
+	const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if(file) {
+			setThumbnail(file)
+		}
 	}
 
 	return (<>
@@ -65,6 +74,18 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 			value={alias}
 			onChange={handleAliasChange}
 		/>
+		<input
+			accept="image/*"
+			style={{ display: "none" }}
+			id="button-file"
+			type="file"
+			onChange={handleThumbnailChange}
+		/>
+		<label htmlFor="button-file">
+			<Button variant="contained" component="span">
+				Upload
+			</Button>
+		</label>
 	</>)
 })
 

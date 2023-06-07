@@ -20,6 +20,11 @@ to = "/.netlify/functions/get_rss_from_supabase"
 status = 200
 
 [[redirects]]
+from = "/playlist/:id/thumbnail"
+to = "http://localhost:55321/storage/v1/object/public/playlist/thumbnail/:id"
+status = 200
+
+[[redirects]]
 from = "/*"
 to = "/index.html"
 status = 200
