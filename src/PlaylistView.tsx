@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { playlist_rss_url } from './components/playlist'
+import { playlist_rss_url } from './components/playlist/Playlist'
 
 const PlaylistView = () => {
 	const navigate = useNavigate()

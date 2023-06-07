@@ -2,7 +2,6 @@ import { Handler, HandlerEvent, HandlerContext } from "@netlify/functions"
 import { supabase } from '../../src/utils/supabase'
 
 export const handler: Handler = async (event: HandlerEvent, _context: HandlerContext) => {
-//	const id = event.path.split('/').slice(-2)[0]
 	const { id } = event.queryStringParameters as { id: string }
 
 	let { data, error } = await supabase

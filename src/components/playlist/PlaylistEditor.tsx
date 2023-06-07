@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useImperativeHandle, FormEvent } fr
 import { TextField, List, ListItem, Grid, Button } from "@mui/material";
 import { useEpisodeSelect } from '../../hooks/useEpisodeSelect';
 import { Episode } from '../../types/podcast'
-import { Playlist } from '.';
+import { Playlist } from './Playlist';
 import { useContextPack } from '../../hooks/useContextPack';
 import { ReorderableList } from '../ReorderList';
 

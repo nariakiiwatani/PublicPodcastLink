@@ -15,7 +15,7 @@ to = "/auto-signin.html"
 status = 200
 
 [[redirects]]
-from = "/playlist/:id/rss"
+from = "/playlist/*/rss"
 to = "/.netlify/functions/get_rss_from_supabase?id=:id"
 status = 200
 

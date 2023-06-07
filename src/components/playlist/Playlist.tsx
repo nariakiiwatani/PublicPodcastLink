@@ -21,26 +21,28 @@ export type Playlist = {
 	items: Episode[]
 }
 
-const create_xml = (podcast: Podcast, episodes: Episode[], id: string, user: User) => {
-	const link = playlist_url(id)
-	const rss_url = playlist_rss_url(id)
-	const image_url = playlist_thumbnail_url(id)
+const create_xml = (playlist: Playlist, user: User) => {
+	const link = playlist_url(playlist.alias)
+	const rss_url = playlist_rss_url(playlist.alias)
+	const image_url = playlist_thumbnail_url(playlist.alias)
 	const author = user.id
 	const email = user.email
+	const title = playlist.channel.title
+	const description = playlist.channel.description
 	if(!email) {
 		throw new Error('email not set')
 	}
 	const channel = {
 		title: {
-			__cdata: podcast.title
+			__cdata: title
 		},
 		description: {
-			__cdata: podcast.description
+			__cdata: description
 		},
 		link,
 		image: {
 			url: image_url,
-			title: podcast.title,
+			title: title,
 			link
 		},
 		generator: 'PublicPodcastLink Playlist Creator',
@@ -51,7 +53,7 @@ const create_xml = (podcast: Podcast, episodes: Episode[], id: string, user: Use
 			'@type': 'application/rss+xml'
 		},
 		'itunes:author': author,
-		'itunes:summary': podcast.description,
+		'itunes:summary': description,
 		'itunes:type': 'episodic',
 		'itunes:owner': {
 			'itunes:name': author,
@@ -60,7 +62,7 @@ const create_xml = (podcast: Podcast, episodes: Episode[], id: string, user: Use
 		'itunes:image': {
 			'@href': image_url
 		},
-		item: episodes.map(({src})=>src)
+		item: playlist.items.map(({src})=>src)
 	}
 	return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"
@@ -140,7 +142,7 @@ export default () => {
 		db.update(
 			value.id, {
 				alias: value.alias,
-				rss: create_xml(value.channel, value.items, value.id, session.user)
+				rss: create_xml(value, session.user)
 			}
 		)
 		setValue(value)

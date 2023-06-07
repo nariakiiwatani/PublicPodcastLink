@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Podcast, Episode } from '../types/podcast';
-import { parser, builder } from '../utils/XmlParser';
+import { parser } from '../utils/XmlParser';
 
 const fetch_via_api = (url: string) => {
 	const new_url = `${window.origin}${import.meta.env.VITE_API_PATH}/get_rss?url=${encodeURIComponent(url)}`

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { FormControl, InputLabel, Select, MenuItem, Button, SelectChangeEvent } from "@mui/material";
-import { Playlist } from '.';
 
 type Props = {
 	playlists: {id: string, alias: string}[],

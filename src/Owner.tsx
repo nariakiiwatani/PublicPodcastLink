@@ -19,7 +19,7 @@ import { useNavigate } from 'react-router-dom'
 import { FetchTitle } from './utils/FetchTitle'
 import { CheckAuth, ResetPassword, redirectURL } from './components/Login'
 import { TabPanel } from './components/TabPanel'
-import Playlist from './components/playlist'
+import Playlist from './components/playlist/Playlist'
 
 const EditableListItem = ({ defaultValue, textFieldProps, Icon, onEdit, onDelete }: {
 	defaultValue: string
