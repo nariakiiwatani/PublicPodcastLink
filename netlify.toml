@@ -16,7 +16,7 @@ status = 200
 
 [[redirects]]
 from = "/playlist/:id/rss"
-to = "/.netlify/functions/get_rss_from_supabase?id=:id"
+to = "/.netlify/functions/get_rss_from_supabase"
 status = 200
 
 [[redirects]]
