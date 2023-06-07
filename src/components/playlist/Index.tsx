@@ -10,7 +10,7 @@ import { FollowingProvider } from '../../hooks/useFollows'
 import PlaylistEditor from './PlaylistEditor'
 import PlaylistSelection from './PlaylistSelection'
 
-export const playlist_url = (id:string)=>`${window.origin}/playlist/${id}`
+export const playlist_url = (id:string)=>`${window.origin}/playlist/${id}/view`
 export const playlist_rss_url = (id:string)=>`${window.origin}/playlist/${id}/rss`
 export const playlist_thumbnail_url = (id:string)=>`${window.origin}/playlist/${id}/thumbnail`
 
