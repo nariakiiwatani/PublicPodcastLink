@@ -107,12 +107,8 @@ const useDB = () => {
 		if(!new_value) return
 		setValue(new_value)
 	}
-	const update = (id: string, record: Record['Insert']) => {
-		supabase.from('playlist').upsert({id, ...record}).match({id}).then(refresh)
-	}
-	const del = (id: string) => {
-		supabase.from('playlist').delete().match({id}).then(refresh)
-	}
+	const update = (id: string, record: Record['Insert']) => supabase.from('playlist').upsert({id, ...record}).match({id}).then(refresh)
+	const del = (id: string) => supabase.from('playlist').delete().match({id}).then(refresh)
 	useEffect(() => {
 		refresh()
 	},[])
@@ -164,14 +160,19 @@ export default () => {
 					rss: create_xml(value, session.user)
 				}
 			)
+			.then(() => {
+				setValue({
+					...value,
+					is_new: false
+				})
+			})
 		)
-		setValue(value)
 	}
 	return <>
 		<FollowingProvider>
 			<Grid container spacing={2}>
 				<Grid item xs={12}>
-					<PlaylistSelection playlists={db.value} onSelect={handleSelect} onNew={handleNew} />
+					<PlaylistSelection playlists={db.value} value={value.is_new?undefined:value.id} onSelect={handleSelect} onNew={handleNew} />
 				</Grid>
 				<Divider variant='fullWidth' />
 				<Grid item xs={12}>

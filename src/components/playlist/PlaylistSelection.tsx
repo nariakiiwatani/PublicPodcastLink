@@ -3,11 +3,6 @@ import { FormControl, Select, MenuItem, SelectChangeEvent, Typography, Box } fro
 import { fetch_podcast } from '../../hooks/usePodcast';
 import { playlist_rss_url } from './Playlist';
 
-type Props = {
-	playlists: {id: string, alias: string}[],
-	onSelect: (value: string) => void,
-	onNew: () => void
-}
 
 const AsyncString = ({ promise, defaultValue }: { promise: Promise<string>, defaultValue: string }) => {
 	const [data, setData] = useState(defaultValue);
@@ -26,9 +21,14 @@ const AsyncString = ({ promise, defaultValue }: { promise: Promise<string>, defa
 
 	return <>{data}</>
 }
+type PlaylistSelectionProps = {
+	playlists: {id: string, alias: string}[],
+	value?: string,
+	onSelect: (value: string) => void,
+	onNew: () => void
+}
 const default_value = 'default'
-const PlaylistSelection = ({ playlists, onSelect, onNew }: Props) => {
-	const [value, setValue] = useState(default_value);
+const PlaylistSelection = ({ playlists, value=default_value, onSelect, onNew }: PlaylistSelectionProps) => {
 	const [titles, setTitles] = useState<{[key:string]:React.ReactNode}>({})
 	useEffect(() => {
 		setTitles(prev => {
@@ -48,7 +48,6 @@ const PlaylistSelection = ({ playlists, onSelect, onNew }: Props) => {
 
 	const handlePlaylistChange = (e: SelectChangeEvent<string>) => {
 		const v = e.target.value
-		setValue(v)
 		if(v === default_value) {
 			onNew()
 		}

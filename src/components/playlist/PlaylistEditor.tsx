@@ -258,7 +258,7 @@ const PlaylistEditor = ({ value, onSave }: PlaylistEditorProps) => {
 				ref={item_ref}
 				value={value.items}
 			/>
-			<Button type='submit' variant='contained'>{value.is_new?'save':'update'}</Button>
+			<Button type='submit' variant='contained'>{value.is_new?'create':'update'}</Button>
 		</form>
 	</>
 };
