@@ -194,6 +194,10 @@ const PlaylistItemEditor = React.forwardRef<PlaylistItemEditorRef, PlaylistItemE
 		setItems(prev => [...prev, item])
 	}
 
+	useEffect(() => {
+		setItems(value)
+	}, [value])
+
 	const leftRef = useRef<HTMLDivElement>(null);
 	const rightHeaderRef = useRef<HTMLDivElement>(null);
 	const [contentHeight, setContentHeight] = useState('auto');
