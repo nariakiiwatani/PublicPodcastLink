@@ -56,7 +56,7 @@ const DraggableItem = (props:{children:React.ReactElement}&React.ComponentProps<
 type ReorderableListProps<T> = {
 	items: T[]
 	onChange: (items:T[]) => void
-	children: React.ReactNode | ((item:T)=>React.ReactNode)
+	children: React.ReactNode | ((item:T,index:number,arr:T[])=>React.ReactNode)
 	component?: React.ElementType
 	componentProps?:{[key:string]:any}
 	dragHandleClass?: string
@@ -96,7 +96,7 @@ export const ReorderableList = <T,>({
 	const Wrapper = useCallback(() => (
 		typeof children === 'function'
 			? <ArrayProviderConsumer value={value}>
-				{value => <ItemWrapper>{children(value)}</ItemWrapper>}
+				{(v,i,a) => <ItemWrapper>{children(v,i,a)}</ItemWrapper>}
 			</ArrayProviderConsumer>
 			: <ArrayProvider value={value}>
 				<ItemWrapper>{children}</ItemWrapper>

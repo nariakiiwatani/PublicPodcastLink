@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef, useMemo, useImperativeHandle, FormEvent } from "react";
-import { TextField, List, ListItem, Grid, Button, Typography, Box, Card, Divider, Select, MenuItem } from "@mui/material";
+import React, { useState, useEffect, useRef, useMemo, useCallback, useImperativeHandle, FormEvent } from "react";
+import { TextField, ListItem, Grid, Button, Typography, Box, Card, Divider, IconButton } from "@mui/material";
 import { useEpisodeSelect } from '../../hooks/useEpisodeSelect';
 import { Episode } from '../../types/podcast'
 import { Playlist, playlist_base_url } from './Playlist';
-import { useContextPack } from '../../hooks/useContextPack';
-import { ReorderableList } from '../ReorderList';
+import { ReorderableList, useReorder } from '../ReorderList';
+import DeleteIcon from '@mui/icons-material/Delete'
 
 type PlaylistChannelEditorProps = {
 	value: Playlist,
@@ -156,10 +156,23 @@ type ItemEditProps = {
 	onChange: (items: Episode[]) => void
 }
 const ItemEdit = ({ items, onChange }: ItemEditProps) => {
+	const { value, del, set } = useReorder(items)
+
+	useEffect(() => {
+		set(items)
+	}, [items])
+
+	const handleChange = (items:Episode[]) => {
+		set(items)
+		onChange(items)
+	}
+	const handleDelete = useCallback((index: number) => {
+		handleChange(del(index))
+	}, [value])
 	return items.length > 0 ?
 		<ReorderableList
-			items={items}
-			onChange={onChange}
+			items={value}
+			onChange={handleChange}
 			component={Card}
 			componentProps={{
 				sx:{
@@ -170,8 +183,8 @@ const ItemEdit = ({ items, onChange }: ItemEditProps) => {
 				}
 			}}
 		>
-			{item =>
-				<ListItem dense>
+			{(item,i) =>
+				<ListItem dense secondaryAction={<IconButton onClick={()=>handleDelete(i)}><DeleteIcon /></IconButton>}>
 					{item.title}
 				</ListItem>
 			}
