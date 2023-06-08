@@ -11,7 +11,7 @@ import PlaylistEditor from './PlaylistEditor'
 import PlaylistSelection from './PlaylistSelection'
 import { Grid, Divider } from '@mui/material'
 
-export const playlist_base_url = `${window.origin}/playlist/`
+export const playlist_base_url = `${window.origin}/playlist`
 export const playlist_view_url = (name:string)=>`${playlist_base_url}/${name}/view`
 export const playlist_rss_url = (name:string)=>`${playlist_base_url}/${name}/rss`
 export const playlist_thumbnail_url = (name:string)=>`${playlist_base_url}/${name}/thumbnail`
