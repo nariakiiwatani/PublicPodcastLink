@@ -1,31 +1,13 @@
 import { Handler, HandlerEvent, HandlerContext } from "@netlify/functions"
-import { supabase } from '../../src/utils/supabase'
+
+const supabaseUrl = process.env.VITE_SUPABASE_API_URL!
 
 export const handler: Handler = async (event: HandlerEvent, _context: HandlerContext) => {
 	const [id] = event.path.split('/').slice(-2)
-	const filepath = `thumbnail/${id}`
-	let { data, error } = await supabase.storage
-		.from('playlist')
-		.download(filepath)
-
-	if (error) {
-		return {
-			statusCode: 500,
-			body: 'An error occurred: ' + error.message,
-		}
-	}
-	if (!data || data.length === 0) {
-		return {
-			statusCode: 404,
-			body: 'Not found.',
-		}
-	}
-
 	return {
-		statusCode: 200,
+		statusCode: 302,
 		headers: {
-			'Content-Type': 'image/*',
+			Location: `${supabaseUrl}/storage/v1/object/public/playlist/thumbnail/${id}`
 		},
-		body: data[0].rss,
 	}
 }
