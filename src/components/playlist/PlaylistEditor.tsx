@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useImperativeHandle, FormE
 import { TextField, List, ListItem, Grid, Button } from "@mui/material";
 import { useEpisodeSelect } from '../../hooks/useEpisodeSelect';
 import { Episode } from '../../types/podcast'
-import { Playlist } from './Playlist';
+import { Playlist, playlist_thumbnail_default_url } from './Playlist';
 import { useContextPack } from '../../hooks/useContextPack';
 import { ReorderableList } from '../ReorderList';
 
@@ -55,7 +55,7 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 			setThumbnail(file)
 		}
 	}
-	const thumbnail_url = useMemo(() => thumbnail?URL.createObjectURL(thumbnail):null, [thumbnail])
+	const thumbnail_url = useMemo(() => thumbnail?URL.createObjectURL(thumbnail):playlist_thumbnail_default_url, [thumbnail])
 
 	return (<>
 		<TextField

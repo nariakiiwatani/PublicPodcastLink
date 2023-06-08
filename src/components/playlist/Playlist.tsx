@@ -13,6 +13,7 @@ import PlaylistSelection from './PlaylistSelection'
 export const playlist_url = (name:string)=>`${window.origin}/playlist/${name}/view`
 export const playlist_rss_url = (name:string)=>`${window.origin}/playlist/${name}/rss`
 export const playlist_thumbnail_url = (name:string)=>`${window.origin}/playlist/${name}/thumbnail`
+export const playlist_thumbnail_default_url = `${window.origin}/playlist-default-thumbnail.png`
 
 export type Playlist = {
 	id: string,
@@ -26,7 +27,7 @@ export type Playlist = {
 const create_xml = (playlist: Playlist, user: User) => {
 	const link = playlist_url(playlist.alias)
 	const rss_url = playlist_rss_url(playlist.alias)
-	const image_url = playlist_thumbnail_url(playlist.id)
+	const image_url = playlist.thumbnail?playlist_thumbnail_url(playlist.id):playlist_thumbnail_default_url
 	const author = playlist.author
 	const email = user.email
 	const title = playlist.channel.title
