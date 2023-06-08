@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FormControl, InputLabel, Select, MenuItem, SelectChangeEvent, Typography, Box } from "@mui/material";
+import { FormControl, Select, MenuItem, SelectChangeEvent, Typography, Box } from "@mui/material";
 import { fetch_podcast } from '../../hooks/usePodcast';
 import { playlist_rss_url } from './Playlist';
 

@@ -9,7 +9,7 @@ import { User } from '@supabase/supabase-js'
 import { FollowingProvider } from '../../hooks/useFollows'
 import PlaylistEditor from './PlaylistEditor'
 import PlaylistSelection from './PlaylistSelection'
-import { Grid, Divider, Typography } from '@mui/material'
+import { Grid, Divider } from '@mui/material'
 
 export const playlist_base_url = `${window.origin}/playlist/`
 export const playlist_view_url = (name:string)=>`${playlist_base_url}/${name}/view`

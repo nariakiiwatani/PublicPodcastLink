@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, useImperativeHandle, FormEvent } from "react";
-import { TextField, ListItem, Grid, Button, Typography, Box, Card, Divider, IconButton } from "@mui/material";
+import { TextField, ListItem, Grid, Button, Typography, Box, Card, Divider, IconButton, List, ListItemText } from "@mui/material";
 import { useEpisodeSelect } from '../../hooks/useEpisodeSelect';
 import { Episode } from '../../types/podcast'
 import { Playlist, playlist_base_url } from './Playlist';
 import { ReorderableList, useReorder } from '../ReorderList';
 import DeleteIcon from '@mui/icons-material/Delete'
+import { useContextPack } from '../../hooks/useContextPack';
 
 type PlaylistChannelEditorProps = {
 	value: Playlist,
@@ -135,22 +136,6 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 	</>)
 })
 
-type SelectFromEpisodesProps = {
-	onSelect: (episode: Episode) => void
-}
-const SelectFromEpisodes = ({ onSelect }: SelectFromEpisodesProps) => {
-	const { episode, Input: SelectPodcast, Select:SelectEpisode } = useEpisodeSelect()
-	useEffect(() => {
-		if(!episode) return
-		onSelect(episode)
-	}, [episode])
-
-	return (<div>
-		<SelectPodcast />
-		<SelectEpisode />
-	</div>)
-}
-
 type ItemEditProps = {
 	items: Episode[],
 	onChange: (items: Episode[]) => void
@@ -173,30 +158,21 @@ const ItemEdit = ({ items, onChange }: ItemEditProps) => {
 		<ReorderableList
 			items={value}
 			onChange={handleChange}
-			component={Card}
-			componentProps={{
-				sx:{
-					marginTop: 2,
-					marginBottom: 2,
-					height:'20rem',
-					overflowY:'scroll'
-				}
-			}}
 		>
 			{(item,i) =>
 				<ListItem dense secondaryAction={<IconButton onClick={()=>handleDelete(i)}><DeleteIcon /></IconButton>}>
-					{item.title}
+					<ListItemText
+						primary={<Grid container spacing={2} direction='row'><Grid item xs={1}><div style={{textAlign:'right'}}>{i+1}</div></Grid><Grid item xs={10}>{item.title}</Grid></Grid>}
+						primaryTypographyProps={{
+							variant:'body1'
+						}}
+					/>
 				</ListItem>
 			}
 		</ReorderableList>
-		: <Card sx={{
-			marginTop: 2,
-			marginBottom: 2,
-			height:'20rem',
-			overflowY:'scroll'
-		}}>
+		: <div>
 			<ListItem>エピソードがありません</ListItem>
-		</Card>
+		</div>
 }
 
 type PlaylistItemEditorProps = {
@@ -207,21 +183,49 @@ type PlaylistItemEditorRef = {
 }
 const PlaylistItemEditor = React.forwardRef<PlaylistItemEditorRef, PlaylistItemEditorProps>(({ value }, ref) => {
 	const [items, setItems] = useState(value)
+	const { episodes, Input: SelectPodcast } = useEpisodeSelect()
+	const { ArrayProviderConsumer } = useContextPack<Episode>()
 	useImperativeHandle(ref, () => ({
 		getValue: () => items,
 	}))
 	const handleAddNewEpisode = (item: Episode): void => {
 		setItems(prev => [...prev, item])
 	}
+
+	const leftRef = useRef<HTMLDivElement>(null);
+	const rightHeaderRef = useRef<HTMLDivElement>(null);
+	const [contentHeight, setContentHeight] = useState('auto');
+	useEffect(() => {
+		if (leftRef.current && rightHeaderRef.current) {
+			const spacing = 16
+			setContentHeight(`${leftRef.current.offsetHeight - rightHeaderRef.current.offsetHeight - spacing}px`);
+		}
+	}, [items]);
 	return <>
 		<Grid container spacing={2}>
-			<Grid item xs={12} md={8}>
+			<Grid item xs={12} md={8} ref={leftRef}>
 				<Typography variant='h4'>プレイリスト</Typography>
-				<ItemEdit items={items} onChange={setItems} />
+				<Card sx={{ height:'20rem', overflow: 'auto', marginTop: 2, marginBottom: 2 }}>
+					<ItemEdit items={items} onChange={setItems} />
+				</Card>
 			</Grid>
-			<Grid item xs={12} md={4}>
-				<Typography variant='h4'>追加するエピソードを選択</Typography>
-				<SelectFromEpisodes onSelect={handleAddNewEpisode} />
+			<Grid item xs={12} md={4} container direction="column">
+				<Grid item ref={rightHeaderRef}>
+					<Typography variant='h4'>追加するエピソードを選択</Typography>
+					<SelectPodcast />
+				</Grid>
+				<Grid item sx={{ height: contentHeight, overflow: 'auto' }}>
+					<List>
+						<ArrayProviderConsumer value={episodes}>
+							{(value) => (
+								<ListItem
+									component={Button}
+									onClick={() => handleAddNewEpisode(value)}
+								>{value.title}</ListItem>
+							)}
+						</ArrayProviderConsumer>
+					</List>
+				</Grid>
 			</Grid>
 		</Grid>
 	</>

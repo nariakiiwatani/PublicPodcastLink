@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from 'react'
-import DragHandleIcon from '@mui/icons-material/DragHandle'
 import { Container, Draggable, DropResult } from "react-smooth-dnd"
 import { Box, List } from '@mui/material'
 import { useContextPack } from '../hooks/useContextPack'
@@ -83,12 +82,12 @@ export const ReorderableList = <T,>({
 	const ItemWrapper = useCallback(({children}:{children:React.ReactNode}) =>
 		<DraggableItem>
 			<Box
-				display="flex"
-				justifyContent="space-between"
-				alignItems="center"
-				padding="8px"
+				sx={{
+					padding:1,
+					cursor: 'pointer'
+				}}
+				className={dragHandleClass}
 			>
-				<DragHandleIcon className={dragHandleClass} sx={{ cursor: 'pointer' }} />
 				{children}
 			</Box>
 		</DraggableItem>
