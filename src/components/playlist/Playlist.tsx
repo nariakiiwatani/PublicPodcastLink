@@ -52,6 +52,7 @@ const create_xml = (playlist: Playlist, user: User) => {
 			title: title,
 			link
 		},
+		author,
 		generator: 'PublicPodcastLink Playlist Creator',
 		lastBuildDate: new Date().toUTCString(),
 		'atom:link': {
@@ -134,7 +135,7 @@ export default () => {
 		const playlist = db.value.find(v=>v.id === id)
 		if(!playlist) return
 		const url = playlist_rss_url(playlist.alias)
-		fetch_podcast(url).then(result => {
+		fetch_podcast(url, true).then(result => {
 			if(!result) return
 			setValue({
 				is_new: false,
