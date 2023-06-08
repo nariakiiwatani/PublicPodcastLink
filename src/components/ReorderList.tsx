@@ -58,12 +58,14 @@ type ReorderableListProps<T> = {
 	onChange: (items:T[]) => void
 	children: React.ReactNode | ((item:T)=>React.ReactNode)
 	component?: React.ElementType
+	componentProps?:{[key:string]:any}
 	dragHandleClass?: string
 }
 export const ReorderableList = <T,>({
 	items,
 	onChange,
 	component:Component=List,
+	componentProps={},
 	dragHandleClass='dragHandle',
 	children
 }:ReorderableListProps<T>) => {
@@ -101,7 +103,7 @@ export const ReorderableList = <T,>({
 			</ArrayProvider>		
 	), [children, value])
 	return (
-		<Component>
+		<Component {...componentProps}>
 			<DraggableContainer
 				onDrop={handleDrop}
 				dragHandleSelector={`.${dragHandleClass}`}

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo, useImperativeHandle, FormEvent } from "react";
-import { TextField, List, ListItem, Grid, Button } from "@mui/material";
+import { TextField, List, ListItem, Grid, Button, Typography, Box, Card, Divider, Select, MenuItem } from "@mui/material";
 import { useEpisodeSelect } from '../../hooks/useEpisodeSelect';
 import { Episode } from '../../types/podcast'
-import { Playlist, playlist_thumbnail_default_url } from './Playlist';
+import { Playlist, playlist_base_url } from './Playlist';
 import { useContextPack } from '../../hooks/useContextPack';
 import { ReorderableList } from '../ReorderList';
 
@@ -12,17 +12,19 @@ type PlaylistChannelEditorProps = {
 interface PlaylistChannelEditorRef {
 	getValue: () => Playlist;
 }
-const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, PlaylistChannelEditorProps>(({value}, ref) => {
+const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, PlaylistChannelEditorProps>(({ value }, ref) => {
 	const [alias, setAlias] = useState(value.alias)
 	const [title, setTitle] = useState(value.title)
+	const [author, setAuthor] = useState(value.author)
 	const [description, setDescription] = useState(value.description)
-	const [thumbnail, setThumbnail] = useState<File|string>(value.thumbnail)
+	const [thumbnail, setThumbnail] = useState<File | string>(value.thumbnail)
 
 	useImperativeHandle(ref, () => ({
 		getValue: () => ({
 			...value,
 			alias,
 			title,
+			author,
 			description,
 			thumbnail,
 		}),
@@ -31,92 +33,133 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 	useEffect(() => {
 		setAlias(value.alias)
 		setTitle(value.title)
+		setAuthor(value.author)
 		setDescription(value.description)
 		setThumbnail(value.thumbnail)
 	}, [value])
 
-	const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setTitle(e.target.value)
-	}
-
-	const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setDescription(e.target.value)
-	}
-
-	const handleAliasChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setAlias(e.target.value)
-	}
 	const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
-		if(file) {
+		if (file) {
 			setThumbnail(file)
 		}
 	}
-	const thumbnail_url = useMemo(() => thumbnail instanceof File ? URL.createObjectURL(thumbnail):thumbnail, [thumbnail])
+	const thumbnail_url = useMemo(() => thumbnail instanceof File ? URL.createObjectURL(thumbnail) : thumbnail, [thumbnail])
 
 	return (<>
-		<TextField
-			label="Title"
-			value={title}
-			onChange={handleTitleChange}
-		/>
+		<Grid container spacing={2} sx={{ marginTop: 2 }}>
+			<Grid item xs={12} md={6} container spacing={2} alignItems={'start'}>
+				<Grid item xs={12}>
+					<Typography variant='h4'>タイトル</Typography>
+					<TextField
+						fullWidth
+						variant='outlined'
+						value={title}
+						onChange={(e) => setTitle(e.target.value)}
+					/>
+				</Grid>
+				<Grid item xs={12}>
+					<Typography variant='h4'>説明</Typography>
+					<TextField
+						fullWidth
+						variant='outlined'
+						value={description}
+						rows={5}
+						multiline
+						onChange={(e) => setDescription(e.target.value)}
+					/>
+				</Grid>
+				<Grid item xs={12}>
+					<Typography variant='h4'>作成者名</Typography>
+					<TextField
+						fullWidth
+						variant='outlined'
+						value={author}
+						onChange={(e) => setAuthor(e.target.value)}
+					/>
+				</Grid>
+			</Grid>
+			<Grid item xs={12} md={6} container spacing={2}>
+				<Grid item xs={12}>
+					<Typography variant='h4'>RSS Feed URL</Typography>
+					<Box sx={{ display: 'flex', alignItems: 'end' }}>
+						<Typography variant='body2'>
+							{playlist_base_url}
+						</Typography>
+						<TextField
+							size='small'
+							variant='outlined'
+							value={alias}
+							onChange={(e) => setAlias(e.target.value)}
+						/>
+						<Typography variant='body2'>
+							/rss
+						</Typography>
+					</Box>
+				</Grid>
+				<Grid item xs={6}>
+					<Typography variant='h4'>サムネイル（クリックしてアップロード）</Typography>
+					<input
+						accept="image/*"
+						style={{ display: "none" }}
+						id="button-file"
+						type="file"
+						onChange={handleThumbnailChange}
+					/>
+					<label htmlFor="button-file">
+						<Button component="span">
+							<img src={thumbnail_url} width='100%' />
+						</Button>
+					</label>
+				</Grid>
 
-		<TextField
-			label="Description"
-			value={description}
-			onChange={handleDescriptionChange}
-		/>
-
-		<TextField
-			label="Alias"
-			value={alias}
-			onChange={handleAliasChange}
-		/>
-		<input
-			accept="image/*"
-			style={{ display: "none" }}
-			id="button-file"
-			type="file"
-			onChange={handleThumbnailChange}
-		/>
-		<label htmlFor="button-file">
-			<Button variant="contained" component="span">
-				Upload
-			</Button>
-		</label>
-		<img src={thumbnail_url} />
+			</Grid>
+		</Grid>
 	</>)
 })
 
 type SelectFromEpisodesProps = {
 	onSelect: (episode: Episode) => void
 }
-const SelectFromEpisodes = ({onSelect}:SelectFromEpisodesProps) => {
-	const {episodes, Input:SelectPodcast} = useEpisodeSelect()
-	const {ArrayProviderConsumer} = useContextPack<Episode>()
+const SelectFromEpisodes = ({ onSelect }: SelectFromEpisodesProps) => {
+	const { episode, Input: SelectPodcast, Select:SelectEpisode } = useEpisodeSelect()
+	useEffect(() => {
+		if(!episode) return
+		onSelect(episode)
+	}, [episode])
 
-	return (<>
+	return (<div>
 		<SelectPodcast />
-		<List>
-			<ArrayProviderConsumer value={episodes}>
-				{(value) => <ListItem onClick={()=>onSelect(value)}>{value.title}</ListItem>}
-			</ArrayProviderConsumer>
-		</List>
-	</>)
+		<SelectEpisode />
+	</div>)
 }
 
 type ItemEditProps = {
 	items: Episode[],
-	onChange: (items:Episode[]) => void
+	onChange: (items: Episode[]) => void
 }
-const ItemEdit = ({items, onChange}:ItemEditProps) => {
-	return <ReorderableList items={items} onChange={onChange}>
-		{item => 
-			<ListItem>
-				{item.title}
-			</ListItem>
-		}
-	</ReorderableList>
+const ItemEdit = ({ items, onChange }: ItemEditProps) => {
+	return items.length > 0 ?
+		<ReorderableList
+			items={items}
+			onChange={onChange}
+			component={Card}
+			componentProps={{
+				sx:{
+					marginTop: 2,
+					marginBottom: 2,
+					height:'20rem',
+					overflowY:'scroll'
+				}
+			}}
+		>
+			{item =>
+				<ListItem dense>
+					{item.title}
+				</ListItem>
+			}
+		</ReorderableList>
+		: <ListItem>エピソードがありません</ListItem>
 }
 
 type PlaylistItemEditorProps = {
@@ -125,50 +168,58 @@ type PlaylistItemEditorProps = {
 type PlaylistItemEditorRef = {
 	getValue: () => Episode[]
 }
-const PlaylistItemEditor = React.forwardRef<PlaylistItemEditorRef, PlaylistItemEditorProps>(({value}, ref) => {
+const PlaylistItemEditor = React.forwardRef<PlaylistItemEditorRef, PlaylistItemEditorProps>(({ value }, ref) => {
 	const [items, setItems] = useState(value)
 	useImperativeHandle(ref, () => ({
 		getValue: () => items,
 	}))
-	const handleAddNewEpisode = (item: Episode):void => {
-		setItems(prev=>[...prev, item])
+	const handleAddNewEpisode = (item: Episode): void => {
+		setItems(prev => [...prev, item])
 	}
-	return <Grid container spacing={2}>
-		<Grid item xs={6}>
-			<ItemEdit items={items} onChange={setItems} />
+	return <>
+		<Grid container spacing={2}>
+			<Grid item xs={12} md={8}>
+				<Typography variant='h4'>プレイリスト</Typography>
+				<ItemEdit items={items} onChange={setItems} />
+			</Grid>
+			<Grid item xs={12} md={4}>
+				<Typography variant='h4'>追加するエピソードを選択</Typography>
+				<SelectFromEpisodes onSelect={handleAddNewEpisode} />
+			</Grid>
 		</Grid>
-		<Grid item xs={6}>
-			<SelectFromEpisodes onSelect={handleAddNewEpisode} />
-		</Grid>
-	</Grid>
+	</>
 })
 
 type PlaylistEditorProps = {
 	value: Playlist,
 	onSave: (value: Playlist) => void
 }
-const PlaylistEditor = ({value, onSave}:PlaylistEditorProps) => {
+const PlaylistEditor = ({ value, onSave }: PlaylistEditorProps) => {
 	const channel_ref = useRef<PlaylistChannelEditorRef>(null)
 	const item_ref = useRef<PlaylistItemEditorRef>(null)
 	const handleSave = (e: FormEvent) => {
 		e.preventDefault()
-		if(!channel_ref.current || !item_ref.current) return
+		if (!channel_ref.current || !item_ref.current) return
 		onSave({
 			...channel_ref.current.getValue(),
 			items: item_ref.current.getValue()
 		})
 	}
-	return <form onSubmit={handleSave}>
-		<PlaylistChannelEditor
-			ref={channel_ref}
-			value={value}
-		/>
-		<PlaylistItemEditor
-			ref={item_ref}
-			value={value.items}
-		/>
-		<Button type='submit'>save</Button>
-	</form>
+	return <>
+		<Divider variant='fullWidth' sx={{ marginTop: 2, marginBottom: 2 }} />
+		<form onSubmit={handleSave}>
+			<PlaylistChannelEditor
+				ref={channel_ref}
+				value={value}
+			/>
+			<Divider variant='fullWidth' sx={{ marginTop: 2, marginBottom: 2 }} />
+			<PlaylistItemEditor
+				ref={item_ref}
+				value={value.items}
+			/>
+			<Button type='submit' variant='contained'>{value.is_new?'save':'update'}</Button>
+		</form>
+	</>
 };
 
 export default PlaylistEditor;

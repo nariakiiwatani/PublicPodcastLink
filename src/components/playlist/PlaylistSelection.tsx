@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FormControl, InputLabel, Select, MenuItem, SelectChangeEvent } from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem, SelectChangeEvent, Typography, Box } from "@mui/material";
 import { fetch_podcast } from '../../hooks/usePodcast';
 import { playlist_rss_url } from './Playlist';
 
@@ -60,9 +60,10 @@ const PlaylistSelection = ({ playlists, onSelect, onNew }: Props) => {
 	return (
 		<div>
 			<FormControl>
-				<InputLabel id="playlist-select-label">Select a Playlist</InputLabel>
+				<Box sx={{display:'flex', flexDirection:'row', alignItems:'baseline'}}>
+				<Typography variant='h3' sx={{marginRight: 2}}>プレイリストを選択</Typography>
 				<Select
-					labelId="playlist-select-label"
+					variant='standard'
 					value={value}
 					onChange={handlePlaylistChange}
 				>
@@ -71,6 +72,7 @@ const PlaylistSelection = ({ playlists, onSelect, onNew }: Props) => {
 						<MenuItem key={playlist.id} value={playlist.id}>{titles[playlist.id]??'unknown'}</MenuItem>
 					))}
 				</Select>
+				</Box>
 			</FormControl>
 		</div>
 	);

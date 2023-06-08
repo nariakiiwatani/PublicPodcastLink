@@ -20,6 +20,7 @@ import { FetchTitle } from './utils/FetchTitle'
 import { CheckAuth, ResetPassword, redirectURL } from './components/Login'
 import { TabPanel } from './components/TabPanel'
 import Playlist from './components/playlist/Playlist'
+import { createTheme, ThemeProvider } from '@mui/material';
 
 const EditableListItem = ({ defaultValue, textFieldProps, Icon, onEdit, onDelete }: {
 	defaultValue: string
@@ -359,9 +360,28 @@ const Account = () => {
 		</Box>
 	</>)
 }
+
+const theme = createTheme({
+	typography: {
+		h2: {
+			fontSize: '2rem',
+			fontWeight: 'bold',
+		},
+		h3: {
+			fontSize: '1.2rem',
+			fontWeight: 'bold',
+		},
+		h4: {
+			fontSize: '1rem',
+			fontWeight: 'bold',
+		},
+	},
+});
+  
 const Owner: React.FC = () => {
 	const { t } = useTranslation(['owner', 'tab'])
 	return (<>
+	<ThemeProvider theme={theme}>
 		<CssBaseline />
 		<Header />
 		<Box sx={{ margin: 2 }}>
@@ -375,6 +395,7 @@ const Owner: React.FC = () => {
 				</TabPanel>
 			</CheckAuth>
 		</Box>
+		</ThemeProvider>
 	</>
 	)
 }
