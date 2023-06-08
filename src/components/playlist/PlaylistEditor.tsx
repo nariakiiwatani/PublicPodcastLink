@@ -48,7 +48,7 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 
 	return (<>
 		<Grid container spacing={2} sx={{ marginTop: 2 }}>
-			<Grid item xs={12} md={6} container spacing={2} alignItems={'start'}>
+			<Grid item xs={12} md={6} container alignContent='start' spacing={2} >
 				<Grid item xs={12}>
 					<Typography variant='h4'>タイトル</Typography>
 					<TextField
@@ -107,8 +107,25 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 						onChange={handleThumbnailChange}
 					/>
 					<label htmlFor="button-file">
-						<Button component="span">
-							<img src={thumbnail_url} width='100%' />
+						<Button component={Box}
+							sx={{
+								width: '100%',
+								paddingTop: '100%',
+								position: 'relative',
+							}}>
+							<Box
+								sx={{
+									position: 'absolute',
+									top: 0,
+									right: 0,
+									bottom: 0,
+									left: 0,
+									backgroundImage: `url(${thumbnail_url})`,
+									backgroundSize: 'contain',
+									backgroundPosition: 'center',
+									backgroundRepeat: 'no-repeat'
+								}}
+							/>
 						</Button>
 					</label>
 				</Grid>
@@ -159,7 +176,14 @@ const ItemEdit = ({ items, onChange }: ItemEditProps) => {
 				</ListItem>
 			}
 		</ReorderableList>
-		: <ListItem>エピソードがありません</ListItem>
+		: <Card sx={{
+			marginTop: 2,
+			marginBottom: 2,
+			height:'20rem',
+			overflowY:'scroll'
+		}}>
+			<ListItem>エピソードがありません</ListItem>
+		</Card>
 }
 
 type PlaylistItemEditorProps = {
