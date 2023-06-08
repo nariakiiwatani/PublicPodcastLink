@@ -6,6 +6,7 @@ import { Playlist, playlist_base_url } from './Playlist';
 import { ReorderableList, useReorder } from '../ReorderList';
 import DeleteIcon from '@mui/icons-material/Delete'
 import { useContextPack } from '../../hooks/useContextPack';
+import { useDialog } from '../../hooks/useDialog';
 
 type PlaylistChannelEditorProps = {
 	value: Playlist,
@@ -98,39 +99,40 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 						</Typography>
 					</Box>
 				</Grid>
-				<Grid item xs={6}>
+				<Grid item xs={12}>
 					<Typography variant='h4'>サムネイル（クリックしてアップロード）</Typography>
-					<input
-						accept="image/*"
-						style={{ display: "none" }}
-						id="button-file"
-						type="file"
-						onChange={handleThumbnailChange}
-					/>
-					<label htmlFor="button-file">
-						<Button component={Box}
-							sx={{
-								width: '100%',
-								paddingTop: '100%',
-								position: 'relative',
-							}}>
-							<Box
+					<Grid item xs={6}>
+						<input
+							accept="image/*"
+							style={{ display: "none" }}
+							id="button-file"
+							type="file"
+							onChange={handleThumbnailChange}
+						/>
+						<label htmlFor="button-file">
+							<Button component={Box}
 								sx={{
-									position: 'absolute',
-									top: 0,
-									right: 0,
-									bottom: 0,
-									left: 0,
-									backgroundImage: `url(${thumbnail_url})`,
-									backgroundSize: 'contain',
-									backgroundPosition: 'center',
-									backgroundRepeat: 'no-repeat'
-								}}
-							/>
-						</Button>
-					</label>
+									width: '100%',
+									paddingTop: '100%',
+									position: 'relative',
+								}}>
+								<Box
+									sx={{
+										position: 'absolute',
+										top: 0,
+										right: 0,
+										bottom: 0,
+										left: 0,
+										backgroundImage: `url(${thumbnail_url})`,
+										backgroundSize: 'contain',
+										backgroundPosition: 'center',
+										backgroundRepeat: 'no-repeat'
+									}}
+								/>
+							</Button>
+						</label>
+					</Grid>
 				</Grid>
-
 			</Grid>
 		</Grid>
 	</>)
@@ -161,12 +163,12 @@ const ItemEdit = ({ items, onChange }: ItemEditProps) => {
 		>
 			{(item,i) =>
 				<ListItem dense secondaryAction={<IconButton onClick={()=>handleDelete(i)}><DeleteIcon /></IconButton>}>
-					<ListItemText
-						primary={<Grid container spacing={2} direction='row'><Grid item xs={1}><div style={{textAlign:'right'}}>{i+1}</div></Grid><Grid item xs={10}>{item.title}</Grid></Grid>}
-						primaryTypographyProps={{
-							variant:'body1'
-						}}
-					/>
+					<Grid container spacing={1} direction='row' alignItems='center'>
+						<Grid item xs={1}><div style={{textAlign:'right'}}>{i+1}.  </div></Grid>
+						<Grid item xs={10}>
+							<ListItemText primary={item.title} />
+						</Grid>
+					</Grid>
 				</ListItem>
 			}
 		</ReorderableList>
@@ -234,8 +236,9 @@ const PlaylistItemEditor = React.forwardRef<PlaylistItemEditorRef, PlaylistItemE
 type PlaylistEditorProps = {
 	value: Playlist,
 	onSave: (value: Playlist) => void
+	onDelete: (id: string) => void
 }
-const PlaylistEditor = ({ value, onSave }: PlaylistEditorProps) => {
+const PlaylistEditor = ({ value, onSave, onDelete }: PlaylistEditorProps) => {
 	const channel_ref = useRef<PlaylistChannelEditorRef>(null)
 	const item_ref = useRef<PlaylistItemEditorRef>(null)
 	const handleSave = (e: FormEvent) => {
@@ -246,6 +249,12 @@ const PlaylistEditor = ({ value, onSave }: PlaylistEditorProps) => {
 			items: item_ref.current.getValue()
 		})
 	}
+	const deleteDialog = useDialog()
+	const handleDelete = (id: string) => {
+		deleteDialog.close()
+		onDelete(id)
+	}
+
 	return <>
 		<Divider variant='fullWidth' sx={{ marginTop: 2, marginBottom: 2 }} />
 		<form onSubmit={handleSave}>
@@ -260,6 +269,29 @@ const PlaylistEditor = ({ value, onSave }: PlaylistEditorProps) => {
 			/>
 			<Button type='submit' variant='contained'>{value.is_new?'create':'update'}</Button>
 		</form>
+		{!value.is_new && <>
+			<Box sx={{ backgroundColor: 'darkgrey', padding: 2, marginTop: 4 }}>
+				<Typography variant='h2' color='error'>プレイリストを削除</Typography>
+				<Button
+					color='error'
+					variant='outlined'
+					onClick={() => deleteDialog.open()}
+				>DELETE</Button>
+			</Box>
+			<deleteDialog.Dialog title='本当に削除しますか？'>
+				<Typography variant='h4'>この操作は取り消せません</Typography>
+				<Button
+					color='error'
+					variant='contained'
+					onClick={() => handleDelete(value.id)}
+				>削除する</Button>
+				<Button
+					color='primary'
+					variant='outlined'
+					onClick={() => deleteDialog.close()}
+				>やめとく</Button>
+			</deleteDialog.Dialog>
+		</>}
 	</>
 };
 

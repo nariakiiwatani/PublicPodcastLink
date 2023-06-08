@@ -9,7 +9,7 @@ import { User } from '@supabase/supabase-js'
 import { FollowingProvider } from '../../hooks/useFollows'
 import PlaylistEditor from './PlaylistEditor'
 import PlaylistSelection from './PlaylistSelection'
-import { Grid, Divider } from '@mui/material'
+import { Grid, Divider, Button, Typography } from '@mui/material'
 
 export const playlist_base_url = `${window.origin}/playlist`
 export const playlist_view_url = (name:string)=>`${playlist_base_url}/${name}/view`
@@ -109,26 +109,24 @@ const useDB = () => {
 		setValue(new_value)
 	}
 	const update = (id: string, record: Record['Insert']) => supabase.from('playlist').upsert({id, ...record}).match({id}).then(refresh)
-	const del = (id: string) => supabase.from('playlist').delete().match({id}).then(refresh)
+	const del = async (id: string) => {
+		await supabase.from('playlist').delete().match({id}).then(refresh)
+		await supabase.storage.from('playlist').remove([`thumbnail/${id}`])
+	}
+	const upload = (file: File, filename: string) => {
+		const filepath = `thumbnail/${filename}`
+		return supabase.storage.from('playlist').upload(filepath, file).then(({data}) => data?.path)
+	}
 	useEffect(() => {
 		refresh()
 	},[])
 	return {
-		value, update, refresh, del
+		value, update, refresh, del, upload
 	}
-}
-const useBucket = (bucket_name: string) => {
-	const upload = (file: File, filename: string) => {
-		const filepath = `thumbnail/${filename}`
-		return supabase.storage.from(bucket_name).upload(filepath, file)
-		.then(({data}) => data?.path)
-	}
-	return { upload }
 }
 
 export default () => {
 	const db = useDB()
-	const bucket = useBucket('playlist')
 	const {session} = useContext(SessionContext)
 	const [value, setValue] = useState<Playlist>(() => make_empty_playlist())
 	const handleSelect = (id: string) => {
@@ -153,7 +151,7 @@ export default () => {
 	}
 	const handleSave = (value: Playlist) => {
 		if(!session?.user) throw new Error('not logged in');
-		((value.thumbnail && value.thumbnail instanceof File) ? bucket.upload(value.thumbnail, value.id) : Promise.resolve())
+		((value.thumbnail && value.thumbnail instanceof File) ? db.upload(value.thumbnail, value.id) : Promise.resolve(value.thumbnail))
 		.then(() => 
 			db.update(
 				value.id, {
@@ -169,6 +167,9 @@ export default () => {
 			})
 		)
 	}
+	const handleDelete = (id: string) => {
+		db.del(id).then(() => handleNew())
+	}
 	return <>
 		<FollowingProvider>
 			<Grid container spacing={2}>
@@ -177,7 +178,7 @@ export default () => {
 				</Grid>
 				<Divider variant='fullWidth' />
 				<Grid item xs={12}>
-					<PlaylistEditor value={value} onSave={handleSave} />
+					<PlaylistEditor value={value} onSave={handleSave} onDelete={handleDelete} />
 				</Grid>
 			</Grid>
 		</FollowingProvider>

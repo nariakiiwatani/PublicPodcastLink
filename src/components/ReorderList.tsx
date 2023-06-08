@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { Container, Draggable, DropResult } from "react-smooth-dnd"
-import { Box, List } from '@mui/material'
+import { Box, List, Divider } from '@mui/material'
 import { useContextPack } from '../hooks/useContextPack'
 
 export const useReorder = <T,>(items:T[]) => {
@@ -79,19 +79,21 @@ export const ReorderableList = <T,>({
 		}
 		onChange(move(removedIndex, addedIndex))
 	};
-	const ItemWrapper = useCallback(({children}:{children:React.ReactNode}) =>
+	const ItemWrapper = useCallback(({children}:{children:React.ReactNode}) => <>
 		<DraggableItem>
+			<>
 			<Box
 				sx={{
-					padding:1,
 					cursor: 'pointer'
 				}}
 				className={dragHandleClass}
 			>
 				{children}
 			</Box>
+			<Divider variant='middle' />
+			</>
 		</DraggableItem>
-	, [])
+	</>, [])
 	const Wrapper = useCallback(() => (
 		typeof children === 'function'
 			? <ArrayProviderConsumer value={value}>
