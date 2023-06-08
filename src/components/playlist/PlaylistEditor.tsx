@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useImperativeHandle, FormEvent } from "react";
+import React, { useState, useEffect, useRef, useMemo, useImperativeHandle, FormEvent } from "react";
 import { TextField, List, ListItem, Grid, Button } from "@mui/material";
 import { useEpisodeSelect } from '../../hooks/useEpisodeSelect';
 import { Episode } from '../../types/podcast'
@@ -55,6 +55,7 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 			setThumbnail(file)
 		}
 	}
+	const thumbnail_url = useMemo(() => thumbnail?URL.createObjectURL(thumbnail):null, [thumbnail])
 
 	return (<>
 		<TextField
@@ -86,6 +87,7 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 				Upload
 			</Button>
 		</label>
+		{thumbnail_url && <img src={thumbnail_url} />}
 	</>)
 })
 

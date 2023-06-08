@@ -1,4 +1,4 @@
-import { useContext, useState, useMemo } from 'react'
+import { useContext, useState, useMemo, useEffect } from 'react'
 import { Podcast, Episode } from '../../types/podcast'
 import { SessionContext, supabase } from '../../utils/supabase'
 import { Database } from '../../types/supabase_database'
@@ -114,6 +114,9 @@ const useDB = () => {
 	const del = (id: string) => {
 		supabase.from('playlist').delete().match({id}).then(refresh)
 	}
+	useEffect(() => {
+		refresh()
+	},[])
 	return {
 		value, update, refresh, del
 	}
@@ -135,7 +138,7 @@ export default () => {
 	const handleSelect = (id: string) => {
 		const playlist = db.value.find(v=>v.id === id)
 		if(!playlist) return
-		const url = playlist_rss_url(id)
+		const url = playlist_rss_url(playlist.alias)
 		fetch_podcast(url).then(result => {
 			if(!result) return
 			setValue({

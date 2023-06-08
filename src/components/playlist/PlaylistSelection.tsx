@@ -8,16 +8,17 @@ type Props = {
 }
 
 const PlaylistSelection = ({ playlists, onSelect, onNew }: Props) => {
-	const [value, setValue] = useState("");
+	const [value, setValue] = useState('default');
 
 	const handlePlaylistChange = (e: SelectChangeEvent<string>) => {
 		const v = e.target.value
-		setValue(v);
-		onSelect(v);
+		setValue(v)
+		onSelect(v)
 	};
 
 	const handleNewPlaylistClick = () => {
-		onNew();
+		onNew()
+		setValue('default')
 	};
 
 	return (
@@ -29,13 +30,13 @@ const PlaylistSelection = ({ playlists, onSelect, onNew }: Props) => {
 					value={value}
 					onChange={handlePlaylistChange}
 				>
+					<MenuItem value='default' disabled sx={{display:'none'}}>新規作成</MenuItem>
 					{playlists.map((playlist) => (
 						<MenuItem key={playlist.id} value={playlist.id}>{playlist.alias}</MenuItem>
 					))}
 				</Select>
 			</FormControl>
-
-			<Button onClick={handleNewPlaylistClick}>Create New Playlist</Button>
+			{value !== 'default' && <Button onClick={handleNewPlaylistClick}>or Create New</Button>}
 		</div>
 	);
 };
