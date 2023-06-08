@@ -85,7 +85,7 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 					<Typography variant='h4'>RSS Feed URL</Typography>
 					<Box sx={{ display: 'flex', alignItems: 'end' }}>
 						<Typography variant='body2'>
-							{playlist_base_url}
+							{playlist_base_url}/
 						</Typography>
 						<TextField
 							size='small'
