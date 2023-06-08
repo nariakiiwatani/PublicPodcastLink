@@ -18,20 +18,21 @@ export const playlist_thumbnail_default_url = `${window.origin}/playlist-default
 export type Playlist = {
 	id: string,
 	alias: string,
-	thumbnail?: File,
-	author?: string,
-	channel: Podcast,
+	title: string,
+	description: string,
+	author: string,
+	thumbnail: File|string,
 	items: Episode[]
 }
 
 const create_xml = (playlist: Playlist, user: User) => {
-	const link = playlist_url(playlist.alias)
-	const rss_url = playlist_rss_url(playlist.alias)
-	const image_url = playlist.thumbnail?playlist_thumbnail_url(playlist.id):playlist_thumbnail_default_url
-	const author = playlist.author
+	const { id, alias, title, description, author } = playlist
+	const link = playlist_url(alias)
+	const rss_url = playlist_rss_url(alias)
+	const image_url = playlist.thumbnail instanceof File
+		? playlist_thumbnail_url(id)
+		: playlist.thumbnail
 	const email = user.email
-	const title = playlist.channel.title
-	const description = playlist.channel.description
 	if(!email) {
 		throw new Error('email not set')
 	}
@@ -84,17 +85,10 @@ const make_empty_playlist = (): Playlist => {
 	return {
 		id: uuidv4(),
 		alias: '',
-		channel: {
-			title: '',
-			description: '',
-			link: '',
-			imageUrl: '',
-			author: '',
-			self_url: '',
-			owner: {
-				email: ''
-			}
-		},
+		title: '',
+		description: '',
+		author: '',
+		thumbnail: playlist_thumbnail_default_url,
 		items: []
 	}
 }
@@ -144,7 +138,10 @@ export default () => {
 			if(!result) return
 			setValue({
 				id, alias: playlist.alias,
-				channel: result.podcast,
+				title: result.podcast.title,
+				description: result.podcast.description,
+				author: result.podcast.author,
+				thumbnail: result.podcast.imageUrl,
 				items: result.episodes
 			})
 		})
@@ -154,7 +151,7 @@ export default () => {
 	}
 	const handleSave = (value: Playlist) => {
 		if(!session?.user) throw new Error('not logged in');
-		(value.thumbnail ? bucket.upload(value.thumbnail, value.id) : Promise.resolve())
+		((value.thumbnail && value.thumbnail instanceof File) ? bucket.upload(value.thumbnail, value.id) : Promise.resolve())
 		.then(() => 
 			db.update(
 				value.id, {

@@ -14,27 +14,24 @@ interface PlaylistChannelEditorRef {
 }
 const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, PlaylistChannelEditorProps>(({value}, ref) => {
 	const [alias, setAlias] = useState(value.alias)
-	const [title, setTitle] = useState(value.channel.title)
-	const [description, setDescription] = useState(value.channel.description)
-	const [thumbnail, setThumbnail] = useState<File|undefined>()
+	const [title, setTitle] = useState(value.title)
+	const [description, setDescription] = useState(value.description)
+	const [thumbnail, setThumbnail] = useState<File|string>(value.thumbnail)
 
 	useImperativeHandle(ref, () => ({
 		getValue: () => ({
 			...value,
 			alias,
+			title,
+			description,
 			thumbnail,
-			channel: {
-				...value.channel,
-				title,
-				description,
-			}
 		}),
 	}))
 
 	useEffect(() => {
 		setAlias(value.alias)
-		setTitle(value.channel.title)
-		setDescription(value.channel.description)
+		setTitle(value.title)
+		setDescription(value.description)
 		setThumbnail(value.thumbnail)
 	}, [value])
 
@@ -55,7 +52,7 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 			setThumbnail(file)
 		}
 	}
-	const thumbnail_url = useMemo(() => thumbnail?URL.createObjectURL(thumbnail):playlist_thumbnail_default_url, [thumbnail])
+	const thumbnail_url = useMemo(() => thumbnail instanceof File ? URL.createObjectURL(thumbnail):thumbnail, [thumbnail])
 
 	return (<>
 		<TextField
@@ -87,7 +84,7 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 				Upload
 			</Button>
 		</label>
-		{thumbnail_url && <img src={thumbnail_url} />}
+		<img src={thumbnail_url} />
 	</>)
 })
 

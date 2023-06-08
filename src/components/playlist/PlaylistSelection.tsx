@@ -1,5 +1,7 @@
-import { useState } from "react";
-import { FormControl, InputLabel, Select, MenuItem, Button, SelectChangeEvent } from "@mui/material";
+import { useState, useEffect } from "react";
+import { FormControl, InputLabel, Select, MenuItem, SelectChangeEvent } from "@mui/material";
+import { fetch_podcast } from '../../hooks/usePodcast';
+import { playlist_rss_url } from './Playlist';
 
 type Props = {
 	playlists: {id: string, alias: string}[],
@@ -7,19 +9,53 @@ type Props = {
 	onNew: () => void
 }
 
+const AsyncString = ({ promise, defaultValue }: { promise: Promise<string>, defaultValue: string }) => {
+	const [data, setData] = useState(defaultValue);
+
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				const result = await promise;
+				setData(result);
+			} catch (error) {
+				console.error('Error:', error);
+			}
+		};
+		fetchData();
+	}, [promise]);
+
+	return <>{data}</>
+}
+const default_value = 'default'
 const PlaylistSelection = ({ playlists, onSelect, onNew }: Props) => {
-	const [value, setValue] = useState('default');
+	const [value, setValue] = useState(default_value);
+	const [titles, setTitles] = useState<{[key:string]:React.ReactNode}>({})
+	useEffect(() => {
+		setTitles(prev => {
+			const ret = {...prev}
+			playlists.forEach(({id, alias}) => {
+				if(!(id in ret)) {
+					ret[id] = <AsyncString promise={
+							fetch_podcast(playlist_rss_url(alias)).then(result=>result?result.podcast.title:`no title(${alias})`)
+						}
+						defaultValue={`fetching...(${alias})`}
+					/>
+				}
+			})
+			return ret
+		})
+	}, [playlists])
 
 	const handlePlaylistChange = (e: SelectChangeEvent<string>) => {
 		const v = e.target.value
 		setValue(v)
-		onSelect(v)
-	};
-
-	const handleNewPlaylistClick = () => {
-		onNew()
-		setValue('default')
-	};
+		if(v === default_value) {
+			onNew()
+		}
+		else {
+			onSelect(v)
+		}
+	}
 
 	return (
 		<div>
@@ -30,13 +66,12 @@ const PlaylistSelection = ({ playlists, onSelect, onNew }: Props) => {
 					value={value}
 					onChange={handlePlaylistChange}
 				>
-					<MenuItem value='default' disabled sx={{display:'none'}}>新規作成</MenuItem>
+					<MenuItem value='default'>新規作成</MenuItem>
 					{playlists.map((playlist) => (
-						<MenuItem key={playlist.id} value={playlist.id}>{playlist.alias}</MenuItem>
+						<MenuItem key={playlist.id} value={playlist.id}>{titles[playlist.id]??'unknown'}</MenuItem>
 					))}
 				</Select>
 			</FormControl>
-			{value !== 'default' && <Button onClick={handleNewPlaylistClick}>or Create New</Button>}
 		</div>
 	);
 };
