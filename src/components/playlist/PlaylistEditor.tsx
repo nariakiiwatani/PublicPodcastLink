@@ -21,6 +21,8 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 	const [description, setDescription] = useState(value.description)
 	const [thumbnail, setThumbnail] = useState<File | string>(value.thumbnail)
 
+	const fileInputRef = useRef<HTMLInputElement>(null)
+
 	useImperativeHandle(ref, () => ({
 		getValue: () => ({
 			...value,
@@ -38,6 +40,9 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 		setAuthor(value.author)
 		setDescription(value.description)
 		setThumbnail(value.thumbnail)
+		if(fileInputRef.current) {
+			fileInputRef.current.value = ''
+		}
 	}, [value])
 
 	const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,6 +113,7 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 							id="button-file"
 							type="file"
 							onChange={handleThumbnailChange}
+							ref={fileInputRef}
 						/>
 						<label htmlFor="button-file">
 							<Button component={Box}
