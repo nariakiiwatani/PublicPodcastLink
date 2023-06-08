@@ -21,7 +21,7 @@ status = 200
 
 [[redirects]]
 from = "/playlist/:id/thumbnail"
-to = "http://localhost:55321/storage/v1/object/public/playlist/thumbnail/:id"
+to = "/.netlify/functions/get_thumbnail_from_supabase"
 status = 200
 
 [[redirects]]
