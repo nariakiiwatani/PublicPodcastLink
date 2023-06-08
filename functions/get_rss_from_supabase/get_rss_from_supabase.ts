@@ -25,7 +25,7 @@ export const handler: Handler = async (event: HandlerEvent, _context: HandlerCon
 	return {
 		statusCode: 200,
 		headers: {
-			'Content-Type': 'application/rss+xml',
+			'Content-Type': 'application/rss+xml; charset=utf-8'
 		},
 		body: data[0].rss,
 	}
