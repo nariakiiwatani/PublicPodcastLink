@@ -194,9 +194,10 @@ export default () => {
 		}
 	}
 	const deleteDialog = useDialog()
-	const handleDelete = (id: string) => {
+	const handleDelete = async (id: string) => {
 		deleteDialog.close()
-		db.del(id).then(() => handleNew())
+		handleNew()
+		await db.del(id)
 	}
 
 	useEffect(() => {
@@ -229,13 +230,6 @@ export default () => {
 					<SubmitStatus status={submitStatus} />
 				</form>
 			</Grid>), [handleSave, channel_ref.current, value, item_ref.current, submitStatus]),
-		'co_editor': useMemo(() => (<SharedMembersEditor url={unique_id_of_this_playlist} />), [unique_id_of_this_playlist]),
-		'related_link': 
-			useMemo(() => (
-				<RelatedLinksProvider url={unique_id_of_this_playlist}>
-					<RelatedLinksEditor />
-				</RelatedLinksProvider>
-			), [unique_id_of_this_playlist]),
 		'delete':
 			useMemo(() => (<Box>
 				<Box sx={{ backgroundColor: 'darkgrey', padding: 2, marginTop: 4 }}>
@@ -261,16 +255,11 @@ export default () => {
 				</deleteDialog.Dialog>
 			</Box>), [handleDelete, deleteDialog])
 	}
-	const { owned } = useContext(EditableChannelContext)
-
-	const is_owned = useMemo(() => value && owned && owned.includes(unique_id_of_this_playlist), [value, owned])
-
 	const tab_used = useMemo<(keyof typeof Tabs)[]>(() => {
 		const ret: (keyof typeof Tabs)[] = []
 		if(value) ret.push('playlist')
 		if(!value.is_new) {
-			ret.push('related_link')
-			if(is_owned) ret.push('co_editor', 'delete')
+			ret.push('delete')
 		}
 		return ret
 	}, [value])
