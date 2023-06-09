@@ -7,14 +7,16 @@ import { ReorderableList, useReorder } from '../ReorderList';
 import DeleteIcon from '@mui/icons-material/Delete'
 import { useContextPack } from '../../hooks/useContextPack';
 import { useDialog } from '../../hooks/useDialog';
+import { supabase } from '../../utils/supabase';
 
 type PlaylistChannelEditorProps = {
 	value: Playlist,
+	onChangeReadyStatus: (okay: boolean) => void
 }
 interface PlaylistChannelEditorRef {
 	getValue: () => Playlist;
 }
-const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, PlaylistChannelEditorProps>(({ value }, ref) => {
+const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, PlaylistChannelEditorProps>(({ value, onChangeReadyStatus }, ref) => {
 	const [alias, setAlias] = useState(value.alias)
 	const [title, setTitle] = useState(value.title)
 	const [author, setAuthor] = useState(value.author)
@@ -31,7 +33,7 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 			author,
 			description,
 			thumbnail,
-		}),
+		})
 	}))
 
 	useEffect(() => {
@@ -45,6 +47,22 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 		}
 	}, [value])
 
+	const [is_alias_pending, setAliasPending] = useState(false)
+	const [is_alias_collide, setAliasCollide] = useState(false)
+	const handleAliasChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const v = e.target.value
+		setAlias(v)
+		setAliasPending(true)
+		try {
+			await supabase.from('playlist').select('alias').neq('id',value.id).eq('alias',v)
+			.then(({data})=> !!data && data.length>0)
+			.then(setAliasCollide)
+		}
+		finally {
+			setAliasPending(false)
+		}
+	}
+
 	const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (file) {
@@ -52,6 +70,10 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 		}
 	}
 	const thumbnail_url = useMemo(() => thumbnail instanceof File ? URL.createObjectURL(thumbnail) : thumbnail, [thumbnail])
+	useEffect(() => {
+		const is_submittable = !is_alias_pending && !is_alias_collide
+		onChangeReadyStatus(is_submittable)
+	}, [is_alias_pending, is_alias_collide])
 
 	return (<>
 		<Grid container spacing={2} sx={{ marginTop: 2 }}>
@@ -97,7 +119,7 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 							size='small'
 							variant='outlined'
 							value={alias}
-							onChange={(e) => setAlias(e.target.value)}
+							onChange={handleAliasChange}
 						/>
 						<Typography variant='body2'>
 							/rss
@@ -264,6 +286,13 @@ const PlaylistEditor = ({ value, onSave, onDelete }: PlaylistEditorProps) => {
 		deleteDialog.close()
 		onDelete(id)
 	}
+	const [submitableStatus, setSubmittableStatus] = useState<{[key:string]:boolean}>({})
+	const handleSubmittableStatusChanged = (slot: string) => (okay: boolean) => {
+		setSubmittableStatus(prev => ({
+			...prev,
+			[slot]: okay
+		}))
+	}
 
 	return <>
 		<Divider variant='fullWidth' sx={{ marginTop: 2, marginBottom: 2 }} />
@@ -271,13 +300,14 @@ const PlaylistEditor = ({ value, onSave, onDelete }: PlaylistEditorProps) => {
 			<PlaylistChannelEditor
 				ref={channel_ref}
 				value={value}
+				onChangeReadyStatus={handleSubmittableStatusChanged('channel')}
 			/>
 			<Divider variant='fullWidth' sx={{ marginTop: 2, marginBottom: 2 }} />
 			<PlaylistItemEditor
 				ref={item_ref}
 				value={value.items}
 			/>
-			<Button type='submit' variant='contained'>{value.is_new?'create':'update'}</Button>
+			<Button type='submit' variant='contained' disabled={Object.values(submitableStatus).some(ok=>!ok)}>{value.is_new?'create':'update'}</Button>
 		</form>
 		{!value.is_new && <>
 			<Box sx={{ backgroundColor: 'darkgrey', padding: 2, marginTop: 4 }}>
