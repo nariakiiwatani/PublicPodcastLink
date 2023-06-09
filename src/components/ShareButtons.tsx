@@ -6,6 +6,7 @@ import { TweetButton } from './TwitterButton'
 import { permalink as createPermalink } from '../utils/permalink';
 import FileCopyOutlinedIcon from '@mui/icons-material/FileCopyOutlined';
 import RssFeedIcon from '@mui/icons-material/RssFeed';
+import { useQuery } from '../hooks/useQuery'
 
 type ShareProps = {
 	channel: Podcast
@@ -13,7 +14,14 @@ type ShareProps = {
 }
 export const ShareButtons = (props: ShareProps) => {
 	const { channel:{self_url:rss_url}, episode } = props
-	const permalink = useMemo(() => createPermalink(rss_url, episode?.id), [rss_url, episode])
+	const query = useQuery();
+	const is_playlist = useMemo(() => query.get('view') === 'playlist', [query])
+	console.info(is_playlist)
+
+	const permalink = useMemo(() => createPermalink(rss_url, {
+		item_id:episode?.id,
+		is_playlist
+	}), [rss_url, episode, is_playlist])
 	
 	return (<Grid container direction='row'>
 		<CopyToClipboardButton {...props} value={rss_url} Icon={<RssFeedIcon />} />

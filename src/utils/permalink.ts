@@ -1,9 +1,19 @@
-export const permalink = (rss_url: string, item_id?: string, base_url=window.origin) => {
-	return item_id
-	? `${base_url}?channel=${encodeURIComponent(rss_url)}&item=${encodeURIComponent(item_id)}`
-	: `${base_url}?channel=${encodeURIComponent(rss_url)}`
+export const permalink = (rss_url: string, option: {
+	item_id?: string,
+	base_url?: string,
+	is_playlist?: boolean
+}={}) => {
+	const {item_id, base_url=window.origin, is_playlist} = option
+	let ret = `${base_url}?channel=${encodeURIComponent(rss_url)}`
+	if(item_id) ret += `&item=${encodeURIComponent(item_id)}`
+	if(is_playlist) ret += `&view=playlist`
+	console.info({ret})
+	return ret
 };
 
-export const importlink = (channels: string[], base_url=window.origin) => {
+export const importlink = (channels: string[], option: {
+	base_url?:string
+}={}) => {
+	const {base_url=window.origin} = option
 	return `${base_url}?channels=${channels.map(encodeURIComponent).join(',')}`
 }

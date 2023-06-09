@@ -14,7 +14,7 @@ export const useEpisodeSelect = () => {
 	const handleUrlInput = (value: string) => {
 		try {
 			const url = new URL(value)
-			return fetchPodcast(url.toString())
+			return fetchPodcast(url.toString()).then(result=>{if(result) setSelectedEpisodeId(null)})
 		}
 		catch (e) {
 			console.error(e)

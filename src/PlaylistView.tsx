@@ -8,7 +8,7 @@ const PlaylistView = () => {
 	useEffect(() => {
 		if(id) {
 			const rss_url = playlist_rss_url(id)
-			navigate(`/?channel=${rss_url}`)
+			navigate(`/?channel=${rss_url}&view=playlist`)
 		}
 	},[])
 	return <>not found</>

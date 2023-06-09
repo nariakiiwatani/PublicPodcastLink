@@ -42,7 +42,9 @@ const App: React.FC = () => {
 		if (url) {
 			const list = url.split(',')
 			if(list.length > 1) {
-				navigate(createImportLink(list, '/'))
+				navigate(createImportLink(list, {
+					base_url:'/'
+				}))
 				return
 			}
 			let guid = query.get('item')
@@ -55,7 +57,12 @@ const App: React.FC = () => {
 		if(!podcast) {
 			return
 		}
-		const permalink = createPermalink(podcast.self_url, episode?.id, '/')
+		const is_playlist = /\/playlist\/[^/]+\/rss/.test(podcast.self_url)
+		const permalink = createPermalink(podcast.self_url, {
+			item_id: episode?.id,
+			base_url:'/',
+			is_playlist
+		})
 		navigate(permalink)
 	}, [podcast, episode]);
 

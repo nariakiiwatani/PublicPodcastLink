@@ -8,6 +8,7 @@ import { RelatedLinks } from '../hooks/useRelatedLinks';
 import { useEditableChannel } from '../hooks/useChannelSharedWith';
 import { useLocation } from 'react-router-dom';
 import { FollowingContext } from '../hooks/useFollows';
+import { useQuery } from '../hooks/useQuery';
 
 type PodcastPreviewProps = {
 	podcast: Podcast | null;
@@ -27,12 +28,15 @@ export const Title: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 }
 
 export const Thumbnail: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
+	const query = useQuery();
+	const is_playlist = useMemo(() => query.get('view') === 'playlist', [query])
+
 	if (!src) return null;
 	return (<CardMedia
 		component="img"
 		image={src.imageUrl}
 		alt={src.title}
-		sx={{ width: 180, height: 180, borderRadius: '50%' }}
+		sx={{ width: 180, height: 180, borderRadius: is_playlist?undefined:'50%' }}
 	/>)
 }
 
