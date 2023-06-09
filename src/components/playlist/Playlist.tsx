@@ -1,4 +1,4 @@
-import { useContext, useState, useMemo, useEffect } from 'react'
+import { useContext, useState, useMemo, useEffect, FormEvent, useRef } from 'react'
 import { Episode } from '../../types/podcast'
 import { SessionContext, supabase } from '../../utils/supabase'
 import { Database } from '../../types/supabase_database'
@@ -7,9 +7,10 @@ import { fetch_podcast } from '../../hooks/usePodcast'
 import { builder } from '../../utils/XmlParser'
 import { User } from '@supabase/supabase-js'
 import { FollowingProvider } from '../../hooks/useFollows'
-import PlaylistEditor from './PlaylistEditor'
 import PlaylistSelection from './PlaylistSelection'
-import { Grid, Divider, Button, Typography } from '@mui/material'
+import { Grid, Divider, Button, Typography, Box } from '@mui/material'
+import { useDialog } from '../../hooks/useDialog'
+import { PlaylistChannelEditorRef, PlaylistItemEditorRef, PlaylistChannelEditor, PlaylistItemEditor } from './PlaylistEditor'
 
 export const playlist_base_url = `${window.origin}/playlist`
 export const playlist_view_url = (name:string)=>`${playlist_base_url}/${name}/view`
@@ -129,12 +130,16 @@ export default () => {
 	const db = useDB()
 	const {session} = useContext(SessionContext)
 	const [value, setValue] = useState<Playlist>(() => make_empty_playlist())
+	const channel_ref = useRef<PlaylistChannelEditorRef>(null)
+	const item_ref = useRef<PlaylistItemEditorRef>(null)
+	const [submitStatus, setSubmitStatus] = useState<'success'|'pending'|'fail'|'neutral'>('neutral')
 	const handleSelect = (id: string) => {
 		const playlist = db.value.find(v=>v.id === id)
 		if(!playlist) return
 		const url = playlist_rss_url(playlist.alias)
 		fetch_podcast(url, true).then(result => {
 			if(!result) return
+			setSubmitStatus('neutral')
 			setValue({
 				is_new: false,
 				id, alias: playlist.alias,
@@ -148,39 +153,89 @@ export default () => {
 	}
 	const handleNew = () => {
 		setValue(make_empty_playlist())
+		setSubmitStatus('neutral')
 	}
-	const handleSave = (value: Playlist) => {
+	const handleSave = async (e: FormEvent) => {
+		e.preventDefault()
 		if(!session?.user) throw new Error('not logged in');
-		((value.thumbnail && value.thumbnail instanceof File) ? db.upload(value.thumbnail, value.id) : Promise.resolve(value.thumbnail))
-		.then(() => 
-			db.update(
-				value.id, {
-					alias: value.alias,
-					rss: create_xml(value, session.user)
-				}
-			)
-			.then(() => {
-				setValue({
-					...value,
-					is_new: false
-				})
+		if(!channel_ref.current || !item_ref.current) return
+		const value:Playlist = {
+			...channel_ref.current.getValue(),
+			items: item_ref.current.getValue()
+		}
+		try {
+			setSubmitStatus('pending')
+			if(value.thumbnail && value.thumbnail instanceof File) {
+				await db.upload(value.thumbnail, value.id)
+			}
+			await db.update(
+					value.id, {
+						alias: value.alias,
+						rss: create_xml(value, session.user)
+					}
+				)
+			setValue({
+				...value,
+				is_new: false
 			})
-		)
+			setSubmitStatus('success')
+		}
+		catch(e) {
+			setSubmitStatus('fail')
+		}
 	}
+	const deleteDialog = useDialog()
 	const handleDelete = (id: string) => {
+		deleteDialog.close()
 		db.del(id).then(() => handleNew())
 	}
-	return <>
+
+	return (<>
 		<FollowingProvider>
 			<Grid container spacing={2}>
 				<Grid item xs={12}>
-					<PlaylistSelection playlists={db.value} value={value.is_new?undefined:value.id} onSelect={handleSelect} onNew={handleNew} />
+					<PlaylistSelection playlists={db.value} value={value.is_new ? undefined : value.id} onSelect={handleSelect} onNew={handleNew} />
 				</Grid>
 				<Divider variant='fullWidth' />
 				<Grid item xs={12}>
-					<PlaylistEditor value={value} onSave={handleSave} onDelete={handleDelete} />
+					<Divider variant='fullWidth' sx={{ marginTop: 2, marginBottom: 2 }} />
+					<form onSubmit={handleSave}>
+						<PlaylistChannelEditor
+							ref={channel_ref}
+							value={value}
+						/>
+						<Divider variant='fullWidth' sx={{ marginTop: 2, marginBottom: 2 }} />
+						<PlaylistItemEditor
+							ref={item_ref}
+							value={value.items}
+						/>
+						<Button type='submit' variant='contained'>{value.is_new ? '公開' : '更新'}</Button>
+					</form>
+					{!value.is_new && <>
+						<Box sx={{ backgroundColor: 'darkgrey', padding: 2, marginTop: 4 }}>
+							<Typography variant='h2' color='error'>プレイリストを削除</Typography>
+							<Button
+								color='error'
+								variant='outlined'
+								onClick={() => deleteDialog.open()}
+							>DELETE</Button>
+						</Box>
+						<deleteDialog.Dialog title='本当に削除しますか？'>
+							<Typography variant='h4'>この操作は取り消せません</Typography>
+							<Button
+								color='error'
+								variant='contained'
+								onClick={() => handleDelete(value.id)}
+							>削除する</Button>
+							<Button
+								color='primary'
+								variant='outlined'
+								onClick={() => deleteDialog.close()}
+							>やめとく</Button>
+						</deleteDialog.Dialog>
+					</>}
 				</Grid>
 			</Grid>
 		</FollowingProvider>
-	</>
+	</>)
 }

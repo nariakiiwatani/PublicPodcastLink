@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback, useImperativeHandle, FormEvent } from "react";
-import { TextField, ListItem, Grid, Button, Typography, Box, Card, Divider, IconButton, List, ListItemText, CircularProgress } from "@mui/material";
+import React, { useState, useEffect, useRef, useMemo, useCallback, useImperativeHandle } from "react";
+import { TextField, ListItem, Grid, Button, Typography, Box, Card, IconButton, List, ListItemText, CircularProgress } from "@mui/material";
 import { useEpisodeSelect } from '../../hooks/useEpisodeSelect';
 import { Episode } from '../../types/podcast'
 import { Playlist, playlist_base_url } from './Playlist';
@@ -11,16 +11,8 @@ import DoneIcon from '@mui/icons-material/Done';
 import ErrorIcon from '@mui/icons-material/Error';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import { useContextPack } from '../../hooks/useContextPack';
-import { useDialog } from '../../hooks/useDialog';
 import { supabase } from '../../utils/supabase';
 
-type PlaylistChannelEditorProps = {
-	value: Playlist,
-	onChangeReadyStatus: (okay: boolean) => void
-}
-interface PlaylistChannelEditorRef {
-	getValue: () => Playlist;
-}
 const copyToClipboard = async (text: string) => {
 	if ('clipboard' in navigator) {
 		return await navigator.clipboard.writeText(text);
@@ -54,7 +46,15 @@ const CopyToClipboard = ({ value, duration=2000, children }: { value: string, du
 		{children(value)}
 	</Box>
 }
-const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, PlaylistChannelEditorProps>(({ value, onChangeReadyStatus }, ref) => {
+
+type PlaylistChannelEditorProps = {
+	value: Playlist,
+}
+export interface PlaylistChannelEditorRef {
+	getValue: () => Playlist;
+}
+
+export const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, PlaylistChannelEditorProps>(({ value }, ref) => {
 	const [alias, setAlias] = useState(value.alias)
 	const [title, setTitle] = useState(value.title)
 	const [author, setAuthor] = useState(value.author)
@@ -128,10 +128,6 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 		}
 	}
 	const thumbnail_url = useMemo(() => thumbnail instanceof File ? URL.createObjectURL(thumbnail) : thumbnail, [thumbnail])
-	useEffect(() => {
-		const is_submittable = !is_alias_pending && !alias_error
-		onChangeReadyStatus(is_submittable)
-	}, [is_alias_pending, alias_error])
 
 	return (<>
 		<Grid container spacing={2} sx={{ marginTop: 2 }}>
@@ -277,10 +273,10 @@ const ItemEdit = ({ items, onChange }: ItemEditProps) => {
 type PlaylistItemEditorProps = {
 	value: Episode[]
 }
-type PlaylistItemEditorRef = {
+export type PlaylistItemEditorRef = {
 	getValue: () => Episode[]
 }
-const PlaylistItemEditor = React.forwardRef<PlaylistItemEditorRef, PlaylistItemEditorProps>(({ value }, ref) => {
+export const PlaylistItemEditor = React.forwardRef<PlaylistItemEditorRef, PlaylistItemEditorProps>(({ value }, ref) => {
 	const [items, setItems] = useState(value)
 	const { episodes, Input: SelectPodcast } = useEpisodeSelect()
 	const { ArrayProviderConsumer } = useContextPack<Episode>()
@@ -334,74 +330,3 @@ const PlaylistItemEditor = React.forwardRef<PlaylistItemEditorRef, PlaylistItemE
 	</>
 })
 
-type PlaylistEditorProps = {
-	value: Playlist,
-	onSave: (value: Playlist) => void
-	onDelete: (id: string) => void
-}
-const PlaylistEditor = ({ value, onSave, onDelete }: PlaylistEditorProps) => {
-	const channel_ref = useRef<PlaylistChannelEditorRef>(null)
-	const item_ref = useRef<PlaylistItemEditorRef>(null)
-	const handleSave = (e: FormEvent) => {
-		e.preventDefault()
-		if (!channel_ref.current || !item_ref.current) return
-		onSave({
-			...channel_ref.current.getValue(),
-			items: item_ref.current.getValue()
-		})
-	}
-	const deleteDialog = useDialog()
-	const handleDelete = (id: string) => {
-		deleteDialog.close()
-		onDelete(id)
-	}
-	const [submitableStatus, setSubmittableStatus] = useState<{[key:string]:boolean}>({})
-	const handleSubmittableStatusChanged = (slot: string) => (okay: boolean) => {
-		setSubmittableStatus(prev => ({
-			...prev,
-			[slot]: okay
-		}))
-	}
-
-	return <>
-		<Divider variant='fullWidth' sx={{ marginTop: 2, marginBottom: 2 }} />
-		<form onSubmit={handleSave}>
-			<PlaylistChannelEditor
-				ref={channel_ref}
-				value={value}
-				onChangeReadyStatus={handleSubmittableStatusChanged('channel')}
-			/>
-			<Divider variant='fullWidth' sx={{ marginTop: 2, marginBottom: 2 }} />
-			<PlaylistItemEditor
-				ref={item_ref}
-				value={value.items}
-			/>
-			<Button type='submit' variant='contained' disabled={Object.values(submitableStatus).some(ok=>!ok)}>{value.is_new?'公開':'更新'}</Button>
-		</form>
-		{!value.is_new && <>
-			<Box sx={{ backgroundColor: 'darkgrey', padding: 2, marginTop: 4 }}>
-				<Typography variant='h2' color='error'>プレイリストを削除</Typography>
-				<Button
-					color='error'
-					variant='outlined'
-					onClick={() => deleteDialog.open()}
-				>DELETE</Button>
-			</Box>
-			<deleteDialog.Dialog title='本当に削除しますか？'>
-				<Typography variant='h4'>この操作は取り消せません</Typography>
-				<Button
-					color='error'
-					variant='contained'
-					onClick={() => handleDelete(value.id)}
-				>削除する</Button>
-				<Button
-					color='primary'
-					variant='outlined'
-					onClick={() => deleteDialog.close()}
-				>やめとく</Button>
-			</deleteDialog.Dialog>
-		</>}
-	</>
-};
-
-export default PlaylistEditor;
