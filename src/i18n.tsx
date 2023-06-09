@@ -221,7 +221,7 @@ export default {
 			},
 			playlist: {
 				en: 'Playlist',
-				ja: 'プレイリスト'
+				ja: 'プレイリスト管理'
 			},
 			account: {
 				en: 'Account',
