@@ -8,6 +8,7 @@ import { RelatedLinks } from '../hooks/useRelatedLinks';
 import { useEditableChannel } from '../hooks/useChannelSharedWith';
 import { useLocation } from 'react-router-dom';
 import { FollowingContext } from '../hooks/useFollows';
+import { is_playlist } from '../utils/is_playlist';
 
 type PodcastPreviewProps = {
 	podcast: Podcast | null;
@@ -27,14 +28,12 @@ export const Title: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 }
 
 export const Thumbnail: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
-	const is_playlist = /\/playlist\/[^/]+\/rss/.test(src?.self_url??'')
-
 	if (!src) return null;
 	return (<CardMedia
 		component="img"
 		image={src.imageUrl}
 		alt={src.title}
-		sx={{ width: 180, height: 180, borderRadius: is_playlist?undefined:'50%' }}
+		sx={{ width: 180, height: 180, borderRadius: is_playlist(src.self_url)?undefined:'50%' }}
 	/>)
 }
 

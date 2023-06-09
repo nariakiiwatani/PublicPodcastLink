@@ -13,6 +13,7 @@ import { useDialog } from './hooks/useDialog';
 import { ImportChannels } from './components/CreateImportURL';
 import { useTranslation } from './hooks/useTranslation';
 import { useEpisodeSelect } from './hooks/useEpisodeSelect';
+import { is_playlist } from './utils/is_playlist'
 
 const theme = createTheme({
 	palette: {
@@ -65,8 +66,6 @@ const App: React.FC = () => {
 		}
 	}, [])
 
-	const is_playlist = useMemo(() => /\/playlist\/[^/]+\/rss/.test(podcast?.self_url??''), [podcast])
-
 	useEffect(() => {
 		if(!podcast) {
 			return
@@ -93,7 +92,7 @@ const App: React.FC = () => {
 							<EpisodePreview
 								channel={podcast}
 								episode={episode}
-								Navigator={<Navigator swap={is_playlist} />}
+								Navigator={<Navigator swap={is_playlist(podcast.self_url)} />}
 								audioRef={audioRef}
 							/>}
 						<RelatedLinksProvider url={podcast.self_url}>
