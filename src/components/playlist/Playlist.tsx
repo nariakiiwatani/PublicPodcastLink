@@ -255,14 +255,17 @@ export default () => {
 				</deleteDialog.Dialog>
 			</Box>), [handleDelete, deleteDialog])
 	}
+	const { owned } = useContext(EditableChannelContext)
+	const is_owned = useMemo(() => value && owned && owned.includes(unique_id_of_this_playlist), [value, owned])
+
 	const tab_used = useMemo<(keyof typeof Tabs)[]>(() => {
 		const ret: (keyof typeof Tabs)[] = []
 		if(value) ret.push('playlist')
-		if(!value.is_new) {
+		if(is_owned) {
 			ret.push('delete')
 		}
 		return ret
-	}, [value])
+	}, [value, is_owned])
 	return (<>
 		<Grid container spacing={2}>
 			<Grid item xs={12}>
