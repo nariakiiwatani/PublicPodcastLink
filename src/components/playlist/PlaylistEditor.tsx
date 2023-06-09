@@ -10,6 +10,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import { useContextPack } from '../../hooks/useContextPack';
 import { supabase } from '../../utils/supabase';
+import { useDropzone } from 'react-dropzone';
 
 const copyToClipboard = async (text: string) => {
 	if ('clipboard' in navigator) {
@@ -125,6 +126,15 @@ export const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, 
 			setThumbnail(file)
 		}
 	}
+	const { getRootProps, getInputProps, isDragActive } = useDropzone({
+		accept: { 'image/*': [] },
+		onDropAccepted: (files: File[]) => {
+			const file = files?.[0]
+			if (file) {
+				setThumbnail(file)
+			}
+		},
+	});
 	const thumbnail_url = useMemo(() => thumbnail instanceof File ? URL.createObjectURL(thumbnail) : thumbnail, [thumbnail])
 
 	return (<>
@@ -189,10 +199,11 @@ export const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, 
 						{(value=><Typography variant='subtitle2'>Playback: {value}</Typography>)}
 					</CopyToClipboard>
 				</Grid>
-				<Grid item xs={12}>
+				<Grid item xs={12} container>
 					<Typography variant='h4'>サムネイル（クリックしてアップロード）</Typography>
-					<Grid item xs={6}>
+					<Grid item xs={6} {...getRootProps()}>
 						<input
+							{...getInputProps()}
 							accept="image/*"
 							style={{ display: "none" }}
 							id="button-file"
@@ -220,6 +231,16 @@ export const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, 
 										backgroundRepeat: 'no-repeat'
 									}}
 								/>
+								{isDragActive && <Box
+									sx={{
+										position: 'absolute',
+										top: 0,
+										right: 0,
+										bottom: 0,
+										left: 0,
+										backgroundColor: 'rgba(32,40,200,0.3)'
+									}}
+								/>}
 							</Button>
 						</label>
 					</Grid>
