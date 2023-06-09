@@ -8,9 +8,11 @@ import { builder } from '../../utils/XmlParser'
 import { User } from '@supabase/supabase-js'
 import { FollowingProvider } from '../../hooks/useFollows'
 import PlaylistSelection from './PlaylistSelection'
-import { Grid, Divider, Button, Typography, Box } from '@mui/material'
+import { Grid, Divider, Button, Typography, Box, CircularProgress } from '@mui/material'
 import { useDialog } from '../../hooks/useDialog'
 import { PlaylistChannelEditorRef, PlaylistItemEditorRef, PlaylistChannelEditor, PlaylistItemEditor } from './PlaylistEditor'
+import DoneIcon from '@mui/icons-material/Done';
+import ErrorIcon from '@mui/icons-material/Error';
 
 export const playlist_base_url = `${window.origin}/playlist`
 export const playlist_view_url = (name:string)=>`${playlist_base_url}/${name}/view`
@@ -109,9 +111,9 @@ const useDB = () => {
 		if(!new_value) return
 		setValue(new_value)
 	}
-	const update = (id: string, record: Record['Insert']) => supabase.from('playlist').upsert({id, ...record}).match({id}).then(refresh)
+	const update = (id: string, record: Record['Insert']) => supabase.from('playlist').upsert({id, ...record}).match({id}).throwOnError().then(refresh)
 	const del = async (id: string) => {
-		await supabase.from('playlist').delete().match({id}).then(refresh)
+		await supabase.from('playlist').delete().match({id}).throwOnError().then(refresh)
 		await supabase.storage.from('playlist').remove([`thumbnail/${id}`])
 	}
 	const upload = (file: File, filename: string) => {
@@ -190,6 +192,18 @@ export default () => {
 		db.del(id).then(() => handleNew())
 	}
 
+	useEffect(() => {
+		if (submitStatus !== 'neutral') {
+			const timerId = setTimeout(() => setSubmitStatus('neutral'), 2000);
+			return () => clearTimeout(timerId);
+		}
+	}, [submitStatus]);
+	const SubmitStatus = ({status}:{status:string}) => 
+		status === 'success' ? <DoneIcon color='success' /> :
+		status === 'fail' ? <ErrorIcon color='error' /> :
+		status === 'pending' ? <CircularProgress /> :
+		<></>
+
 	return (<>
 		<FollowingProvider>
 			<Grid container spacing={2}>
@@ -210,6 +224,7 @@ export default () => {
 							value={value.items}
 						/>
 						<Button type='submit' variant='contained'>{value.is_new ? '公開' : '更新'}</Button>
+						<SubmitStatus status={submitStatus} />
 					</form>
 					{!value.is_new && <>
 						<Box sx={{ backgroundColor: 'darkgrey', padding: 2, marginTop: 4 }}>

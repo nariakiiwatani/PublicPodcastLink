@@ -5,8 +5,6 @@ import { Episode } from '../../types/podcast'
 import { Playlist, playlist_base_url } from './Playlist';
 import { ReorderableList, useReorder } from '../ReorderList';
 import DeleteIcon from '@mui/icons-material/Delete'
-import ReportIcon from '@mui/icons-material/Report';
-import CheckIcon from '@mui/icons-material/Check';
 import DoneIcon from '@mui/icons-material/Done';
 import ErrorIcon from '@mui/icons-material/Error';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
@@ -171,7 +169,7 @@ export const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, 
 			<Grid item xs={12} md={6} container spacing={2}>
 				<Grid item xs={12}>
 					<Typography variant='h4'>URL</Typography>
-					<Box sx={{ display: 'flex', alignItems: 'center' }}>
+					<Box sx={{ display: 'flex' }}>
 						<TextField
 							size='small'
 							variant='outlined'
@@ -182,7 +180,7 @@ export const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, 
 							onChange={handleAliasChange}
 						/>
 						{is_alias_pending ? <CircularProgress /> :
-						!alias_error ? <CheckIcon color='success' /> : <ReportIcon color='error' />}
+						!alias_error ? <DoneIcon color='success' /> : <ErrorIcon color='error' />}
 					</Box>
 					<CopyToClipboard value={`${playlist_base_url}/${alias}/rss`}>
 						{(value=><Typography variant='subtitle2'>RSS: {value}</Typography>)}
