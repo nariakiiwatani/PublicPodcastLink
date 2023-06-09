@@ -8,7 +8,6 @@ import { RelatedLinks } from '../hooks/useRelatedLinks';
 import { useEditableChannel } from '../hooks/useChannelSharedWith';
 import { useLocation } from 'react-router-dom';
 import { FollowingContext } from '../hooks/useFollows';
-import { useQuery } from '../hooks/useQuery';
 
 type PodcastPreviewProps = {
 	podcast: Podcast | null;
