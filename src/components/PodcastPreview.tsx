@@ -28,8 +28,7 @@ export const Title: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 }
 
 export const Thumbnail: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
-	const query = useQuery();
-	const is_playlist = useMemo(() => query.get('view') === 'playlist', [query])
+	const is_playlist = /\/playlist\/[^/]+\/rss/.test(src?.self_url??'')
 
 	if (!src) return null;
 	return (<CardMedia

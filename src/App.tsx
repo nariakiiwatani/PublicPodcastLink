@@ -24,7 +24,6 @@ const App: React.FC = () => {
 	const { t } = useTranslation()
 
 	const query = useQuery();
-	const is_playlist = useMemo(() => query.get('view') === 'playlist', [query])
 
 	const import_channels = useMemo(() => query.get('channels')?.split(','), [query])
 	const import_dialog = useDialog()
@@ -66,15 +65,15 @@ const App: React.FC = () => {
 		}
 	}, [])
 
+	const is_playlist = useMemo(() => /\/playlist\/[^/]+\/rss/.test(podcast?.self_url??''), [podcast])
+
 	useEffect(() => {
 		if(!podcast) {
 			return
 		}
-		const is_playlist = /\/playlist\/[^/]+\/rss/.test(podcast.self_url)
 		const permalink = createPermalink(podcast.self_url, {
 			item_id: episode?.id,
-			base_url:'/',
-			is_playlist
+			base_url:'/'
 		})
 		navigate(permalink)
 	}, [podcast, episode]);

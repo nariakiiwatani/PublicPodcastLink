@@ -1,12 +1,10 @@
 export const permalink = (rss_url: string, option: {
 	item_id?: string,
-	base_url?: string,
-	is_playlist?: boolean
+	base_url?: string
 }={}) => {
-	const {item_id, base_url=window.origin, is_playlist} = option
+	const {item_id, base_url=window.origin} = option
 	let ret = `${base_url}?channel=${encodeURIComponent(rss_url)}`
 	if(item_id) ret += `&item=${encodeURIComponent(item_id)}`
-	if(is_playlist) ret += `&view=playlist`
 	return ret
 };
 

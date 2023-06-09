@@ -14,7 +14,7 @@ const PlaylistView = () => {
 					setMessage('not found')
 					return
 				}
-				navigate(`/?channel=${data[0].channel}&view=playlist`)
+				navigate(`/?channel=${data[0].channel}`)
 			})
 		}
 	},[])
