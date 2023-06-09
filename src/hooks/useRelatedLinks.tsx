@@ -109,6 +109,7 @@ export const getPlatformIcon = (url: string) => {
 		'https://(.*\.)?radiopublic\.com/': 'radiopublic',
 		'https://(.*\.)?overcast\.fm/': ['overcast', 'svg'],
 		'https://(.*\.)?castbox\.fm/': ['castbox', 'svg'],
+		'https://(.*\.)?base\.shop/': 'thebase',
 	}
 	const found_key = Object.keys(approved_list).find(tester => new RegExp(tester).test(url))
 	if (found_key) {
