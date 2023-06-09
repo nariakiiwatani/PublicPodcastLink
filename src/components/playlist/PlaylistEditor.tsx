@@ -200,7 +200,9 @@ export const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, 
 					</CopyToClipboard>
 				</Grid>
 				<Grid item xs={12} container>
-					<Typography variant='h4'>サムネイル（クリックしてアップロード）</Typography>
+					<Grid item xs={12}>
+						<Typography variant='h4'>サムネイル（クリックしてアップロード）</Typography>
+					</Grid>
 					<Grid item xs={6} {...getRootProps()}>
 						<input
 							{...getInputProps()}
