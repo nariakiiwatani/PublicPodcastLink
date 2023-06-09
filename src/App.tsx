@@ -46,6 +46,10 @@ const App: React.FC = () => {
 	useEffect(() => {
 		if(!audioRef.current) return
 		audioRef.current.onended = handleAudioEnded
+		return () => {
+			if(!audioRef.current) return
+			audioRef.current.load()
+		}
 	}, [audioRef.current, handleAudioEnded])
 
 	const navigate = useNavigate()
