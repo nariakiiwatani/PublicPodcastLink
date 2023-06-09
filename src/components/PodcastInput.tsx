@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useContext, useEffect } from 'react';
-import { ListItemText, TextField, Autocomplete } from '@mui/material';
+import { ListItem, ListItemText, TextField, Autocomplete, IconButton } from '@mui/material';
 import { useTranslation } from '../hooks/useTranslation';
 import { FollowingContext } from '../hooks/useFollows';
 import { fetch_podcast } from '../hooks/usePodcast';
 import { Podcast } from '../types/podcast';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 type PodcastInputProps = {
 	option: Podcast | null
@@ -14,7 +15,7 @@ const is_url = (value: string) => new RegExp('https?://.+').test(value)
 
 const PodcastInput: React.FC<PodcastInputProps> = ({ option, setUrl }) => {
 	const [value, setValue] = useState('')
-	const { podcasts } = useContext(FollowingContext)
+	const { podcasts, del } = useContext(FollowingContext)
 	const { t } = useTranslation('select_channel')
 	const options = useMemo(() => {
 		if(!option || podcasts.includes(option.self_url)) {
@@ -33,14 +34,16 @@ const PodcastInput: React.FC<PodcastInputProps> = ({ option, setUrl }) => {
 		.forEach(url => {
 			if(!is_url(url)) return
 			fetch_podcast(url).then(result => {
-				if(!result) return
 				setTitles(prev=> ({
 					...prev,
-					[url]: result.podcast.title
+					[url]: result ? result.podcast.title : 'failed to fetch'
 				}))
 			})
 		})
 	}, [options])
+	const handleDelete = (url: string) => {
+		del(url)
+	}
 
 	return (
 		<Autocomplete
@@ -60,9 +63,10 @@ const PodcastInput: React.FC<PodcastInputProps> = ({ option, setUrl }) => {
 				}
 			}}
 			renderOption={(props, option, { selected:_ }) => (
-				<li {...props} key={option}>
-					<ListItemText primary={titles[option]} />
-				</li>
+				<ListItem {...props} key={option}
+					secondaryAction={<IconButton onClick={()=>handleDelete(option)}><DeleteIcon /></IconButton>}>
+					<ListItemText primary={titles[option]} secondary={option} />
+				</ListItem>
 			)}
 			renderInput={(params) => (
 				<TextField
