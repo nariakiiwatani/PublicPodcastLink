@@ -196,7 +196,7 @@ const AddNewChannel = () => {
 	const { t } = useTranslation('owner')
 	const { session } = useContext(SessionContext)
 	const user_email = session?.user?.email
-	const { check: alreadyAdded, add, refresh } = useContext(EditableChannelContext)
+	const { check: alreadyAdded, insert, refresh } = useContext(EditableChannelContext)
 	const [error, setError] = useState('')
 	const [pending, setPending] = useState(false)
 	const handleAdd = (value: string) => {
@@ -212,7 +212,7 @@ const AddNewChannel = () => {
 			.then(result => {
 				if (!result?.podcast) throw t.rss_fetch_failed
 				if (!user_email || !compare_icase(result.podcast.owner.email, user_email)) throw t.not_yours(redirectURL(result.podcast.self_url))
-				return add(result.podcast.self_url)
+				return insert(result.podcast.self_url)
 			})
 			.then(() => {
 				refresh()
@@ -341,6 +341,7 @@ export const EditableChannelContext = createContext<ReturnType<typeof useEditabl
 	shared: [],
 	check: (_: string): boolean => false,
 	add: (_: string): Promise<string[]> => Promise.resolve([]),
+	insert: (_: string): Promise<string[]> => Promise.resolve([]),
 	del: (_: string): Promise<string[]> => Promise.resolve([]),
 	refresh: () => { }
 })
