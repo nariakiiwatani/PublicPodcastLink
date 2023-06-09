@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from './utils/supabase'
+import { permalink } from './utils/permalink'
 
 const PlaylistView = () => {
 	const navigate = useNavigate()
@@ -14,7 +15,11 @@ const PlaylistView = () => {
 					setMessage('not found')
 					return
 				}
-				navigate(`/?channel=${data[0].channel}`)
+				if(!data[0].channel) {
+					setMessage('something is wrong')
+					return 
+				}
+				navigate(permalink(data[0].channel, {base_url:'/'}))
 			})
 		}
 	},[])
