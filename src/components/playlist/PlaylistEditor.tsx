@@ -74,8 +74,36 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 		})
 	}))
 
+	const checkAliasValid = async (v: string) => {
+		if(v === '') {
+			setAliasError('入力してください')
+			return
+		}
+		const invalid_chars = v.split('').filter(c => !/^[a-zA-Z0-9-._~!$&'()*+,;=:@]$/.test(c))
+		if(invalid_chars.length > 0) {
+			const unique = [...new Set(invalid_chars)];
+			setAliasError(`URLに使用できない文字が含まれています: ${unique.join('')}`)
+			return
+		}
+		setAliasPending(true)
+		setAliasError(null)
+		try {
+			await supabase.from('playlist').select('alias').neq('id',value.id).eq('alias',v)
+			.then(({data})=> !!data && data.length>0)
+			.then(collide=> {
+				if(collide) {
+					setAliasError('既に使われています')
+				}
+			})
+		}
+		finally {
+			setAliasPending(false)
+		}
+	}
+
 	useEffect(() => {
 		setAlias(value.alias)
+		checkAliasValid(value.alias)
 		setTitle(value.title)
 		setAuthor(value.author)
 		setDescription(value.description)
@@ -86,23 +114,11 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 	}, [value])
 
 	const [is_alias_pending, setAliasPending] = useState(false)
-	const [is_alias_valid, setAliasValid] = useState(false)
-	const handleAliasChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+	const [alias_error, setAliasError] = useState<string|null>(null)
+	const handleAliasChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const v = e.target.value
 		setAlias(v)
-		if(v === '') {
-			setAliasValid(false)
-			return
-		}
-		setAliasPending(true)
-		try {
-			await supabase.from('playlist').select('alias').neq('id',value.id).eq('alias',v)
-			.then(({data})=> !!data && data.length>0)
-			.then(collide=>setAliasValid(!collide))
-		}
-		finally {
-			setAliasPending(false)
-		}
+		checkAliasValid(v)
 	}
 
 	const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,9 +129,9 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 	}
 	const thumbnail_url = useMemo(() => thumbnail instanceof File ? URL.createObjectURL(thumbnail) : thumbnail, [thumbnail])
 	useEffect(() => {
-		const is_submittable = !is_alias_pending && is_alias_valid
+		const is_submittable = !is_alias_pending && !alias_error
 		onChangeReadyStatus(is_submittable)
-	}, [is_alias_pending, is_alias_valid])
+	}, [is_alias_pending, alias_error])
 
 	return (<>
 		<Grid container spacing={2} sx={{ marginTop: 2 }}>
@@ -158,10 +174,12 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 							size='small'
 							variant='outlined'
 							value={alias}
+							error={!!alias_error}
+							helperText={alias_error}
 							onChange={handleAliasChange}
 						/>
 						{is_alias_pending ? <CircularProgress /> :
-						is_alias_valid ? <CheckIcon color='success' /> : <ReportIcon color='error' />}
+						!alias_error ? <CheckIcon color='success' /> : <ReportIcon color='error' />}
 					</Box>
 					<CopyToClipboard value={`${playlist_base_url}/${alias}/rss`}>
 						{(value=><Typography variant='subtitle2'>RSS: {value}</Typography>)}
