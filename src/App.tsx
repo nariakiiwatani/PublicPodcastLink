@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom'
 import PodcastPreview from './components/PodcastPreview';
 import EpisodePreview from './components/EpisodePreview';
@@ -35,7 +35,18 @@ const App: React.FC = () => {
 		import_dialog.open()
 	}, [import_channels])
 
-	const { podcast, episode, fetch_rss, Input:PodcastInput, Select:EpisodeSelect, Navigator } = useEpisodeSelect()
+	const { podcast, episode, fetch_rss, Input:PodcastInput, Select:EpisodeSelect, Navigator, progress:nextEpisode } = useEpisodeSelect()
+	const audioRef = useRef<HTMLAudioElement>(null)
+	const handleAudioEnded = useCallback(() => {
+		if(!audioRef.current) return
+		if(audioRef.current.autoplay) {
+			nextEpisode(1)
+		}
+	}, [audioRef.current, nextEpisode])
+	useEffect(() => {
+		if(!audioRef.current) return
+		audioRef.current.onended = handleAudioEnded
+	}, [audioRef.current, handleAudioEnded])
 
 	const navigate = useNavigate()
 
@@ -84,6 +95,7 @@ const App: React.FC = () => {
 								channel={podcast}
 								episode={episode}
 								Navigator={<Navigator swap={is_playlist} />}
+								audioRef={audioRef}
 							/>}
 						<RelatedLinksProvider url={podcast.self_url}>
 							<PodcastPreview podcast={podcast}/>

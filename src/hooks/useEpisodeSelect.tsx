@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { EpisodeList, EpisodeSelect } from '../components/EpisodeList';
 import { NavigatorButtons } from '../components/NavigatorButtons';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
@@ -26,7 +26,9 @@ export const useEpisodeSelect = () => {
 		const index = episodes.findIndex(({ id }) => id === selectedEpisodeId) + diff;
 		if (index >= 0 && index < episodes.length) {
 			handleChangeEpisode(episodes[index].id);
+			return true
 		}
+		return false
 	}, [episodes, currentIndex])
 	const handleChangeEpisode = useCallback((id: string) => {
 		setSelectedEpisodeId(id)
@@ -71,6 +73,7 @@ export const useEpisodeSelect = () => {
 		Input,
 		List,
 		Select,
-		fetch_rss
+		fetch_rss,
+		progress:handleChangeIndex
 	}
 }

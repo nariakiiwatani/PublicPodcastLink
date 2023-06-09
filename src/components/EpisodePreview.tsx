@@ -9,9 +9,10 @@ type EpisodePreviewProps = {
 	channel: Podcast
 	episode: Episode | null;
 	Navigator?: React.ReactNode;
+	audioRef?: React.Ref<HTMLAudioElement>
 };
 
-const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, Navigator }) => {
+const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, Navigator, audioRef }) => {
 	const { autoPlay, set:setAutoPlay } = useAutoPlay()
 	if (!src) return null;
 	return (
@@ -50,7 +51,7 @@ const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, 
 				/>
 			</Grid>
 			<Grid item xs={12}>
-				<audio controls key={src.audioUrl} style={{ width: '100%', marginTop: 5 }} autoPlay={autoPlay}>
+				<audio controls key={src.audioUrl} style={{ width: '100%', marginTop: 5 }} autoPlay={autoPlay} ref={audioRef}>
 					<source src={src.audioUrl} type="audio/mpeg" />
 					Your browser does not support the audio element.
 				</audio>
