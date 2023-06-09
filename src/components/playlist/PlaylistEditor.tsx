@@ -1,10 +1,15 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, useImperativeHandle, FormEvent } from "react";
-import { TextField, ListItem, Grid, Button, Typography, Box, Card, Divider, IconButton, List, ListItemText } from "@mui/material";
+import { TextField, ListItem, Grid, Button, Typography, Box, Card, Divider, IconButton, List, ListItemText, CircularProgress } from "@mui/material";
 import { useEpisodeSelect } from '../../hooks/useEpisodeSelect';
 import { Episode } from '../../types/podcast'
 import { Playlist, playlist_base_url } from './Playlist';
 import { ReorderableList, useReorder } from '../ReorderList';
 import DeleteIcon from '@mui/icons-material/Delete'
+import ReportIcon from '@mui/icons-material/Report';
+import CheckIcon from '@mui/icons-material/Check';
+import DoneIcon from '@mui/icons-material/Done';
+import ErrorIcon from '@mui/icons-material/Error';
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import { useContextPack } from '../../hooks/useContextPack';
 import { useDialog } from '../../hooks/useDialog';
 import { supabase } from '../../utils/supabase';
@@ -15,6 +20,39 @@ type PlaylistChannelEditorProps = {
 }
 interface PlaylistChannelEditorRef {
 	getValue: () => Playlist;
+}
+const copyToClipboard = async (text: string) => {
+	if ('clipboard' in navigator) {
+		return await navigator.clipboard.writeText(text);
+	} else {
+		return document.execCommand('copy', true, text);
+	}
+};
+
+const CopyToClipboard = ({ value, duration=2000, children }: { value: string, duration?: number, children: (value: string) => React.ReactNode }) => {
+	const [status, setStatus] = useState('default');
+
+	const handleClick = async () => {
+		try {
+			await copyToClipboard(value);
+			setStatus('success');
+		} catch (err) {
+			setStatus('error');
+		}
+	};
+
+	useEffect(() => {
+		if (status !== 'default') {
+			const timerId = setTimeout(() => setStatus('default'), duration);
+			return () => clearTimeout(timerId);
+		}
+	}, [status]);
+	return <Box sx={{ display: 'flex', cursor: 'pointer' }} onClick={handleClick}>
+		{status === 'default' && <ContentPasteIcon fontSize='small' />}
+		{status === 'success' && <DoneIcon fontSize='small' />}
+		{status === 'error' && <ErrorIcon fontSize='small' />}
+		{children(value)}
+	</Box>
 }
 const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, PlaylistChannelEditorProps>(({ value, onChangeReadyStatus }, ref) => {
 	const [alias, setAlias] = useState(value.alias)
@@ -48,15 +86,19 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 	}, [value])
 
 	const [is_alias_pending, setAliasPending] = useState(false)
-	const [is_alias_collide, setAliasCollide] = useState(false)
+	const [is_alias_valid, setAliasValid] = useState(false)
 	const handleAliasChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const v = e.target.value
 		setAlias(v)
+		if(v === '') {
+			setAliasValid(false)
+			return
+		}
 		setAliasPending(true)
 		try {
 			await supabase.from('playlist').select('alias').neq('id',value.id).eq('alias',v)
 			.then(({data})=> !!data && data.length>0)
-			.then(setAliasCollide)
+			.then(collide=>setAliasValid(!collide))
 		}
 		finally {
 			setAliasPending(false)
@@ -71,9 +113,9 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 	}
 	const thumbnail_url = useMemo(() => thumbnail instanceof File ? URL.createObjectURL(thumbnail) : thumbnail, [thumbnail])
 	useEffect(() => {
-		const is_submittable = !is_alias_pending && !is_alias_collide
+		const is_submittable = !is_alias_pending && is_alias_valid
 		onChangeReadyStatus(is_submittable)
-	}, [is_alias_pending, is_alias_collide])
+	}, [is_alias_pending, is_alias_valid])
 
 	return (<>
 		<Grid container spacing={2} sx={{ marginTop: 2 }}>
@@ -110,21 +152,23 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 			</Grid>
 			<Grid item xs={12} md={6} container spacing={2}>
 				<Grid item xs={12}>
-					<Typography variant='h4'>RSS Feed URL</Typography>
-					<Box sx={{ display: 'flex', alignItems: 'end' }}>
-						<Typography variant='body2'>
-							{playlist_base_url}/
-						</Typography>
+					<Typography variant='h4'>URL</Typography>
+					<Box sx={{ display: 'flex', alignItems: 'center' }}>
 						<TextField
 							size='small'
 							variant='outlined'
 							value={alias}
 							onChange={handleAliasChange}
 						/>
-						<Typography variant='body2'>
-							/rss
-						</Typography>
+						{is_alias_pending ? <CircularProgress /> :
+						is_alias_valid ? <CheckIcon color='success' /> : <ReportIcon color='error' />}
 					</Box>
+					<CopyToClipboard value={`${playlist_base_url}/${alias}/rss`}>
+						{(value=><Typography variant='subtitle2'>RSS: {value}</Typography>)}
+					</CopyToClipboard>
+					<CopyToClipboard value={`${playlist_base_url}/${alias}/view`}>
+						{(value=><Typography variant='subtitle2'>Playback: {value}</Typography>)}
+					</CopyToClipboard>
 				</Grid>
 				<Grid item xs={12}>
 					<Typography variant='h4'>サムネイル（クリックしてアップロード）</Typography>
