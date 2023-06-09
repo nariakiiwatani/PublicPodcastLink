@@ -1,17 +1,24 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { playlist_rss_url } from './components/playlist/Playlist'
+import { supabase } from './utils/supabase'
 
 const PlaylistView = () => {
 	const navigate = useNavigate()
+	const [message, setMessage] = useState('redirect...')
 	const {id} = useParams()
 	useEffect(() => {
 		if(id) {
-			const rss_url = playlist_rss_url(id)
-			navigate(`/?channel=${rss_url}&view=playlist`)
+			supabase.from('playlist').select('channel').eq('alias', id)
+			.then(({data}) => {
+				if(!data || data.length === 0) {
+					setMessage('not found')
+					return
+				}
+				navigate(`/?channel=${data[0].channel}&view=playlist`)
+			})
 		}
 	},[])
-	return <>not found</>
+	return <>{message}</>
 }
 
 export default PlaylistView

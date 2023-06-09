@@ -122,7 +122,7 @@ const EditableList = ({ value, type, onEdit, onDelete, onAdd, is_unique }: {
 	)
 }
 
-const SharedMembersEditor = ({ url }: { url: string }) => {
+export const SharedMembersEditor = ({ url }: { url: string }) => {
 	const { session } = useContext(SessionContext)
 	const { value, add, del, edit } = useChannelSharedWith(url)
 	const without_me = useMemo(() => value.filter(email => email !== session?.user.email), [value, session])
@@ -335,7 +335,7 @@ const Manager = () => {
 	</>)
 }
 
-const EditableChannelContext = createContext<ReturnType<typeof useEditableChannel>>({
+export const EditableChannelContext = createContext<ReturnType<typeof useEditableChannel>>({
 	value: [],
 	owned: [],
 	shared: [],
@@ -377,24 +377,24 @@ const theme = createTheme({
 		},
 	},
 });
-  
+
 const Owner: React.FC = () => {
 	const { t } = useTranslation(['owner', 'tab'])
 	return (<>
-	<ThemeProvider theme={theme}>
-		<CssBaseline />
-		<Header />
-		<Box sx={{ margin: 2 }}>
-			<CheckAuth>
-				<TabPanel labels={[t.channels, t.playlist, t.account]}>
+		<ThemeProvider theme={theme}>
+			<CssBaseline />
+			<Header />
+			<Box sx={{ margin: 2 }}>
+				<CheckAuth>
 					<EditableChannelContextProvider>
-						<Manager />
+						<TabPanel labels={[t.channels, t.playlist, t.account]}>
+							<Manager />
+							<Playlist />
+							<Account />
+						</TabPanel>
 					</EditableChannelContextProvider>
-					<Playlist />
-					<Account />
-				</TabPanel>
-			</CheckAuth>
-		</Box>
+				</CheckAuth>
+			</Box>
 		</ThemeProvider>
 	</>
 	)
