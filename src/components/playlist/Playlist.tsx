@@ -105,13 +105,13 @@ const make_empty_playlist = (): Playlist => {
 
 type Record = Database['public']['Tables']['playlist']
 const useDB = () => {
-	const { session } = useContext(SessionContext)
-	const user_id = useMemo(() => session?.user.id, [session])
+	const { value: editable } = useContext(EditableChannelContext)
 	const [value, setValue] = useState<Record['Row'][]>([])
 	const refresh = async () => {
-		const new_value = (await supabase.from('playlist').select('*').match({ created_by: user_id })).data
-		if (!new_value) return
-		setValue(new_value)
+		const {data, error} = await supabase.from('playlist').select('*')
+		if (error) throw new Error()
+		if(!data || data.length === 0) return
+		setValue(data.filter(({channel})=>editable.includes(channel??'')))
 	}
 	const update = (id: string, record: Record['Insert']) => supabase.from('playlist').upsert({ id, ...record }).match({ id }).throwOnError().then(refresh)
 	const del = async (id: string) => {
