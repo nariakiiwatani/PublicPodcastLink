@@ -139,29 +139,35 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 				<Grid item xs={12}>
 					<Typography variant='h4'>タイトル</Typography>
 					<TextField
+						size='small'
 						fullWidth
 						variant='outlined'
 						value={title}
+						required
 						onChange={(e) => setTitle(e.target.value)}
 					/>
 				</Grid>
 				<Grid item xs={12}>
 					<Typography variant='h4'>説明</Typography>
 					<TextField
+						size='small'
 						fullWidth
 						variant='outlined'
 						value={description}
-						rows={5}
+						rows={8}
 						multiline
+						required
 						onChange={(e) => setDescription(e.target.value)}
 					/>
 				</Grid>
 				<Grid item xs={12}>
 					<Typography variant='h4'>作成者名</Typography>
 					<TextField
+						size='small'
 						fullWidth
 						variant='outlined'
 						value={author}
+						required
 						onChange={(e) => setAuthor(e.target.value)}
 					/>
 				</Grid>
@@ -176,6 +182,7 @@ const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, Playlis
 							value={alias}
 							error={!!alias_error}
 							helperText={alias_error}
+							required
 							onChange={handleAliasChange}
 						/>
 						{is_alias_pending ? <CircularProgress /> :
