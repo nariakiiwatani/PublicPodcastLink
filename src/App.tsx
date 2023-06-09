@@ -40,7 +40,7 @@ const App: React.FC = () => {
 	const handleAudioEnded = useCallback(() => {
 		if(!audioRef.current) return
 		if(audioRef.current.autoplay) {
-			nextEpisode(1)
+			nextEpisode(is_playlist(podcast.self_url)?1:-1)
 		}
 	}, [audioRef.current, nextEpisode])
 	useEffect(() => {
