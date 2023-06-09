@@ -63,6 +63,7 @@ const usePodcast = (url?: string) => {
 	})
 
 	const fetchPodcast = async (url: string) => {
+		setValue({podcast:null,episodes:[]})
 		return fetch_podcast(url)
 		.then(result => {
 			if(result) {
