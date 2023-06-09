@@ -351,7 +351,7 @@ const PlaylistEditor = ({ value, onSave, onDelete }: PlaylistEditorProps) => {
 				ref={item_ref}
 				value={value.items}
 			/>
-			<Button type='submit' variant='contained' disabled={Object.values(submitableStatus).some(ok=>!ok)}>{value.is_new?'create':'update'}</Button>
+			<Button type='submit' variant='contained' disabled={Object.values(submitableStatus).some(ok=>!ok)}>{value.is_new?'公開':'更新'}</Button>
 		</form>
 		{!value.is_new && <>
 			<Box sx={{ backgroundColor: 'darkgrey', padding: 2, marginTop: 4 }}>
