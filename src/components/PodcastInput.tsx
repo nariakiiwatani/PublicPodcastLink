@@ -9,11 +9,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 type PodcastInputProps = {
 	option: Podcast | null
 	setUrl: (url: string) => void;
+	deletable?: boolean
 };
 
 const is_url = (value: string) => new RegExp('https?://.+').test(value)
 
-const PodcastInput: React.FC<PodcastInputProps> = ({ option, setUrl }) => {
+const PodcastInput: React.FC<PodcastInputProps> = ({ option, setUrl, deletable }) => {
 	const [value, setValue] = useState('')
 	const { podcasts, del } = useContext(FollowingContext)
 	const { t } = useTranslation('select_channel')
@@ -64,7 +65,7 @@ const PodcastInput: React.FC<PodcastInputProps> = ({ option, setUrl }) => {
 			}}
 			renderOption={(props, option, { selected:_ }) => (
 				<ListItem {...props} key={option}
-					secondaryAction={<IconButton onClick={()=>handleDelete(option)}><DeleteIcon /></IconButton>}>
+					secondaryAction={deletable&&<IconButton onClick={()=>handleDelete(option)}><DeleteIcon /></IconButton>}>
 					<ListItemText primary={titles[option]} secondary={option} />
 				</ListItem>
 			)}

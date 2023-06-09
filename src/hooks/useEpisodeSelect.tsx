@@ -33,7 +33,7 @@ export const useEpisodeSelect = () => {
 	const handleChangeEpisode = useCallback((id: string) => {
 		setSelectedEpisodeId(id)
 	}, [setSelectedEpisodeId])
-	const Input = useCallback(() => <PodcastInput setUrl={handleUrlInput} option={podcast} />, [podcast])
+	const Input = useCallback(({deletable}:{deletable?:boolean}) => <PodcastInput setUrl={handleUrlInput} option={podcast} deletable={deletable} />, [podcast])
 	const Select = useCallback(() => <EpisodeSelect episodes={episodes} onSelect={handleChangeEpisode} />, [episodes])
 	const List = useCallback(() => <EpisodeList episodes={episodes} onSelect={handleChangeEpisode} />, [episodes])
 

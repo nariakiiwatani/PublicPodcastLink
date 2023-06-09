@@ -87,7 +87,7 @@ const App: React.FC = () => {
 				<MyHelmet podcast={podcast} episode={episode} />
 				<Header />
 				<Box sx={{ margin: 2 }}>
-					<PodcastInput />
+					<PodcastInput deletable={true} />
 					{podcast && <>
 						<EpisodeSelect />
 						{episode &&
