@@ -1,8 +1,9 @@
 import React from 'react';
 import { Podcast, Episode } from '../types/podcast';
-import { Typography, Grid } from '@mui/material'
+import { Typography, Grid, Checkbox, FormControlLabel } from '@mui/material'
 import { OpenInNewButton } from './OpenInNewButton';
 import { ShareButtons } from './ShareButtons';
+import { useAutoPlay } from '../hooks/useAutoPlay';
 
 type EpisodePreviewProps = {
 	channel: Podcast
@@ -11,8 +12,8 @@ type EpisodePreviewProps = {
 };
 
 const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, Navigator }) => {
+	const { autoPlay, set:setAutoPlay } = useAutoPlay()
 	if (!src) return null;
-
 	return (
 		<Grid container spacing={1} marginTop={2} columns={{xs:12, md:18}} justifyContent={'center'}>
 			<Grid item xs={12} md={2} container>
@@ -30,7 +31,7 @@ const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, 
 					<ShareButtons channel={channel} episode={src} />
 				</Grid>
 			</Grid>
-			<Grid item xs={12} md={8}>
+			<Grid item xs={12} md={8} sx={{position:'relative'}}>
 				<Typography variant="subtitle2">
 					{new Date(src.pubDate).toLocaleString()}
 				</Typography>
@@ -40,9 +41,16 @@ const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, 
 				<Typography variant="subtitle1">
 					{channel?.title}
 				</Typography>
+				<FormControlLabel
+					sx={{ position: 'absolute', right: 0, bottom: 0 }}
+					control={
+						<Checkbox checked={autoPlay} onChange={(e)=>setAutoPlay(e.target.checked)} />
+					}
+					label="自動再生"
+				/>
 			</Grid>
 			<Grid item xs={12}>
-				<audio controls key={src.audioUrl} style={{ width: '100%', marginTop: 5 }}>
+				<audio controls key={src.audioUrl} style={{ width: '100%', marginTop: 5 }} autoPlay={autoPlay}>
 					<source src={src.audioUrl} type="audio/mpeg" />
 					Your browser does not support the audio element.
 				</audio>

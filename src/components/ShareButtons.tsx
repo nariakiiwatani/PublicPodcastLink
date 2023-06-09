@@ -16,7 +16,6 @@ export const ShareButtons = (props: ShareProps) => {
 	const { channel:{self_url:rss_url}, episode } = props
 	const query = useQuery();
 	const is_playlist = useMemo(() => query.get('view') === 'playlist', [query])
-	console.info(is_playlist)
 
 	const permalink = useMemo(() => createPermalink(rss_url, {
 		item_id:episode?.id,

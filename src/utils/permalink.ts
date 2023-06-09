@@ -7,7 +7,6 @@ export const permalink = (rss_url: string, option: {
 	let ret = `${base_url}?channel=${encodeURIComponent(rss_url)}`
 	if(item_id) ret += `&item=${encodeURIComponent(item_id)}`
 	if(is_playlist) ret += `&view=playlist`
-	console.info({ret})
 	return ret
 };
 
