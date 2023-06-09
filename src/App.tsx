@@ -24,6 +24,8 @@ const App: React.FC = () => {
 	const { t } = useTranslation()
 
 	const query = useQuery();
+	const is_playlist = useMemo(() => query.get('view') === 'playlist', [query])
+
 	const import_channels = useMemo(() => query.get('channels')?.split(','), [query])
 	const import_dialog = useDialog()
 	useEffect(() => {
@@ -81,7 +83,7 @@ const App: React.FC = () => {
 							<EpisodePreview
 								channel={podcast}
 								episode={episode}
-								Navigator={Navigator}
+								Navigator={<Navigator swap={is_playlist} />}
 							/>}
 						<RelatedLinksProvider url={podcast.self_url}>
 							<PodcastPreview podcast={podcast}/>

@@ -35,19 +35,30 @@ export const useEpisodeSelect = () => {
 	const Select = useCallback(() => <EpisodeSelect episodes={episodes} onSelect={handleChangeEpisode} />, [episodes])
 	const List = useCallback(() => <EpisodeList episodes={episodes} onSelect={handleChangeEpisode} />, [episodes])
 
-	const Navigator = useMemo(() =>
-		<NavigatorButtons
-			prev={{
-				value: <><SkipPreviousIcon />{episodes[currentIndex + 1]?.title}</>,
+	const Navigator = useCallback(({swap}:{swap?:boolean}) => {
+		let [left, right] = [
+			{
+				title: episodes[currentIndex + 1]?.title,
 				onClick: () => handleChangeIndex(1),
 				disabled: currentIndex >= episodes.length - 1
-			}}
-			next={{
-				value: <>{episodes[currentIndex - 1]?.title}<SkipNextIcon /></>,
+			},
+			{
+				title: episodes[currentIndex - 1]?.title,
 				onClick: () => handleChangeIndex(-1),
 				disabled: currentIndex <= 0
+			}
+		]
+		if(swap) [left, right] = [right, left]
+		return <NavigatorButtons
+			prev={{
+				...left,
+				value: <><SkipPreviousIcon />{left.title}</>,
 			}}
-		/>, [handleChangeIndex, currentIndex, episodes.length])
+			next={{
+				...right,
+				value: <>{right.title}<SkipNextIcon /></>,
+			}}
+		/>}, [handleChangeIndex, currentIndex, episodes.length])
 
 	const fetch_rss = (url: string, select_item_id: string | null = null) => {
 		handleUrlInput(url)?.then(() => select_item_id && handleChangeEpisode(select_item_id))
