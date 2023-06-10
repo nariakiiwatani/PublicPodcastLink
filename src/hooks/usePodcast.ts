@@ -27,7 +27,7 @@ export const fetch_podcast = async (url: string, reload?:boolean):Promise<{
 					imageUrl: channel.image?.url || '',
 					link: channel.link,
 					author: channel.author || '',
-					self_url: url,
+					self_url: channel['atom:link']?.['@href']??url,
 					owner: {
 						email: channel['itunes:owner']?.['itunes:email'] || ''
 					},
