@@ -13,7 +13,7 @@ import { useDialog } from './hooks/useDialog';
 import { ImportChannels } from './components/CreateImportURL';
 import { useTranslation } from './hooks/useTranslation';
 import { useEpisodeSelect } from './hooks/useEpisodeSelect';
-import { is_playlist } from './utils/is_playlist'
+import { is_playlist_url } from './utils/is_playlist'
 
 const theme = createTheme({
 	palette: {
@@ -40,7 +40,7 @@ const App: React.FC = () => {
 	const handleAudioEnded = useCallback(() => {
 		if(!audioRef.current) return
 		if(audioRef.current.autoplay) {
-			nextEpisode(is_playlist(podcast!.self_url)?1:-1)
+			nextEpisode(is_playlist_url(podcast!.self_url)[0]?1:-1)
 		}
 	}, [audioRef.current, nextEpisode])
 	useEffect(() => {
@@ -96,7 +96,7 @@ const App: React.FC = () => {
 							<EpisodePreview
 								channel={podcast}
 								episode={episode}
-								Navigator={<Navigator swap={is_playlist(podcast.self_url)} />}
+								Navigator={<Navigator swap={is_playlist_url(podcast.self_url)[0]} />}
 								audioRef={audioRef}
 							/>}
 						<RelatedLinksProvider url={podcast.self_url}>

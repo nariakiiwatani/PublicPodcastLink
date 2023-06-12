@@ -8,7 +8,7 @@ import { RelatedLinks } from '../hooks/useRelatedLinks';
 import { useEditableChannel } from '../hooks/useChannelSharedWith';
 import { useLocation } from 'react-router-dom';
 import { FollowingContext } from '../hooks/useFollows';
-import { is_playlist } from '../utils/is_playlist';
+import { is_playlist_url } from '../utils/is_playlist';
 
 type PodcastPreviewProps = {
 	podcast: Podcast | null;
@@ -33,7 +33,7 @@ export const Thumbnail: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 		component="img"
 		image={src.imageUrl}
 		alt={src.title}
-		sx={{ width: 180, height: 180, borderRadius: is_playlist(src.self_url)?undefined:'50%' }}
+		sx={{ width: 180, height: 180, borderRadius: is_playlist_url(src.self_url)[0]?undefined:'50%' }}
 	/>)
 }
 
