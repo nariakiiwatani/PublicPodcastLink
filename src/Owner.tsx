@@ -150,11 +150,8 @@ const SelectChannel = ({ onChange }: {
 	const query = useQuery()
 	useEffect(() => {
 		const url = query.get('channel')
-		const req = async (url: string) => {
-			return await requestNew(url)
-		}
 		if (url) {
-			req(url).then(result => {
+			fetch_podcast(url).then(result => {
 				if (result) {
 					setValue(url)
 				}

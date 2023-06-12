@@ -46,6 +46,8 @@ const CopyToClipboard = ({ value, duration=2000, children }: { value: string, du
 	</Box>
 }
 
+export const is_acceptable_for_alias = (str: string) => /^[a-zA-Z0-9-._~!$'()*+;]+$/.test(str)
+
 type PlaylistChannelEditorProps = {
 	value: Playlist,
 }
@@ -78,7 +80,7 @@ export const PlaylistChannelEditor = React.forwardRef<PlaylistChannelEditorRef, 
 			setAliasError('入力してください')
 			return
 		}
-		const invalid_chars = v.split('').filter(c => !/^[a-zA-Z0-9-._~!$'()*+;]$/.test(c))
+		const invalid_chars = v.split('').filter(c => !is_acceptable_for_alias(c))
 		if(invalid_chars.length > 0) {
 			const unique = [...new Set(invalid_chars)];
 			setAliasError(`使用できない文字が含まれています: ${unique.join('')}`)
