@@ -14,6 +14,7 @@ import { ImportChannels } from './components/CreateImportURL';
 import { useTranslation } from './hooks/useTranslation';
 import { useEpisodeSelect } from './hooks/useEpisodeSelect';
 import { is_playlist_url } from './utils/is_playlist'
+import { usePlaybackRate } from './hooks/useAudioSettings';
 
 const theme = createTheme({
 	palette: {
@@ -37,6 +38,24 @@ const App: React.FC = () => {
 
 	const { podcast, episode, fetch_rss, Input:PodcastInput, Select:EpisodeSelect, Navigator, progress:nextEpisode } = useEpisodeSelect()
 	const audioRef = useRef<HTMLAudioElement>(null)
+	const [playback_rate, setPlaybackRate] = usePlaybackRate(podcast?.self_url)
+	const handleRateChange = useCallback(() => {
+		if(!audioRef.current) return
+		setPlaybackRate(audioRef.current.playbackRate)
+	}, [audioRef.current, setPlaybackRate])
+	useEffect(() => {
+		if(!audioRef.current) return
+		audioRef.current.playbackRate = playback_rate
+	}, [episode, audioRef.current])
+	useEffect(() => {
+		if(!audioRef.current) return
+		audioRef.current.onratechange = handleRateChange
+		return () => {
+			if(!audioRef.current) return
+			audioRef.current.onratechange = ()=>{}
+		}
+	}, [audioRef.current, handleRateChange])
+	
 	const handleAudioEnded = useCallback(() => {
 		if(!audioRef.current) return
 		if(audioRef.current.autoplay) {

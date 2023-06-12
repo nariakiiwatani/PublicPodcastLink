@@ -3,7 +3,7 @@ import { Podcast, Episode } from '../types/podcast';
 import { Typography, Grid, Checkbox, FormControlLabel } from '@mui/material'
 import { OpenInNewButton } from './OpenInNewButton';
 import { ShareButtons } from './ShareButtons';
-import { useAutoPlay } from '../hooks/useAutoPlay';
+import { useAutoPlay } from '../hooks/useAudioSettings';
 
 type EpisodePreviewProps = {
 	channel: Podcast
