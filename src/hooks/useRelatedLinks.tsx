@@ -10,6 +10,7 @@ import DragHandleIcon from '@mui/icons-material/DragHandle'
 import { AddNewString } from '../components/AddNewString'
 import { useTranslation } from './useTranslation'
 import { Container, Draggable, DropResult } from "react-smooth-dnd"
+import { is_playlist_url, playlist_alias_to_id_url } from '../utils/is_playlist'
 
 const table_name = 'related_link'
 
@@ -206,6 +207,11 @@ const LinkItem = ({ url, icon, onEdit, onDelete }: LinkItemProps) => {
 		</ListItem>)
 }
 
+const isUUID = (str: string) => {
+	const regex = /^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$/;
+	return regex.test(str);
+};
+
 const RelatedLinksContext = createContext<ReturnType<typeof useRelatedLinks>>({
 	value: [],
 	add: (_: string): Promise<string[]> => Promise.resolve([]),
@@ -217,7 +223,16 @@ export const RelatedLinksProvider = ({ children, url }: {
 	children: React.ReactNode
 	url: string
 }) => {
-	const value = useRelatedLinks(url)
+	const [channel_id, setChannelID] = useState(url)
+	useEffect(() => {
+		const [is_playlist, alias_or_id] = is_playlist_url(url)
+		if(is_playlist && !isUUID(alias_or_id!)) {
+			playlist_alias_to_id_url(alias_or_id!).then(setChannelID)
+		}
+		setChannelID(url)
+	}, [url])
+
+	const value = useRelatedLinks(channel_id)
 	return <RelatedLinksContext.Provider value={value}>
 		{children}
 	</RelatedLinksContext.Provider>

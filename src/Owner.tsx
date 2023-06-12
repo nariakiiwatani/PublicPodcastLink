@@ -9,7 +9,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { RelatedLinksEditor, RelatedLinksProvider } from './hooks/useRelatedLinks'
 import { useDialog } from './hooks/useDialog'
-import { SessionContext, supabase } from './utils/supabase'
+import { SessionContext } from './utils/supabase'
 import Header from './components/Header'
 import { useChannelSharedWith, useEditableChannel } from './hooks/useChannelSharedWith'
 import { AddNewString } from './components/AddNewString'
@@ -21,7 +21,7 @@ import { CheckAuth, ResetPassword, redirectURL } from './components/Login'
 import { TabPanel } from './components/TabPanel'
 import Playlist from './components/playlist/Playlist'
 import { createTheme, ThemeProvider } from '@mui/material';
-import { is_playlist_url } from './utils/is_playlist'
+import { is_playlist_url, playlist_alias_to_id_url } from './utils/is_playlist'
 
 const EditableListItem = ({ defaultValue, textFieldProps, Icon, onEdit, onDelete }: {
 	defaultValue: string
@@ -194,16 +194,6 @@ const isUUID = (str: string) => {
 	const regex = /^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$/;
 	return regex.test(str);
 };
-const playlist_alias_to_id_url = async (alias: string) => {
-	const { data, error } = await supabase.from('playlist').select('channel').match({alias})
-	if(error) {
-		throw error
-	}
-	if(!data || data.length === 0) {
-		throw new Error('alias not found in playlist')
-	}
-	return data[0].channel
-}
 
 const AddNewChannel = () => {
 	const { t } = useTranslation('owner')
