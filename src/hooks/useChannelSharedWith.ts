@@ -1,47 +1,9 @@
 import { useState, useEffect, useMemo, useCallback, useContext } from 'react'
 import { supabase, SessionContext } from '../utils/supabase'
 import { Session } from '@supabase/supabase-js'
-import { is_acceptable_for_alias } from '../components/playlist/PlaylistEditor'
-import { fetch_podcast } from './usePodcast'
-import { playlist_rss_url } from '../components/playlist/Playlist'
 const table_name = 'channel_shared_with'
 
-const isUUID = (str: string) => {
-	const regex = /^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$/;
-	return regex.test(str);
-};
-
 const includes_icase = (array: string[], value: string) => array.some(a=>a.toLowerCase()===value.toLowerCase())
-const playlist_alias_to_id_url = async (alias: string) => {
-	if(!is_acceptable_for_alias(alias)) {
-		const result = await fetch_podcast(alias)
-		if(!result) {
-			throw new Error('alias url not found')
-		}
-		return alias
-	}
-	const { data, error } = await supabase.from('playlist').select('channel').match({alias})
-	if(error) {
-		throw error
-	}
-	if(!data || data.length === 0) {
-		throw new Error('alias not found in playlist')
-	}
-	return data[0].channel
-}
-const playlist_id_to_alias_url = async (id: string) => {
-	if(isUUID(id)) {
-		id = playlist_rss_url(id)
-	}
-	const { data, error } = await supabase.from('playlist').select('alias').match({channel: id})
-	if(error) {
-		throw error
-	}
-	if(!data || data.length === 0) {
-		throw new Error('id not found in playlist')
-	}
-	return playlist_rss_url(data[0].alias)
-}
 
 const get_shared_members = async (url: string) => {
 	const {data, error} = await supabase.from(table_name).select('shared_with').eq('channel', url)
@@ -84,7 +46,6 @@ const insert_db = async (channel:string) => {
 }
 
 export const useChannelSharedWith = (channel: string) => {
-	const id_for_this_channel = useMemo(()=>playlist_alias_to_id_url(channel), [channel])
 	const [result, setResult] = useState<string[]>([])
 	useEffect(() => {
 		get_shared_members(channel)
