@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom'
 import PodcastPreview from './components/PodcastPreview';
 import EpisodePreview from './components/EpisodePreview';
-import { CssBaseline, ThemeProvider, createTheme, Box, Typography } from '@mui/material';
+import { CssBaseline, ThemeProvider, createTheme, Box } from '@mui/material';
 import Header from './components/Header';
 import { permalink as createPermalink, importlink as createImportLink } from './utils/permalink';
 import { MyHelmet } from './components/MyHelmet';
@@ -110,13 +110,15 @@ const App: React.FC = () => {
 				<Box sx={{ margin: 2 }}>
 					<PodcastInput deletable={true} />
 					{podcast && <>
-						<EpisodeSelect />
+						<Box sx={{display:'flex', flexDirection:'row'}}>
+							<EpisodeSelect />
+							<OrderSelect label='並べ替え' />
+						</Box>
 						{episode &&
 							<EpisodePreview
 								channel={podcast}
 								episode={episode}
-								Navigator={<Navigator swap={is_playlist_url(podcast.self_url)[0]} />}
-								Order={<OrderSelect />}
+								Navigator={<Navigator />}
 								audioRef={audioRef}
 							/>}
 						<RelatedLinksProvider url={podcast.self_url}>
