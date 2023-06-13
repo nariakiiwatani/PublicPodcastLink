@@ -6,6 +6,7 @@ import SkipNextIcon from '@mui/icons-material/SkipNext';
 import PodcastInput from '../components/PodcastInput';
 import usePodcast from './usePodcast';
 import { Select, MenuItem, SelectChangeEvent, FormControl, InputLabel } from '@mui/material';
+import { useTrackControl } from './useTrackControl';
 
 const OrderEpisode = ({ value, label, onChange }: {
 	value: string,
@@ -32,36 +33,34 @@ const OrderEpisode = ({ value, label, onChange }: {
 }
 
 export const useEpisodeSelect = () => {
-	const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | null>(null);
 	const [episode_order, setEpisodeOrder] = useState<'listed' | 'date_asc' | 'date_desc'>('listed')
 	const { podcast, episodes, fetchPodcast } = usePodcast(undefined, { order_by: episode_order });
-	const episode = useMemo(() => episodes.find(({ id }) => id === selectedEpisodeId) ?? null, [episodes, selectedEpisodeId])
+	const {
+		track: episode,
+		index: currentIndex,
+		next,
+		prev,
+		set: setCurrentEpisodeById,
+		clear: clearEpisode
+	} = useTrackControl(episodes)
+	console.info(currentIndex)
 
 	const handleUrlInput = (value: string) => {
 		try {
 			const url = new URL(value)
-			return fetchPodcast(url.toString()).then(result => { if (result) setSelectedEpisodeId(null) })
+			return fetchPodcast(url.toString()).then(result => { if (result) clearEpisode() })
 		}
 		catch (e) {
 			console.error(e)
 		}
 	}
 
-	const currentIndex = episodes.findIndex(({ id }) => id === selectedEpisodeId);
-	const handleChangeIndex = useCallback((diff: number) => {
-		const index = episodes.findIndex(({ id }) => id === selectedEpisodeId) + diff;
-		if (index >= 0 && index < episodes.length) {
-			handleChangeEpisode(episodes[index].id);
-			return true
-		}
-		return false
-	}, [episodes, selectedEpisodeId])
 	const handleChangeEpisode = useCallback((id: string) => {
-		setSelectedEpisodeId(id)
-	}, [setSelectedEpisodeId])
+		setCurrentEpisodeById(id)
+	}, [setCurrentEpisodeById])
 	const Input = useCallback(({ deletable }: { deletable?: boolean }) => <PodcastInput setUrl={handleUrlInput} option={podcast} deletable={deletable} />, [podcast])
-	const Select = useCallback(() => <EpisodeSelect episodes={episodes} selected_id={selectedEpisodeId} onSelect={handleChangeEpisode} />, [episodes, selectedEpisodeId])
-	const List = useCallback(() => <EpisodeList episodes={episodes} selected_id={selectedEpisodeId} onSelect={handleChangeEpisode} />, [episodes, selectedEpisodeId])
+	const Select = useCallback(() => <EpisodeSelect episodes={episodes} selected_id={episode?.id??null} onSelect={handleChangeEpisode} />, [episodes, episode])
+	const List = useCallback(() => <EpisodeList episodes={episodes} selected_id={episode?.id??null} onSelect={handleChangeEpisode} />, [episodes, episode])
 
 	const handleChangeOrder = (e: SelectChangeEvent) => {
 		const v = e.target.value
@@ -75,12 +74,12 @@ export const useEpisodeSelect = () => {
 		let [left, right] = [
 			{
 				title: episodes[currentIndex - 1]?.title,
-				onClick: () => handleChangeIndex(-1),
+				onClick: prev,
 				disabled: currentIndex <= 0
 			},
 			{
 				title: episodes[currentIndex + 1]?.title,
-				onClick: () => handleChangeIndex(1),
+				onClick: next,
 				disabled: currentIndex >= episodes.length - 1
 			},
 		]
@@ -94,7 +93,7 @@ export const useEpisodeSelect = () => {
 				value: <>{right.title}<SkipNextIcon /></>,
 			}}
 		/>
-	}, [handleChangeIndex, currentIndex, episodes.length])
+	}, [currentIndex, episodes.length])
 
 	const fetch_rss = (url: string, select_item_id: string | null = null) => {
 		handleUrlInput(url)?.then(() => select_item_id && handleChangeEpisode(select_item_id))
@@ -109,6 +108,6 @@ export const useEpisodeSelect = () => {
 		Select,
 		OrderSelect,
 		fetch_rss,
-		progress: handleChangeIndex
+		next, prev,
 	}
 }

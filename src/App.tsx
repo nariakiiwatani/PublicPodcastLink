@@ -13,7 +13,6 @@ import { useDialog } from './hooks/useDialog';
 import { ImportChannels } from './components/CreateImportURL';
 import { useTranslation } from './hooks/useTranslation';
 import { useEpisodeSelect } from './hooks/useEpisodeSelect';
-import { is_playlist_url } from './utils/is_playlist'
 import { usePlaybackRate } from './hooks/useAudioSettings';
 
 const theme = createTheme({
@@ -36,7 +35,7 @@ const App: React.FC = () => {
 		import_dialog.open()
 	}, [import_channels])
 
-	const { podcast, episode, fetch_rss, Input:PodcastInput, OrderSelect, Select:EpisodeSelect, Navigator, progress:nextEpisode } = useEpisodeSelect()
+	const { podcast, episode, episodes, fetch_rss, Input:PodcastInput, OrderSelect, Select:EpisodeSelect, Navigator, next, prev } = useEpisodeSelect()
 	const audioRef = useRef<HTMLAudioElement>(null)
 	const [playback_rate, setPlaybackRate] = usePlaybackRate(podcast?.self_url)
 	const handleRateChange = useCallback(() => {
@@ -59,17 +58,18 @@ const App: React.FC = () => {
 	const handleAudioEnded = useCallback(() => {
 		if(!audioRef.current) return
 		if(audioRef.current.autoplay) {
-			nextEpisode(is_playlist_url(podcast!.self_url)[0]?1:-1)
+			audioRef.current.load()
+			next()
 		}
-	}, [audioRef.current, nextEpisode])
+	}, [audioRef.current, next, episodes])
 	useEffect(() => {
 		if(!audioRef.current) return
 		audioRef.current.onended = handleAudioEnded
 		return () => {
 			if(!audioRef.current) return
-			audioRef.current.load()
+			audioRef.current.onended = ()=>{}
 		}
-	}, [audioRef.current])
+	}, [audioRef.current, handleAudioEnded])
 
 	const navigate = useNavigate()
 

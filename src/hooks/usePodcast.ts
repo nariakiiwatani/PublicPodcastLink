@@ -100,7 +100,7 @@ const usePodcast = (url?: string, {
 				break;
 		}
 		setOrderedEpisodes(episodes)
-	}, [order_by, value])
+	}, [order_by, value.episodes])
 
 	const clearPodcast = () => {
 		setValue({
