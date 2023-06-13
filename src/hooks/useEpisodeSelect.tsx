@@ -55,7 +55,7 @@ export const useEpisodeSelect = () => {
 			return true
 		}
 		return false
-	}, [episodes, currentIndex])
+	}, [episodes, selectedEpisodeId])
 	const handleChangeEpisode = useCallback((id: string) => {
 		setSelectedEpisodeId(id)
 	}, [setSelectedEpisodeId])
