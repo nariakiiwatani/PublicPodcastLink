@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Episode } from '../types/podcast';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
@@ -8,12 +8,17 @@ import { useTranslation } from '../hooks/useTranslation'
 
 type EpisodeListProps = {
 	episodes: Episode[];
+	selected_id: string|null,
 	onSelect: (id: string) => void;
 };
 
-export const EpisodeSelect: React.FC<EpisodeListProps> = ({ episodes, onSelect }) => {
+export const EpisodeSelect: React.FC<EpisodeListProps> = ({ episodes, selected_id=null, onSelect }) => {
 	const { t } = useTranslation('select_episode')
-	const [value, setValue] = useState('')
+	const [value, setValue] = useState(selected_id??'')
+	useEffect(() => {
+		if(!selected_id) return
+		setValue(selected_id)
+	}, [selected_id])
 	const handleChange = (e: SelectChangeEvent) => {
 		const v = e.target.value
 		setValue(v)

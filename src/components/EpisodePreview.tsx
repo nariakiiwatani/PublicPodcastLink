@@ -1,6 +1,6 @@
 import React from 'react';
 import { Podcast, Episode } from '../types/podcast';
-import { Typography, Grid, Checkbox, FormControlLabel } from '@mui/material'
+import { Typography, Grid, Checkbox, FormControlLabel, Box } from '@mui/material'
 import { OpenInNewButton } from './OpenInNewButton';
 import { ShareButtons } from './ShareButtons';
 import { useAutoPlay } from '../hooks/useAudioSettings';
@@ -9,10 +9,11 @@ type EpisodePreviewProps = {
 	channel: Podcast
 	episode: Episode | null;
 	Navigator?: React.ReactNode;
+	Order?: React.ReactNode
 	audioRef?: React.Ref<HTMLAudioElement>
 };
 
-const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, Navigator, audioRef }) => {
+const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, Navigator, Order, audioRef }) => {
 	const { autoPlay, set:setAutoPlay } = useAutoPlay()
 	if (!src) return null;
 	return (
@@ -42,13 +43,15 @@ const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, 
 				<Typography variant="subtitle1">
 					{channel?.title}
 				</Typography>
+				<Box sx={{ position: 'absolute', right: 0, bottom: 0 }}>
 				<FormControlLabel
-					sx={{ position: 'absolute', right: 0, bottom: 0 }}
 					control={
 						<Checkbox checked={autoPlay} onChange={(e)=>setAutoPlay(e.target.checked)} />
 					}
 					label="自動再生"
 				/>
+				{Order}
+				</Box>
 			</Grid>
 			<Grid item xs={12}>
 				<audio controls key={src.audioUrl} style={{ width: '100%', marginTop: 5 }} autoPlay={autoPlay} ref={audioRef}>

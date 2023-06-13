@@ -9,7 +9,7 @@ const fetch_via_api = (url: string) => {
 const rss_cache:{[url:string]:any} = {}
 export const fetch_podcast = async (url: string, reload?:boolean):Promise<{
 	podcast: Podcast,
-	episodes: Episode[]
+	episodes: Episode[],
 }|null> => {
 	const p = parser()
 	try {
@@ -56,11 +56,20 @@ export const fetch_podcast = async (url: string, reload?:boolean):Promise<{
 	}
 }
 
-const usePodcast = (url?: string) => {
+type usePodcastOptions = {
+	order_by?: 'listed'|'date_asc'|'date_desc'
+}
+
+const usePodcast = (url?: string, {
+	order_by
+}:usePodcastOptions = {
+	order_by: 'listed'
+}) => {
 
 	const [value, setValue] = useState<{podcast:Podcast|null,episodes:Episode[]}>({
 		podcast: null, episodes:[]
 	})
+	const [ordered_episodes, setOrderedEpisodes] = useState<Episode[]>([])
 
 	const fetchPodcast = async (url: string) => {
 		setValue({podcast:null,episodes:[]})
@@ -71,12 +80,27 @@ const usePodcast = (url?: string) => {
 			}
 			return result
 		})
-	};
+	}
 
 	useEffect(() => {
 		if(!url) return
 		fetchPodcast(url)
 	}, [url])
+
+	useEffect(() => {
+		const episodes = [...value.episodes]
+		switch(order_by) {
+			case 'date_asc':
+				episodes.sort((a,b) => new Date(a.pubDate).getTime() - new Date(b.pubDate).getTime())
+				break;
+			case 'date_desc':
+				episodes.sort((a,b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
+				break;
+			case 'listed':
+				break;
+		}
+		setOrderedEpisodes(episodes)
+	}, [order_by, value])
 
 	const clearPodcast = () => {
 		setValue({
@@ -85,7 +109,12 @@ const usePodcast = (url?: string) => {
 		})
 	}
 
-	return { ...value, fetchPodcast, clearPodcast };
+	return {
+		podcast: value.podcast,
+		episodes: ordered_episodes,
+		fetchPodcast,
+		clearPodcast
+	};
 };
 
 export default usePodcast;

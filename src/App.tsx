@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom'
 import PodcastPreview from './components/PodcastPreview';
 import EpisodePreview from './components/EpisodePreview';
-import { CssBaseline, ThemeProvider, createTheme, Box } from '@mui/material';
+import { CssBaseline, ThemeProvider, createTheme, Box, Typography } from '@mui/material';
 import Header from './components/Header';
 import { permalink as createPermalink, importlink as createImportLink } from './utils/permalink';
 import { MyHelmet } from './components/MyHelmet';
@@ -36,7 +36,7 @@ const App: React.FC = () => {
 		import_dialog.open()
 	}, [import_channels])
 
-	const { podcast, episode, fetch_rss, Input:PodcastInput, Select:EpisodeSelect, Navigator, progress:nextEpisode } = useEpisodeSelect()
+	const { podcast, episode, fetch_rss, Input:PodcastInput, OrderSelect, Select:EpisodeSelect, Navigator, progress:nextEpisode } = useEpisodeSelect()
 	const audioRef = useRef<HTMLAudioElement>(null)
 	const [playback_rate, setPlaybackRate] = usePlaybackRate(podcast?.self_url)
 	const handleRateChange = useCallback(() => {
@@ -55,7 +55,7 @@ const App: React.FC = () => {
 			audioRef.current.onratechange = ()=>{}
 		}
 	}, [audioRef.current, handleRateChange])
-	
+
 	const handleAudioEnded = useCallback(() => {
 		if(!audioRef.current) return
 		if(audioRef.current.autoplay) {
@@ -116,6 +116,7 @@ const App: React.FC = () => {
 								channel={podcast}
 								episode={episode}
 								Navigator={<Navigator swap={is_playlist_url(podcast.self_url)[0]} />}
+								Order={<OrderSelect />}
 								audioRef={audioRef}
 							/>}
 						<RelatedLinksProvider url={podcast.self_url}>
