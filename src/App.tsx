@@ -19,6 +19,7 @@ import usePodcast from './hooks/usePodcast';
 import PodcastInput from './components/PodcastInput';
 import { EpisodeSelect } from './components/EpisodeList';
 import { OrderEpisode } from './components/OrderEpisode';
+import { Episode } from './types/podcast'
 
 const theme = createTheme({
 	palette: {
@@ -45,11 +46,16 @@ const App: React.FC = () => {
 
 	const audioRef = useRef<HTMLAudioElement>(null)
 
-	const handleLoadEpisode = (id: string | null) => {
+	const handleLoadEpisode = (track: Episode | null) => {
 		if(!podcast) return
-
+		if(audioRef.current?.autoplay && track?.audioUrl) {
+			audioRef.current.src = track.audioUrl
+			audioRef.current.play().catch(error => {
+				console.error('Error during play:', error);
+			});
+		}
 		const permalink = createPermalink(podcast.self_url, {
-			item_id: id??undefined,
+			item_id: track?.id,
 			base_url:'/'
 		})
 		navigate(permalink)
@@ -94,21 +100,20 @@ const App: React.FC = () => {
 		}
 	}, [audioRef.current, handleRateChange])
 
-	const handleAudioEnded = useCallback(() => {
-		if(!audioRef.current) return
-		if(audioRef.current.autoplay) {
-			audioRef.current.load()
-			next()
-		}
-	}, [audioRef.current, next, episodes])
 	useEffect(() => {
 		if(!audioRef.current) return
-		audioRef.current.onended = handleAudioEnded
+		audioRef.current.onended = (e: Event) => {
+			const element = e.target as HTMLAudioElement
+			if(element.autoplay) {
+				element.load()
+				next()
+			}
+		}
 		return () => {
 			if(!audioRef.current) return
 			audioRef.current.onended = ()=>{}
 		}
-	}, [audioRef.current, handleAudioEnded])
+	}, [audioRef.current, audioRef.current?.autoplay, next])
 
 	const navigate = useNavigate()
 

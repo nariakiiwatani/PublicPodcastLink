@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Podcast, Episode } from '../types/podcast';
 import { Typography, Grid, Checkbox, FormControlLabel } from '@mui/material'
 import { OpenInNewButton } from './OpenInNewButton';
@@ -9,11 +9,25 @@ type EpisodePreviewProps = {
 	channel: Podcast
 	episode: Episode | null;
 	Navigator?: React.ReactNode;
-	audioRef?: React.Ref<HTMLAudioElement>
+	audioRef?: React.RefObject<HTMLAudioElement>
 };
 
 const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, Navigator, audioRef }) => {
 	const { autoPlay, set:setAutoPlay } = useAutoPlay()
+	const [audioElement, setAudioElement] = useState<React.ReactNode|null>(null);
+	const handleChangeAutoPlay = (is_autoplay: boolean) => {
+		setAutoPlay(is_autoplay)
+		if(audioRef?.current) audioRef.current.autoplay = is_autoplay
+	}
+	useEffect(() => {
+		if(!src) return
+		if(src.audioUrl !== audioRef?.current?.src) {
+			setAudioElement(<audio key={audioRef?.current?.src} controls style={{ width: '100%', marginTop: 5 }} autoPlay={autoPlay} ref={audioRef}>
+				<source src={src?.audioUrl} type="audio/mpeg" />
+				Your browser does not support the audio element.
+			</audio>)
+		}
+	}, [src])
 	if (!src) return null;
 	return (
 		<Grid container spacing={1} marginTop={2} columns={{xs:12, md:18}} justifyContent={'center'}>
@@ -45,17 +59,14 @@ const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, 
 				<FormControlLabel
 					sx={{ position: 'absolute', right: 0, bottom: 0 }}
 					control={
-						<Checkbox checked={autoPlay} onChange={(e)=>setAutoPlay(e.target.checked)} />
+						<Checkbox checked={autoPlay} onChange={(e)=>handleChangeAutoPlay(e.target.checked)} />
 					}
 					label="自動再生"
 				/>
 			</Grid>
 			<Grid item xs={12}>
-				<audio controls key={src.audioUrl} style={{ width: '100%', marginTop: 5 }} autoPlay={autoPlay} ref={audioRef}>
-					<source src={src.audioUrl} type="audio/mpeg" />
-					Your browser does not support the audio element.
-				</audio>
-				</Grid>
+				{audioElement}
+			</Grid>
 			<Grid item xs={12}>
 				{Navigator}
 			</Grid>
