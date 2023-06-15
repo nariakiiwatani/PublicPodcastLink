@@ -106,7 +106,7 @@ const App: React.FC = () => {
 			const element = e.target as HTMLAudioElement
 			if(element.autoplay) {
 				element.load()
-				next()
+				next && next()
 			}
 		}
 		return () => {
@@ -137,6 +137,51 @@ const App: React.FC = () => {
 			})
 		}
 	}, [])
+
+	useEffect(() => {
+		if (!podcast || !episode) return
+		if ('mediaSession' in navigator) {
+			navigator.mediaSession.metadata = new MediaMetadata({
+				title: episode.title,
+				artist: podcast.author,
+				album: podcast.title,
+				artwork: [{
+					src: episode.imageUrl,
+				}],
+			});
+
+			navigator.mediaSession.setActionHandler('previoustrack', () => {
+				if(!audioRef.current) return
+				if(prev && audioRef.current.currentTime < 3) {
+					prev()
+				}
+				else {
+					audioRef.current.currentTime = 0
+				}
+			});
+			navigator.mediaSession.setActionHandler('nexttrack', next);
+			navigator.mediaSession.setActionHandler('seekto', (details: MediaSessionActionDetails) => {
+				if(!audioRef.current || details.seekTime === undefined) return
+				audioRef.current.currentTime = details.seekTime
+			});
+			navigator.mediaSession.setActionHandler('play', async () => {
+				if(!audioRef.current) return
+				await audioRef.current.play()
+			});
+			navigator.mediaSession.setActionHandler('pause', () => {
+				if(!audioRef.current) return
+				audioRef.current.pause();
+			});
+		}
+
+		return () => {
+			if ('mediaSession' in navigator) {
+				navigator.mediaSession.setActionHandler('previoustrack', null);
+				navigator.mediaSession.setActionHandler('nexttrack', null);
+				navigator.mediaSession.setActionHandler('seekto', null);
+			}
+		};
+	}, [podcast, episode, prev, next, audioRef.current?.src]);
 
 	return (
 		<ThemeProvider theme={theme}>

@@ -3,8 +3,7 @@ import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 
 type NavigatorButtonProps = {
-	disabled?: boolean
-	onClick: ()=>void
+	onClick: (()=>void)|null
 	value: React.ReactNode
 }
 type NavigatorButtonsProps = {
@@ -12,8 +11,8 @@ type NavigatorButtonsProps = {
 	prev?: NavigatorButtonProps,
 }
 
-const NavigatorButton = ({value, onClick, disabled}:NavigatorButtonProps) => {
-	return <Button onClick={onClick} variant='text' disabled={disabled}>{value}</Button>
+const NavigatorButton = ({value, onClick}:NavigatorButtonProps) => {
+	return <Button onClick={onClick??undefined} variant='text' disabled={!onClick}>{value}</Button>
 }
 
 export const NavigatorButtons = ({next, prev }:NavigatorButtonsProps) => {
@@ -33,20 +32,18 @@ export const NavigatorButtons = ({next, prev }:NavigatorButtonsProps) => {
 type NavigatorProps = {
 	episodes: {title:string}[]
 	index: number
-	onPrev: ()=>void,
-	onNext: ()=>void
+	onPrev: (()=>void)|null,
+	onNext: (()=>void)|null
 }
 export const Navigator = ({episodes, index, onPrev, onNext}:NavigatorProps) => {
 	let [left, right] = [
 		{
 			title: episodes[index - 1]?.title,
 			onClick: onPrev,
-			disabled: index <= 0
 		},
 		{
 			title: episodes[index + 1]?.title,
 			onClick: onNext,
-			disabled: index >= episodes.length - 1
 		},
 	]
 	return <NavigatorButtons

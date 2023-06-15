@@ -28,17 +28,17 @@ export const useTrackControl = <T extends Track,>(tracks: T[], onChange:(track:T
 	const currentIndex = useMemo(() => {
 		return tracks.findIndex(t=>t===currentTrack)
 	}, [tracks, currentTrack])
-	const next = useCallback(() => {
+	const next = useMemo(() => {
 		if(!tracks || currentIndex > tracks.length-2) {
-			return
+			return null
 		}
-		handleChangeTrack(tracks[currentIndex+1])
+		return () => handleChangeTrack(tracks[currentIndex+1])
 	}, [tracks, currentIndex, handleChangeTrack])
-	const prev = useCallback(() => {
+	const prev = useMemo(() => {
 		if(!tracks || currentIndex <= 0) {
-			return
+			return null
 		}
-		handleChangeTrack(tracks[currentIndex-1])
+		return () => handleChangeTrack(tracks[currentIndex-1])
 	}, [tracks, currentIndex, handleChangeTrack])
 	const clear = useCallback(() => {
 		handleChangeTrack(null)
