@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Podcast, Episode } from '../types/podcast';
 import { Typography, Grid, Checkbox, FormControlLabel } from '@mui/material'
 import { OpenInNewButton } from './OpenInNewButton';
@@ -9,23 +9,40 @@ type EpisodePreviewProps = {
 	channel: Podcast
 	episode: Episode | null;
 	Navigator?: React.ReactNode;
-	audioRef?: React.RefObject<HTMLAudioElement>
+	onAudioChanged: (element: HTMLAudioElement) => void
 };
 
-const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, Navigator, audioRef }) => {
+const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, Navigator, onAudioChanged }) => {
+	const audioRef = useRef<HTMLAudioElement>(null)
+
 	const { autoPlay, set:setAutoPlay } = useAutoPlay()
 	const [audioElement, setAudioElement] = useState<React.ReactNode|null>(null);
+	const handleAudioChanged = (e: React.FormEvent<HTMLAudioElement>) => {
+		onAudioChanged(e.target as HTMLAudioElement)
+	}
 	const handleChangeAutoPlay = (is_autoplay: boolean) => {
 		setAutoPlay(is_autoplay)
-		if(audioRef?.current) audioRef.current.autoplay = is_autoplay
+		if(audioRef?.current) {
+			audioRef.current.autoplay = is_autoplay
+			onAudioChanged(audioRef.current)
+		}
 	}
 	useEffect(() => {
 		if(!src) return
 		if(src.audioUrl !== audioRef?.current?.src) {
-			setAudioElement(<audio key={audioRef?.current?.src} controls style={{ width: '100%', marginTop: 5 }} autoPlay={autoPlay} ref={audioRef}>
+			const element = (<audio
+				key={audioRef?.current?.src}
+				controls
+				style={{ width: '100%', marginTop: 5 }}
+				autoPlay={autoPlay}
+				ref={audioRef}
+				onLoadedMetadata={handleAudioChanged}
+				onChange={handleAudioChanged}
+			>
 				<source src={src?.audioUrl} type="audio/mpeg" />
 				Your browser does not support the audio element.
 			</audio>)
+			setAudioElement(element)
 		}
 	}, [src])
 	if (!src) return null;

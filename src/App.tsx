@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useCallback, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom'
 import PodcastPreview from './components/PodcastPreview';
 import EpisodePreview from './components/EpisodePreview';
@@ -44,13 +44,11 @@ const App: React.FC = () => {
 	const [episode_order, setEpisodeOrder] = useState<'listed' | 'date_asc' | 'date_desc'>('listed')
 	const { podcast, episodes, fetchPodcast } = usePodcast(undefined, { order_by: episode_order });
 
-	const audioRef = useRef<HTMLAudioElement>(null)
-
 	const handleLoadEpisode = (track: Episode | null) => {
-		if(!podcast) return
-		if(audioRef.current?.autoplay && track?.audioUrl) {
-			audioRef.current.src = track.audioUrl
-			audioRef.current.play().catch(error => {
+		if(!podcast || !track || !audioElement) return
+		audioElement.src = track.audioUrl
+		if(audioElement.autoplay) {
+			audioElement.play().catch(error => {
 				console.error('Error during play:', error);
 			});
 		}
@@ -83,37 +81,34 @@ const App: React.FC = () => {
 	}
 
 	const [playback_rate, setPlaybackRate] = usePlaybackRate(podcast?.self_url)
-	const handleRateChange = useCallback(() => {
-		if(!audioRef.current) return
-		setPlaybackRate(audioRef.current.playbackRate)
-	}, [audioRef.current, setPlaybackRate])
+	const [audioElement, setAudioElement] = useState<HTMLAudioElement|null>(null)
+	
 	useEffect(() => {
-		if(!audioRef.current) return
-		audioRef.current.playbackRate = playback_rate
-	}, [episode, audioRef.current])
+		if(!audioElement) return
+		audioElement.playbackRate = playback_rate
+	}, [episode, audioElement])
 	useEffect(() => {
-		if(!audioRef.current) return
-		audioRef.current.onratechange = handleRateChange
-		return () => {
-			if(!audioRef.current) return
-			audioRef.current.onratechange = ()=>{}
+		if(!audioElement) return
+		audioElement.onratechange = () => {
+			setPlaybackRate(audioElement.playbackRate)
 		}
-	}, [audioRef.current, handleRateChange])
+		return () => {
+			audioElement.onratechange = ()=>{}
+		}
+	}, [audioElement])
 
 	useEffect(() => {
-		if(!audioRef.current) return
-		audioRef.current.onended = (e: Event) => {
-			const element = e.target as HTMLAudioElement
-			if(element.autoplay) {
-				element.load()
+		if(!audioElement) return
+		audioElement.onended = () => {
+			if(audioElement.autoplay) {
+				audioElement.load()
 				next && next()
 			}
 		}
 		return () => {
-			if(!audioRef.current) return
-			audioRef.current.onended = ()=>{}
+			audioElement.onended = ()=>{}
 		}
-	}, [audioRef.current, audioRef.current?.autoplay, next])
+	}, [audioElement, next])
 
 	const navigate = useNavigate()
 
@@ -139,7 +134,7 @@ const App: React.FC = () => {
 	}, [])
 
 	useEffect(() => {
-		if (!podcast || !episode) return
+		if (!podcast || !episode || !audioElement) return
 		if ('mediaSession' in navigator) {
 			navigator.mediaSession.metadata = new MediaMetadata({
 				title: episode.title,
@@ -151,37 +146,35 @@ const App: React.FC = () => {
 			});
 
 			navigator.mediaSession.setActionHandler('previoustrack', () => {
-				if(!audioRef.current) return
-				if(prev && audioRef.current.currentTime < 3) {
+				if(prev && audioElement.currentTime < 3) {
 					prev()
 				}
 				else {
-					audioRef.current.currentTime = 0
+					audioElement.currentTime = 0
 				}
 			});
 			navigator.mediaSession.setActionHandler('nexttrack', next);
 			navigator.mediaSession.setActionHandler('seekto', (details: MediaSessionActionDetails) => {
-				if(!audioRef.current || details.seekTime === undefined) return
-				audioRef.current.currentTime = details.seekTime
+				if(!audioElement || details.seekTime === undefined) return
+				audioElement.currentTime = details.seekTime
 			});
 			navigator.mediaSession.setActionHandler('play', async () => {
-				if(!audioRef.current) return
-				await audioRef.current.play()
+				await audioElement.play()
 			});
 			navigator.mediaSession.setActionHandler('pause', () => {
-				if(!audioRef.current) return
-				audioRef.current.pause();
+				audioElement.pause();
 			});
 		}
-
 		return () => {
 			if ('mediaSession' in navigator) {
 				navigator.mediaSession.setActionHandler('previoustrack', null);
 				navigator.mediaSession.setActionHandler('nexttrack', null);
 				navigator.mediaSession.setActionHandler('seekto', null);
+				navigator.mediaSession.setActionHandler('play', null);
+				navigator.mediaSession.setActionHandler('pause', null);
 			}
-		};
-	}, [podcast, episode, prev, next, audioRef.current?.src]);
+		}
+	}, [podcast, episode, audioElement, next, prev]);
 
 	return (
 		<ThemeProvider theme={theme}>
@@ -201,7 +194,7 @@ const App: React.FC = () => {
 								channel={podcast}
 								episode={episode}
 								Navigator={<Navigator episodes={episodes} index={currentIndex} onPrev={prev} onNext={next} />}
-								audioRef={audioRef}
+								onAudioChanged={setAudioElement}
 							/>}
 						<RelatedLinksProvider url={podcast.self_url}>
 							<PodcastPreview podcast={podcast}/>

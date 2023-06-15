@@ -33,7 +33,7 @@ export const useTrackControl = <T extends Track,>(tracks: T[], onChange:(track:T
 			return null
 		}
 		return () => handleChangeTrack(tracks[currentIndex+1])
-	}, [tracks, currentIndex, handleChangeTrack])
+	}, [tracks, currentIndex, defferedId, handleChangeTrack])
 	const prev = useMemo(() => {
 		if(!tracks || currentIndex <= 0) {
 			return null
