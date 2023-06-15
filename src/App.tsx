@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useEffect, useMemo, useRef, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom'
 import PodcastPreview from './components/PodcastPreview';
 import EpisodePreview from './components/EpisodePreview';
-import { CssBaseline, ThemeProvider, createTheme, Box } from '@mui/material';
+import { CssBaseline, ThemeProvider, createTheme, Box, SelectChangeEvent } from '@mui/material';
 import Header from './components/Header';
 import { permalink as createPermalink, importlink as createImportLink } from './utils/permalink';
 import { MyHelmet } from './components/MyHelmet';
@@ -12,8 +12,13 @@ import { FollowingProvider } from './hooks/useFollows'
 import { useDialog } from './hooks/useDialog';
 import { ImportChannels } from './components/CreateImportURL';
 import { useTranslation } from './hooks/useTranslation';
-import { useEpisodeSelect } from './hooks/useEpisodeSelect';
 import { usePlaybackRate } from './hooks/useAudioSettings';
+import { useTrackControl } from './hooks/useTrackControl';
+import { Navigator } from './components/Navigator'
+import usePodcast from './hooks/usePodcast';
+import PodcastInput from './components/PodcastInput';
+import { EpisodeSelect } from './components/EpisodeList';
+import { OrderEpisode } from './components/OrderEpisode';
 
 const theme = createTheme({
 	palette: {
@@ -35,8 +40,42 @@ const App: React.FC = () => {
 		import_dialog.open()
 	}, [import_channels])
 
-	const { podcast, episode, episodes, fetch_rss, Input:PodcastInput, OrderSelect, Select:EpisodeSelect, Navigator, next, prev } = useEpisodeSelect()
+	const [episode_order, setEpisodeOrder] = useState<'listed' | 'date_asc' | 'date_desc'>('listed')
+	const { podcast, episodes, fetchPodcast } = usePodcast(undefined, { order_by: episode_order });
+
 	const audioRef = useRef<HTMLAudioElement>(null)
+
+	const handleLoadEpisode = (id: string | null) => {
+		if(!podcast) return
+
+		const permalink = createPermalink(podcast.self_url, {
+			item_id: id??undefined,
+			base_url:'/'
+		})
+		navigate(permalink)
+	}
+
+	const {
+		track: episode,
+		index: currentIndex,
+		next,
+		prev,
+		set: setCurrentEpisodeById,
+		clear: clearEpisode
+	} = useTrackControl(episodes, handleLoadEpisode)
+
+	const handleSelectPodcast = (url: string) => {
+		clearEpisode()
+		return fetchPodcast(url)
+	}
+
+	const handleChangeOrder = (e: SelectChangeEvent) => {
+		const v = e.target.value
+		if (v === 'listed' || v === 'date_asc' || v === 'date_desc') {
+			setEpisodeOrder(v)
+		}
+	}
+
 	const [playback_rate, setPlaybackRate] = usePlaybackRate(podcast?.self_url)
 	const handleRateChange = useCallback(() => {
 		if(!audioRef.current) return
@@ -83,23 +122,16 @@ const App: React.FC = () => {
 				}))
 				return
 			}
-			let guid = query.get('item')
-			if(guid) guid = decodeURIComponent(guid)
-			return fetch_rss(decodeURIComponent(url), guid)
+			fetchPodcast(decodeURIComponent(url))
+			.then(result => {
+				if(!result) return
+				let guid = query.get('item')
+				if(guid) {
+					setCurrentEpisodeById(decodeURIComponent(guid))
+				}
+			})
 		}
 	}, [])
-
-	useEffect(() => {
-		if(!podcast) {
-			return
-		}
-		const permalink = createPermalink(podcast.self_url, {
-			item_id: episode?.id,
-			base_url:'/'
-		})
-		navigate(permalink)
-	}, [podcast, episode]);
-
 
 	return (
 		<ThemeProvider theme={theme}>
@@ -108,17 +140,17 @@ const App: React.FC = () => {
 				<MyHelmet podcast={podcast} episode={episode} />
 				<Header />
 				<Box sx={{ margin: 2 }}>
-					<PodcastInput deletable={true} />
+					<PodcastInput option={podcast} setUrl={handleSelectPodcast} deletable={true} />
 					{podcast && <>
 						<Box sx={{display:'flex', flexDirection:'row'}}>
-							<EpisodeSelect />
-							<OrderSelect label='並べ替え' />
+							<EpisodeSelect episodes={episodes} selected_id={episode?.id??null} onSelect={setCurrentEpisodeById} />
+							<OrderEpisode label='並べ替え' value={episode_order} onChange={handleChangeOrder} />
 						</Box>
 						{episode &&
 							<EpisodePreview
 								channel={podcast}
 								episode={episode}
-								Navigator={<Navigator />}
+								Navigator={<Navigator episodes={episodes} index={currentIndex} onPrev={prev} onNext={next} />}
 								audioRef={audioRef}
 							/>}
 						<RelatedLinksProvider url={podcast.self_url}>

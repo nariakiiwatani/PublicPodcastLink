@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, useImperativeHandle } from "react";
 import { TextField, ListItem, Grid, Button, Typography, Box, Card, IconButton, List, ListItemText, CircularProgress } from "@mui/material";
-import { useEpisodeSelect } from '../../hooks/useEpisodeSelect';
 import { Episode } from '../../types/podcast'
 import { Playlist, playlist_base_url } from './Playlist';
 import { ReorderableList, useReorder } from '../ReorderList';
@@ -11,6 +10,8 @@ import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import { useContextPack } from '../../hooks/useContextPack';
 import { supabase } from '../../utils/supabase';
 import { useDropzone } from 'react-dropzone';
+import PodcastInput from '../PodcastInput';
+import usePodcast from '../../hooks/usePodcast';
 
 const copyToClipboard = async (text: string) => {
 	if ('clipboard' in navigator) {
@@ -301,7 +302,7 @@ export type PlaylistItemEditorRef = {
 }
 export const PlaylistItemEditor = React.forwardRef<PlaylistItemEditorRef, PlaylistItemEditorProps>(({ value }, ref) => {
 	const [items, setItems] = useState(value)
-	const { episodes, Input: SelectPodcast } = useEpisodeSelect()
+	const { podcast, episodes, fetchPodcast } = usePodcast();
 	const { ArrayProviderConsumer } = useContextPack<Episode>()
 	useImperativeHandle(ref, () => ({
 		getValue: () => items,
@@ -334,7 +335,7 @@ export const PlaylistItemEditor = React.forwardRef<PlaylistItemEditorRef, Playli
 			<Grid item xs={12} md={4} container direction="column">
 				<Grid item ref={rightHeaderRef}>
 					<Typography variant='h4'>追加するエピソードを選択</Typography>
-					<SelectPodcast />
+					<PodcastInput option={podcast} setUrl={fetchPodcast} />
 				</Grid>
 				<Grid item sx={{ height: contentHeight, overflow: 'auto' }}>
 					<List>
