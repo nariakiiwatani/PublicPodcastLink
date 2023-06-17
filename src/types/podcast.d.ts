@@ -16,7 +16,7 @@ export type Episode = {
 	title: string;
 	description: string;
 	link: string;
-	audioUrl: string;
+	mediaUrl: string;
 	type: string;
 	imageUrl: string;
 	pubDate: string;

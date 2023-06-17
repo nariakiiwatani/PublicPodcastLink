@@ -40,7 +40,7 @@ export const fetch_podcast = async (url: string, reload?:boolean):Promise<{
 					title: item.title || '',
 					description: item.description || '',
 					link: item.link || '',
-					audioUrl: item.enclosure?.['@url'] || '',
+					mediaUrl: item.enclosure?.['@url'] || '',
 					imageUrl: item['itunes:image']?.['@href'] || '',
 					pubDate: item.pubDate || '',
 					type: item.enclosure?.['@type'] || '',

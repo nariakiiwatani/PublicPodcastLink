@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {  } from 'react';
 import { Podcast, Episode } from '../types/podcast';
 import { Typography, Grid, Checkbox, FormControlLabel } from '@mui/material'
 import { OpenInNewButton } from './OpenInNewButton';
@@ -9,42 +9,20 @@ type EpisodePreviewProps = {
 	channel: Podcast
 	episode: Episode | null;
 	Navigator?: React.ReactNode;
-	onAudioChanged: (element: HTMLAudioElement) => void
+	mediaElement: HTMLAudioElement|HTMLVideoElement|null
+	MediaPlayer: React.ReactNode
 };
 
-const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, Navigator, onAudioChanged }) => {
-	const audioRef = useRef<HTMLAudioElement>(null)
+const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, Navigator, mediaElement, MediaPlayer }) => {
 
 	const { autoPlay, set:setAutoPlay } = useAutoPlay()
-	const [audioElement, setAudioElement] = useState<React.ReactNode|null>(null);
-	const handleAudioChanged = (e: React.FormEvent<HTMLAudioElement>) => {
-		onAudioChanged(e.target as HTMLAudioElement)
-	}
 	const handleChangeAutoPlay = (is_autoplay: boolean) => {
 		setAutoPlay(is_autoplay)
-		if(audioRef?.current) {
-			audioRef.current.autoplay = is_autoplay
-			onAudioChanged(audioRef.current)
+		if(mediaElement) {
+			mediaElement.autoplay = is_autoplay
 		}
 	}
-	useEffect(() => {
-		if(!src) return
-		if(src.audioUrl !== audioRef?.current?.src) {
-			const element = (<audio
-				key={audioRef?.current?.src}
-				controls
-				style={{ width: '100%', marginTop: 5 }}
-				autoPlay={autoPlay}
-				ref={audioRef}
-				onLoadedMetadata={handleAudioChanged}
-				onChange={handleAudioChanged}
-			>
-				<source src={src?.audioUrl} type="audio/mpeg" />
-				Your browser does not support the audio element.
-			</audio>)
-			setAudioElement(element)
-		}
-	}, [src])
+
 	if (!src) return null;
 	return (
 		<Grid container spacing={1} marginTop={2} columns={{xs:12, md:18}} justifyContent={'center'}>
@@ -82,7 +60,7 @@ const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, 
 				/>
 			</Grid>
 			<Grid item xs={12}>
-				{audioElement}
+				{MediaPlayer}
 			</Grid>
 			<Grid item xs={12}>
 				{Navigator}

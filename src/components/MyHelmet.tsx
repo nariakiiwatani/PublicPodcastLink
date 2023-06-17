@@ -51,7 +51,7 @@ export const MyHelmet = ({podcast:p, episode:e}:MyHelmetProps) => {
 		}
 		if(e) {
 			ret.audio = {
-				url: e.audioUrl,
+				url: e.mediaUrl,
 				type: e.type
 			}
 		}

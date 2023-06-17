@@ -20,6 +20,7 @@ import PodcastInput from './components/PodcastInput';
 import { EpisodeSelect } from './components/EpisodeList';
 import { OrderEpisode } from './components/OrderEpisode';
 import { Episode } from './types/podcast'
+import { useMediaPlayer } from './hooks/useMediaPlayer';
 
 const theme = createTheme({
 	palette: {
@@ -44,14 +45,12 @@ const App: React.FC = () => {
 	const [episode_order, setEpisodeOrder] = useState<'listed' | 'date_asc' | 'date_desc'>('listed')
 	const { podcast, episodes, fetchPodcast } = usePodcast(undefined, { order_by: episode_order });
 
+	const {load:loadMedia, element: mediaElement, Node: Player} = useMediaPlayer()
+
 	const handleLoadEpisode = (track: Episode | null) => {
-		if(!podcast || !track || !audioElement) return
-		audioElement.src = track.audioUrl
-		if(audioElement.autoplay) {
-			audioElement.play().catch(error => {
-				console.error('Error during play:', error);
-			});
-		}
+		if(!podcast || !track) return
+		loadMedia(track.mediaUrl, track.type)
+
 		const permalink = createPermalink(podcast.self_url, {
 			item_id: track?.id,
 			base_url:'/'
@@ -73,6 +72,11 @@ const App: React.FC = () => {
 		return fetchPodcast(url)
 	}
 
+	useEffect(() => {
+		if(!episode) return
+		loadMedia(episode.mediaUrl, episode.type)
+	}, [episode])
+
 	const handleChangeOrder = (e: SelectChangeEvent) => {
 		const v = e.target.value
 		if (v === 'listed' || v === 'date_asc' || v === 'date_desc') {
@@ -81,34 +85,33 @@ const App: React.FC = () => {
 	}
 
 	const [playback_rate, setPlaybackRate] = usePlaybackRate(podcast?.self_url)
-	const [audioElement, setAudioElement] = useState<HTMLAudioElement|null>(null)
 	
 	useEffect(() => {
-		if(!audioElement) return
-		audioElement.playbackRate = playback_rate
-	}, [episode, audioElement])
+		if(!mediaElement) return
+		mediaElement.playbackRate = playback_rate
+	}, [episode, mediaElement])
 	useEffect(() => {
-		if(!audioElement) return
-		audioElement.onratechange = () => {
-			setPlaybackRate(audioElement.playbackRate)
+		if(!mediaElement) return
+		mediaElement.onratechange = () => {
+			setPlaybackRate(mediaElement.playbackRate)
 		}
 		return () => {
-			audioElement.onratechange = ()=>{}
+			mediaElement.onratechange = ()=>{}
 		}
-	}, [audioElement])
+	}, [mediaElement])
 
 	useEffect(() => {
-		if(!audioElement) return
-		audioElement.onended = () => {
-			if(audioElement.autoplay) {
-				audioElement.load()
+		if(!mediaElement) return
+		mediaElement.onended = () => {
+			if(mediaElement.autoplay) {
+				mediaElement.pause()
 				next && next()
 			}
 		}
 		return () => {
-			audioElement.onended = ()=>{}
+			mediaElement.onended = ()=>{}
 		}
-	}, [audioElement, next])
+	}, [mediaElement, next])
 
 	const navigate = useNavigate()
 
@@ -134,7 +137,7 @@ const App: React.FC = () => {
 	}, [])
 
 	useEffect(() => {
-		if (!podcast || !episode || !audioElement) return
+		if (!podcast || !episode || !mediaElement) return
 		if ('mediaSession' in navigator) {
 			navigator.mediaSession.metadata = new MediaMetadata({
 				title: episode.title,
@@ -146,23 +149,23 @@ const App: React.FC = () => {
 			});
 
 			navigator.mediaSession.setActionHandler('previoustrack', () => {
-				if(prev && audioElement.currentTime < 3) {
+				if(prev && mediaElement.currentTime < 3) {
 					prev()
 				}
 				else {
-					audioElement.currentTime = 0
+					mediaElement.currentTime = 0
 				}
 			});
 			navigator.mediaSession.setActionHandler('nexttrack', next);
 			navigator.mediaSession.setActionHandler('seekto', (details: MediaSessionActionDetails) => {
-				if(!audioElement || details.seekTime === undefined) return
-				audioElement.currentTime = details.seekTime
+				if(!mediaElement || details.seekTime === undefined) return
+				mediaElement.currentTime = details.seekTime
 			});
 			navigator.mediaSession.setActionHandler('play', async () => {
-				await audioElement.play()
+				await mediaElement.play()
 			});
 			navigator.mediaSession.setActionHandler('pause', () => {
-				audioElement.pause();
+				mediaElement.pause();
 			});
 		}
 		return () => {
@@ -174,7 +177,7 @@ const App: React.FC = () => {
 				navigator.mediaSession.setActionHandler('pause', null);
 			}
 		}
-	}, [podcast, episode, audioElement, next, prev]);
+	}, [podcast, episode, mediaElement, next, prev, mediaElement?.src]);
 
 	return (
 		<ThemeProvider theme={theme}>
@@ -194,7 +197,8 @@ const App: React.FC = () => {
 								channel={podcast}
 								episode={episode}
 								Navigator={<Navigator episodes={episodes} index={currentIndex} onPrev={prev} onNext={next} />}
-								onAudioChanged={setAudioElement}
+								mediaElement={mediaElement}
+								MediaPlayer={Player}
 							/>}
 						<RelatedLinksProvider url={podcast.self_url}>
 							<PodcastPreview podcast={podcast}/>
