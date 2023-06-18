@@ -69,7 +69,13 @@ const App: React.FC = () => {
 
 	const handleSelectPodcast = (url: string) => {
 		clearEpisode()
-		return fetchPodcast(url)
+		fetchPodcast(url).then(result => {
+			if(!result) return
+			const permalink = createPermalink(url, {
+				base_url:'/'
+			})
+			navigate(permalink)
+		})
 	}
 
 	useEffect(() => {
