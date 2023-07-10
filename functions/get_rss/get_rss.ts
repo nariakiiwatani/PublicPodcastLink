@@ -2,7 +2,7 @@ import { Handler } from '@netlify/functions'
 import fetch from 'node-fetch';
 
 const allowedOrigins = ["https://publicpodcast.link", "https://tweetpodcast.online"];
-console.info({allowedOrigins})
+
 export const handler: Handler = async (event, context) => {
 	const { url } = event.queryStringParameters as { url: string }
 	if (!url) {

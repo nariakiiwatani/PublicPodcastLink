@@ -38,8 +38,8 @@ export const Thumbnail: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
 }
 
 export const Description: React.FC<PodcastPreviewProps> = ({ podcast: src }) => {
+	const safeDescription = useMemo(() => src?avoidXSS(src.description):'', [src?.description])
 	if (!src) return null
-	const safeDescription = useMemo(() => avoidXSS(src.description), [src.description])
 	return (<Typography
 		variant="subtitle1"
 		color="text.secondary"

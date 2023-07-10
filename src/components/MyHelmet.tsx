@@ -32,6 +32,7 @@ export const MyHelmet = ({podcast:p, episode:e}:MyHelmetProps) => {
 					{ property: 'og:image', content: s.imageUrl },
 					{ property: 'og:description', content: s.description },
 					{ property: 'og:site_name', content: 'PublicPodcastLink' },
+					{ property: 'prerender-status-code', content: '404' },
 				]}
 			/>
 		</HelmetProvider>)

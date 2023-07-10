@@ -1,9 +1,10 @@
-import React, {  } from 'react';
+import React, { useMemo } from 'react';
 import { Podcast, Episode } from '../types/podcast';
 import { Typography, Grid, Checkbox, FormControlLabel } from '@mui/material'
 import { OpenInNewButton } from './OpenInNewButton';
 import { ShareButtons } from './ShareButtons';
 import { useAutoPlay } from '../hooks/useAudioSettings';
+import { avoidXSS } from '../utils/escape';
 
 type EpisodePreviewProps = {
 	channel: Podcast
@@ -22,6 +23,7 @@ const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, 
 			mediaElement.autoplay = is_autoplay
 		}
 	}
+	const safeDescription = useMemo(() => src?avoidXSS(src.description):'', [src?.description])
 
 	if (!src) return null;
 	return (
@@ -74,7 +76,7 @@ const EpisodePreview: React.FC<EpisodePreviewProps> = ({ channel, episode: src, 
 						overflowWrap: 'break-word',
 						wordBreak: 'break-all',
 					}}
-					dangerouslySetInnerHTML={{ __html: src.description }}
+					dangerouslySetInnerHTML={{ __html: safeDescription }}
 				/>
 			</Grid>
 			<Grid item xs={12}>
