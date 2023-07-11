@@ -25,13 +25,13 @@ export const MyHelmet = ({podcast:p, episode:e}:MyHelmetProps) => {
 			<Helmet
 				title={s.title}
 				meta={[
-					{ name: 'twitter:card', content: 'summary_large_image' },
-					{ property: 'og:title', content: s.title },
-					{ property: 'og:type', content: 'website' },
-					{ property: 'og:url', content: s.link },
-					{ property: 'og:image', content: s.imageUrl },
-					{ property: 'og:description', content: s.description },
-					{ property: 'og:site_name', content: 'PublicPodcastLink' },
+					// { name: 'twitter:card', content: 'summary_large_image' },
+					// { property: 'og:title', content: s.title },
+					// { property: 'og:type', content: 'website' },
+					// { property: 'og:url', content: s.link },
+					// { property: 'og:image', content: s.imageUrl },
+					// { property: 'og:description', content: s.description },
+					// { property: 'og:site_name', content: 'PublicPodcastLink' },
 					{ property: 'prerender-status-code', content: '404' },
 				]}
 			/>
