@@ -6,7 +6,8 @@ const DonatorList = () => {
 	const list = [
 		'Kendea',
 		'サカプル番外編',
-		'Miko'
+		'Miko',
+		'Mo'
 	]
 	return (
 		<div>
