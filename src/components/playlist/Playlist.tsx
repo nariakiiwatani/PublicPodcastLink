@@ -19,7 +19,30 @@ import { EditableChannelContext } from '../../Owner'
 export const playlist_base_url = `${window.origin}/playlist`
 export const playlist_view_url = (name: string) => `${playlist_base_url}/${name}/view`
 export const playlist_rss_url = (name: string) => `${playlist_base_url}/${name}/rss`
-export const playlist_thumbnail_url = (name: string) => `${playlist_base_url}/${name}/thumbnail`
+export const playlist_thumbnail_url = (name: string, mime_type: string) => {
+	const ext_map = {
+		"text/html": ".html",
+		"text/plain": ".txt",
+		"text/css": ".css",
+		"text/javascript": ".js",
+		"application/javascript": ".js",
+		"image/jpeg": ".jpeg",
+		"image/png": ".png",
+		"image/gif": ".gif",
+		"image/webp": ".webp",
+		"image/svg+xml": ".svg",
+		"audio/mpeg": ".mp3",
+		"audio/wav": ".wav",
+		"video/mp4": ".mp4",
+		"application/pdf": ".pdf",
+		"application/xml": ".xml",
+		"application/json": ".json",
+		"application/zip": ".zip"
+	}
+	const url = `${playlist_base_url}/${name}/thumbnail`
+	const ext = mime_type ? Object.entries(ext_map).find(([k,v]) => mime_type.includes(k)) : undefined
+	return ext ? `${url}.${ext[1]}` : url
+}
 export const playlist_thumbnail_default_url = `${window.origin}/playlist-default-thumbnail.png`
 
 export type Playlist = {
@@ -38,7 +61,7 @@ const create_xml = (playlist: Playlist, user: User) => {
 	const link = playlist_view_url(alias)
 	const rss_url = playlist_rss_url(alias)
 	const image_url = playlist.thumbnail instanceof File
-		? playlist_thumbnail_url(id)
+		? playlist_thumbnail_url(id, playlist.thumbnail.type)
 		: playlist.thumbnail
 	const email = user.email
 	if (!email) {

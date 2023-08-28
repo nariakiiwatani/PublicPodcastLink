@@ -20,7 +20,7 @@ to = "/.netlify/functions/get_rss_from_supabase"
 status = 200
 
 [[redirects]]
-from = "/playlist/:id/thumbnail"
+from = "/playlist/:id/thumbnail*"
 to = "/.netlify/functions/get_thumbnail_from_supabase"
 status = 200
 
