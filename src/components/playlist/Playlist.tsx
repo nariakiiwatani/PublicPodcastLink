@@ -41,7 +41,7 @@ export const playlist_thumbnail_url = (name: string, mime_type: string) => {
 	}
 	const url = `${playlist_base_url}/${name}/thumbnail`
 	const ext = mime_type ? Object.entries(ext_map).find(([k,_]) => mime_type.includes(k)) : undefined
-	return ext ? `${url}.${ext[1]}` : url
+	return ext ? `${url}${ext[1]}` : url
 }
 export const playlist_thumbnail_default_url = `${window.origin}/playlist-default-thumbnail.png`
 
