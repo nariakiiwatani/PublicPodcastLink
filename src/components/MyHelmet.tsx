@@ -25,7 +25,10 @@ export const MyHelmet = ({podcast:p, episode:e}:MyHelmetProps) => {
 			<Helmet
 				title={s.title}
 				meta={[
-					{ name: 'twitter:card', content: 'summary_large_image' },
+					{ name: 'twitter:card', content: 'summary' },
+					{ name: "twitter:title", content: s.title },
+					{ name: "twitter:description", content: s.description },
+					{ name: "twitter:image", content: s.imageUrl },
 					{ property: 'og:title', content: s.title },
 					{ property: 'og:type', content: 'website' },
 					{ property: 'og:url', content: s.link },
