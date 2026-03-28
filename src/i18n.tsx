@@ -18,10 +18,7 @@ export default {
 				en: 'Support This Project',
 				ja: 'サポートする'
 			},
-			url: {
-				en: 'https://donate.stripe.com/3cs8xhggxaMtdTq4gi',
-				ja: 'https://donate.stripe.com/3cseVF4xP07PbLibIJ'
-			}
+			url: 'https://buymeacoffee.com/nariakiiwatani'
 		},
 		about_donation: {
 			en: 'About Supporting',
@@ -98,8 +95,8 @@ export default {
 				<p>However, costs such as domain management and operational expenses are necessary to keep it publicly available. In order to continue and enhance this service, we need your donations.</p>
 				<p>If you find PublicPodcast.link useful, we'd appreciate it if you could consider making a donation. Any amount makes a big difference.</p>
 				<p>
-					<span>We deeply appreciate your support and understanding. You can make a donation here: </span>
-					<a href='https://donate.stripe.com/3cs8xhggxaMtdTq4gi' target='_blank'>Support PublicPodcast.link</a>
+					<span>We deeply appreciate your support and understanding. You can make a donation here(please note that it's for PublicPodcast.link): </span>
+					<a href='https://buymeacoffee.com/nariakiiwatani' target='_blank'>Support PublicPodcast.link</a>
 				</p>
 			</div>,
 			ja: <div>
@@ -111,8 +108,8 @@ export default {
 				<p>しかし、公開維持のためにはドメイン管理費用が必要です。このサービスを続け、改善し続けるためには、皆様からの寄付が必要です。</p>
 				<p>あなたがPublicPodcast.linkを有用と感じていただけるなら、寄付を検討していただけると幸いです。どんな額でも、大きな違いを生み出す力があります。</p>
 				<p>
-					<span>皆様のご支援とご理解に心より感謝いたします。ここから寄付をしていただけます： </span>
-					<a href='https://buy.stripe.com/3cseVF4xP07PbLibIJ' target='_blank'>PublicPodcast.linkをサポートする</a>
+					<span>皆様のご支援とご理解に心より感謝いたします。ここから寄付をしていただけます(コメントにPublicPodcast.linkへの寄付であることを記載してください)： </span>
+					<a href='https://buymeacoffee.com/nariakiiwatani' target='_blank'>PublicPodcast.linkをサポートする</a>
 				</p>
 			</div>
 		}

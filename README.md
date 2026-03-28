@@ -41,6 +41,6 @@
 
 あなたがPublicPodcast.linkを有用と感じていただけるなら、寄付を検討していただけると幸いです。どんな額でも、大きな違いを生み出す力があります。
 
-皆様のご支援とご理解に心より感謝いたします。ここから寄付をしていただけます：[PublicPodcast.linkへの寄付](https://buy.stripe.com/3cseVF4xP07PbLibIJ)
+皆様のご支援とご理解に心より感謝いたします。ここから寄付をしていただけます：[PublicPodcast.linkへの寄付](https://buymeacoffee.com/nariakiiwatani)
 
 よろしくお願いいたします。
